@@ -12,7 +12,7 @@
 | `qwen36-128k` | Qwen3.6-35B-A3B MTP UD-IQ4_XS | 131072 token | SSD window128、MTP draft2 |
 | `minicpm-64k` | MiniCPM-V4.7 35B-A3B | 65536 token | SSD window176、DSpark draft7 |
 
-两个档位都关闭思考，保留全部专家，SSD只改变存储与缓存方式。
+两个档位都支持思考开关，保留全部专家，SSD只改变存储与缓存方式。
 上下文是输入与输出共用容量；两者均已测试容量与8218-token实际输入，尚未测满各自上下文。
 此前Qwen标准SVG实测17.31 token/s；长文预处理另需时间，不能把生成速度当输入处理速度。
 
@@ -52,7 +52,14 @@ for chunk in stream:
 重复惩罚扫描窗口仍沿用模型固定设置。两种 token 上限同时提供时必须相同。
 不支持多个候选 n>1、工具、图片、结构化 response_format、logprobs、Responses API 或 Embeddings；
 这些参数会明确报错，不会默默忽略。`user` 仅接受为客户端标识，不影响推理。
-思考固定关闭。
+`enable_thinking`可设为布尔值true或false。原始API省略时保持关闭，以兼容已有调用和标准测试；
+OpenWebUI普通聊天默认开启，可在输入框旁的“模型控制”→“思考模式”选择开启或关闭（标准测试）。
+选择按用户和模型保存；两个模型仍共用互斥槽位。
+开启时，JSON响应的`choices[0].message.reasoning_content`和SSE的`choices[0].delta.reasoning_content`
+返回模型实际生成的思考文本，与最终回答`content`分开；关闭时不人为填充思考内容。
+客户端可在assistant历史消息中携带可选`reasoning_content`，具体是否保留由模型聊天模板决定。
+思考和最终答案共用输出token上限；usage、TPS、生成耗时统计包含二者。
+如果输出额度在思考阶段耗尽，可能只有思考内容，finish_reason仍如实返回length。
 
 新旧接口共用同一个准入槽位。Chat 忙时返回 OpenAI 格式 HTTP429 `device_job_busy`，
 异步 jobs 忙时仍为409；没有后台排队。空闲时可以选择任意一个模型。
@@ -96,7 +103,8 @@ MiniCPM示例：
 {"request_id":"minicpm-example-001","profile":"minicpm-64k","prompt":"用中文解释SSD专家缓存。","max_tokens":512}
 ```
 
-标准鹈鹕题使用原文`Generate an SVG of a pelican riding a bicycle.`，不添加其他提示或开启思考。
+标准鹈鹕题使用原文`Generate an SVG of a pelican riding a bicycle.`，不添加其他提示，
+在WebUI选择“关闭（标准测试）”或API显式传`enable_thinking:false`。
 API返回模型原文，不会修复生成代码。请求成功与绘图质量分别验收。
 
 Python客户端示例（从环境注入专用令牌，不写死）：

@@ -19,7 +19,7 @@ def error(code, param=None, kind='invalid_request_error'):
 def normalize(body, key=None):
     fields = {'model', 'messages', 'stream', 'stream_options', 'max_tokens', 'max_completion_tokens',
               'temperature', 'top_p', 'seed', 'stop', 'presence_penalty', 'frequency_penalty',
-              'n', 'tools', 'tool_choice', 'response_format', 'user'}
+              'n', 'tools', 'tool_choice', 'response_format', 'user', 'enable_thinking'}
     if not isinstance(body, dict):
         raise InvalidRequest('invalid_request')
     unknown = set(body) - fields
@@ -27,6 +27,8 @@ def normalize(body, key=None):
         raise InvalidRequest('unsupported_parameter', sorted(unknown)[0])
     if body.get('model') not in MODELS:
         raise InvalidRequest('model_not_found', 'model')
+    if type(body.get('enable_thinking', False)) is not bool:
+        raise InvalidRequest('invalid_enable_thinking', 'enable_thinking')
     if type(body.get('stream', False)) is not bool:
         raise InvalidRequest('invalid_stream', 'stream')
     stream = body.get('stream', False)
@@ -49,7 +51,7 @@ def normalize(body, key=None):
         raise InvalidRequest('invalid_messages', 'messages')
     normalized = []
     for i, message in enumerate(messages):
-        if not isinstance(message, dict) or set(message) - {'role', 'content'}:
+        if not isinstance(message, dict) or set(message) - {'role', 'content', 'reasoning_content'}:
             raise InvalidRequest('unsupported_message', 'messages')
         role, content = message.get('role'), message.get('content')
         if role not in ('system', 'user', 'assistant') or (role == 'system' and i != 0):
@@ -67,9 +69,19 @@ def normalize(body, key=None):
         except UnicodeError:
             raise InvalidRequest('invalid_unicode', 'messages')
         normalized.append({'role': role, 'content': content})
+        if 'reasoning_content' in message:
+            reasoning = message['reasoning_content']
+            if role != 'assistant' or (reasoning is not None and (not isinstance(reasoning, str) or '\0' in reasoning)):
+                raise InvalidRequest('invalid_reasoning_content', 'messages')
+            if reasoning:
+                try:
+                    reasoning.encode('utf-8')
+                except UnicodeError:
+                    raise InvalidRequest('invalid_unicode', 'messages')
+                normalized[-1]['reasoning_content'] = reasoning
     if normalized[-1]['role'] != 'user':
         raise InvalidRequest('last_message_must_be_user', 'messages')
-    if not 1 <= sum(len(m['content']) for m in normalized) <= 500000:
+    if not 1 <= sum(len(m['content']) + len(m.get('reasoning_content', '')) for m in normalized) <= 500000:
         raise InvalidRequest('invalid_message_size', 'messages')
     a, b = body.get('max_tokens'), body.get('max_completion_tokens')
     if a is not None and b is not None and a != b:
@@ -78,6 +90,9 @@ def normalize(body, key=None):
     if type(limit) is not int or not 1 <= limit <= 7680:
         raise InvalidRequest('invalid_output_limit', 'max_tokens')
     request = {'messages': normalized}
+    # Omitted and explicit false retain the original request fingerprint.
+    if body.get('enable_thinking', False):
+        request['enable_thinking'] = True
     for name, lower, upper in [('temperature', 0, 2), ('top_p', 0, 1),
                                 ('presence_penalty', -2, 2), ('frequency_penalty', -2, 2)]:
         if name in body and body[name] is not None:
@@ -120,6 +135,8 @@ def completion(job, delta=None, finish=None, usage_only=False):
     else:
         value['choices'] = [{'index': 0, 'message': {'role': 'assistant', 'content': result['text']},
                              'finish_reason': result['finish_reason'], 'logprobs': None}]
+        if result.get('reasoning_content'):
+            value['choices'][0]['message']['reasoning_content'] = result['reasoning_content']
     if usage_only or not streaming:
         value['usage'] = {'prompt_tokens': result['input_tokens'], 'completion_tokens': result['output_tokens'],
                           'total_tokens': result['input_tokens'] + result['output_tokens']}

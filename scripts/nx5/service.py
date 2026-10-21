@@ -171,9 +171,12 @@ class Service:
                 final = events[-1]
                 if final['type'] != 'final' or final['content'] != ''.join(e['content'] for e in events if e['type'] == 'delta'):
                     raise ValueError('incomplete_chat_result')
+                if final.get('reasoning_content', '') != ''.join(e['reasoning_content'] for e in events if e['type'] == 'reasoning_delta'):
+                    raise ValueError('incomplete_reasoning_result')
                 with self.lock:
                     job.update(status='succeeded', finished_at=time.time(), result={
                         'text': final['content'], 'profile': payload['profile'],
+                        'reasoning_content': final.get('reasoning_content', ''),
                         'context_capacity': metrics['args']['ctx'],
                         'input_tokens': final['usage']['prompt_tokens'],
                         'output_tokens': final['usage']['completion_tokens'],
@@ -317,6 +320,8 @@ def make_server(config, service=None):
                                     item = json.loads(line)
                                     if item['type'] == 'delta':
                                         event(completion(job, delta={'content': item['content']}))
+                                    elif item['type'] == 'reasoning_delta':
+                                        event(completion(job, delta={'reasoning_content': item['reasoning_content']}))
                         if snapshot['status'] == 'succeeded':
                             event(completion(snapshot, finish=snapshot['result']['finish_reason']))
                             if include_usage:

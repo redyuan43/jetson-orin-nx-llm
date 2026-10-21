@@ -69,11 +69,15 @@ def main():
     for key in ('ctx', 'window', 'sampling', 'reasoning', 'draft', 'log_verbosity', 'no_spec_draft_backend_sampling'):
         if getattr(args, key) is not None:
             parameters[key] = getattr(args, key)
-    if args.reasoning is not None:
-        kwargs = json.loads(parameters['chat_template_kwargs'])
-        kwargs['enable_thinking'] = args.reasoning == 'on'
+    if args.chat_json:
+        thinking = json.loads(args.prompt.read_text()).get('enable_thinking', False)
+        assert type(thinking) is bool
+        parameters['reasoning'] = 'on' if thinking else 'off'
+    if args.reasoning is not None or args.chat_json:
+        kwargs = json.loads(parameters.get('chat_template_kwargs', '{}'))
+        kwargs['enable_thinking'] = parameters['reasoning'] == 'on'
         parameters['chat_template_kwargs'] = json.dumps(kwargs, separators=(',', ':'))
-        parameters['reasoning_budget'] = -1 if args.reasoning == 'on' else 0
+        parameters['reasoning_budget'] = -1 if parameters['reasoning'] == 'on' else 0
     if not 0 < args.tokens < parameters['ctx']:
         parser.error('output budget must be positive and below the context capacity')
     args.output.mkdir(parents=True, exist_ok=True)

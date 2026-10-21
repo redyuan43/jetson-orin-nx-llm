@@ -26,6 +26,10 @@ int main(int argc, char ** argv) {
     try {
         const auto request = json::parse(params.prompt);
         params.prompt.clear();
+        const bool enable_thinking = request.value("enable_thinking", false);
+        params.enable_reasoning = enable_thinking ? 1 : 0;
+        params.default_template_kwargs["enable_thinking"] = enable_thinking ? "true" : "false";
+        params.sampling.reasoning_budget_tokens = enable_thinking ? -1 : 0;
         auto messages = common_chat_msgs_parse_oaicompat(request.at("messages"));
         if (request.contains("temperature")) params.sampling.temp = request.at("temperature");
         if (request.contains("top_p")) params.sampling.top_p = request.at("top_p");
@@ -42,10 +46,11 @@ int main(int argc, char ** argv) {
         inputs.tool_choice = COMMON_CHAT_TOOL_CHOICE_NONE;
         inputs.use_jinja = options.use_jinja;
         inputs.add_generation_prompt = true;
-        inputs.enable_thinking = false;
+        inputs.enable_thinking = enable_thinking;
         inputs.reasoning_format = COMMON_REASONING_FORMAT_DEEPSEEK;
         inputs.force_pure_content = options.force_pure_content;
         inputs.chat_template_kwargs = options.chat_template_kwargs;
+        inputs.chat_template_kwargs["enable_thinking"] = enable_thinking ? "true" : "false";
         auto formatted = common_chat_templates_apply(options.tmpls.get(), inputs);
         auto ctx = server.get_llama_context();
         auto vocab = llama_model_get_vocab(llama_get_model(ctx));
@@ -75,7 +80,7 @@ int main(int argc, char ** argv) {
             if (!formatted.parser.empty()) task.params.chat_parser_params.parser.load(formatted.parser);
             if (!formatted.thinking_end_tag.empty()) {
                 auto & sampling = task.params.sampling;
-                sampling.reasoning_budget_tokens = 0;
+                sampling.reasoning_budget_tokens = enable_thinking ? -1 : 0;
                 sampling.generation_prompt = formatted.generation_prompt;
                 if (!formatted.thinking_start_tag.empty())
                     sampling.reasoning_budget_start = common_tokenize(vocab, formatted.thinking_start_tag, false, true);
@@ -84,8 +89,13 @@ int main(int argc, char ** argv) {
             }
             reader.post_task({std::move(task)});
             std::string content;
+            std::string reasoning_content;
             auto emit_diffs = [&](const std::vector<common_chat_msg_diff> & diffs) {
                 for (const auto & diff : diffs) {
+                    if (!diff.reasoning_content_delta.empty()) {
+                        reasoning_content += diff.reasoning_content_delta;
+                        emit({{"type", "reasoning_delta"}, {"reasoning_content", diff.reasoning_content_delta}});
+                    }
                     if (!diff.content_delta.empty()) {
                         content += diff.content_delta;
                         emit({{"type", "delta"}, {"content", diff.content_delta}});
@@ -99,7 +109,7 @@ int main(int argc, char ** argv) {
                     emit_diffs(part->oaicompat_msg_diffs);
                 if (auto final = dynamic_cast<server_task_result_cmpl_final *>(result.get())) {
                     emit_diffs(final->oaicompat_msg_diffs);
-                    emit({{"type", "final"}, {"content", content},
+                    emit({{"type", "final"}, {"content", content}, {"reasoning_content", reasoning_content},
                           {"finish_reason", final->stop == STOP_TYPE_LIMIT ? "length" : "stop"},
                           {"usage", final->usage_json_oaicompat()}, {"timings", final->timings.to_json()}});
                     rc = 0;

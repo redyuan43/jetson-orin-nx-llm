@@ -574,6 +574,13 @@
                       }
                     }
                   ]
+                },
+                "reasoning_content": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Optional assistant-only reasoning text for round-tripping. Model templates decide whether earlier reasoning is retained."
                 }
               }
             },
@@ -699,6 +706,11 @@
             ],
             "minimum": -2,
             "maximum": 2
+          },
+          "enable_thinking": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable model thinking for this request. Omitted/false keeps the reference non-thinking mode. WebUI exposes a per-model choice and defaults to enabled."
           }
         }
       },
@@ -775,6 +787,10 @@
                     },
                     "content": {
                       "type": "string"
+                    },
+                    "reasoning_content": {
+                      "type": "string",
+                      "description": "Model reasoning text, separate from the final answer. SSE uses delta.reasoning_content."
                     }
                   }
                 },

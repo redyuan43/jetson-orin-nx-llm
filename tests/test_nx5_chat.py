@@ -69,6 +69,7 @@ class ChatTests(unittest.TestCase):
                  dict(messages=[{'role': 'user', 'content': [{'type': 'image_url', 'image_url': {'url': 'data:abc'}}]}]),
                  dict(temperature=float('nan')), dict(max_tokens=True), dict(seed=-1), dict(n=2),
                  dict(reasoning_effort='high'), dict(stream_options={'include_usage': True})]
+        cases += [dict(enable_thinking='true'), dict(enable_thinking=1), dict(enable_thinking=None)]
         for extra in cases:
             with self.subTest(extra=extra):
                 r = self.request('POST', '/v1/chat/completions', self.body(**extra))
@@ -142,6 +143,38 @@ class ChatTests(unittest.TestCase):
             replay=completion(job)
         self.assertEqual(first['timings'], replay['timings'])
         self.assertEqual(replay['timings']['total_s'],12)
+
+    def test_thinking_choice_is_part_of_identity_and_off_keeps_old_identity(self):
+        implicit=normalize(self.body(), 'same')[0]
+        explicit=normalize(self.body(enable_thinking=False), 'same')[0]
+        enabled=normalize(self.body(enable_thinking=True), 'same')[0]
+        self.assertEqual(implicit,explicit)
+        self.assertNotEqual(module.digest(implicit),module.digest(enabled))
+        self.assertTrue(enabled['chat']['enable_thinking'])
+        history=self.body()
+        history['messages'][2]['reasoning_content']='此前的思考'
+        self.assertEqual(normalize(history)[0]['chat']['messages'][2]['reasoning_content'],'此前的思考')
+
+    def test_reasoning_is_streamed_and_replayed_separately_from_answer(self):
+        def execute(job,payload):
+            folder=self.service.state/job['id'];folder.mkdir()
+            (folder/'result.out').write_text('\n'.join(json.dumps(e,ensure_ascii=False) for e in [
+                {'type':'reasoning_delta','reasoning_content':'先计算'},
+                {'type':'delta','content':'391'}])+'\n')
+            self.finish(job,'391')
+            job['result']['reasoning_content']='先计算'
+        self.mock_run.side_effect=execute
+        r=self.request('POST','/v1/chat/completions',self.body(enable_thinking=True,stream=True),{'Idempotency-Key':'thinking'})
+        values=[json.loads(line[6:]) for line in r.read().decode().splitlines() if line.startswith('data: {')]
+        self.assertEqual(''.join(c['choices'][0]['delta'].get('reasoning_content','') for c in values),'先计算')
+        self.assertEqual(''.join(c['choices'][0]['delta'].get('content','') for c in values),'391')
+        r=self.request('POST','/v1/chat/completions',self.body(enable_thinking=True),{'Idempotency-Key':'thinking'})
+        message=json.load(r)['choices'][0]['message']
+        self.assertEqual(message,{'role':'assistant','content':'391','reasoning_content':'先计算'})
+        self.assertEqual(self.mock_run.call_count,1)
+        r=self.request('POST','/v1/chat/completions',self.body(enable_thinking=False),{'Idempotency-Key':'thinking'})
+        self.assertEqual(r.status,409)
+        r.read()
 
     def test_chat_and_legacy_share_admission_disconnect_keeps_busy(self):
         r = self.request('POST', '/v1/chat/completions', self.body(stream=True), {'Idempotency-Key': 'shared'})
