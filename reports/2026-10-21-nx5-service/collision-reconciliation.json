@@ -1,0 +1,73 @@
+{
+  "reason": "Request did not execute: reused central ID already released by earlier request.",
+  "old_job": {
+    "id": "op_34247be3a0724dc9ac96bb50c9e5a84b",
+    "request_id": "nx5-api-1792577459-2",
+    "digest": "0c0f040857f4b3b3ffa317a950af593f7fd2a06625070e7631dfcf72bc9e371c",
+    "profile": "qwen36-128k",
+    "status": "unknown",
+    "created_at": 1792577516.4744132,
+    "child_pid": 316340,
+    "error": "reconciliation_required",
+    "finished_at": 1792577516.9936423
+  },
+  "old_proof": {
+    "operation_id": "op_1a8edc56660a6ee3e82621ed9b2da581",
+    "request": {
+      "model": "Qwen3.6-35B-A3B MTP (Unsloth UD-IQ4_XS)",
+      "source_sha256": "df27a780435b7b45c2597536112ea3cb091f8544c3d0c3318d9f4258b31f7adf",
+      "prompt_sha256": "f53558c91383a646dcdf949b9127faa032599befb4fa1f6f570838a9c3c843d0",
+      "tag": "result",
+      "tokens": 192,
+      "parameters": {
+        "ctx": 131072,
+        "window": 128,
+        "bank": 64,
+        "rows": 8,
+        "ubatch": 8,
+        "draft": 2,
+        "io_threads": 8,
+        "threads": 6,
+        "mapped_experts": true,
+        "offload_min_batch": 32,
+        "ctx_checkpoints": 2,
+        "cache_ram_mib": 64,
+        "no_prewarm": true,
+        "sampling": "qwen-instruct",
+        "seed": 42,
+        "reasoning": "off",
+        "min_available_mib": 768,
+        "timeout": 2400,
+        "spec_type": "draft-mtp",
+        "reasoning_budget": 0,
+        "chat_template_kwargs": "{\"preserve_thinking\":false,\"enable_thinking\":false}"
+      }
+    },
+    "created_at": 1792577516.781757,
+    "initial_activity": {
+      "group_id": "nx5-igpu-group",
+      "resources": [
+        "nx5-igpu"
+      ],
+      "mode": "off",
+      "state": "unknown",
+      "active": 0,
+      "observed_at": 1792577516.2910993,
+      "fresh": true,
+      "leases": [],
+      "pending": [],
+      "transition": null
+    },
+    "initial_units": {
+      "siyuan-fleet-control.service": "MainPID=0\nActiveState=inactive\n",
+      "siyuan-image-comfy.service": "MainPID=0\nActiveState=inactive\n",
+      "nx5-ornith-35b-a3b-iq2s.service": "MainPID=0\nActiveState=inactive\n"
+    },
+    "status": "waiting",
+    "controller": "manual CLI experiment; original controller and services remain inactive"
+  },
+  "lease_status": "released",
+  "no_model_process": true,
+  "resource_empty": true,
+  "at": 1792577588.4900086
+}

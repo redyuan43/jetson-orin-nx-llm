@@ -1,0 +1,13 @@
+{
+  "service_tests_passed": 13,
+  "fleet_source_tests_passed": 158,
+  "fleet_candidate_tests_passed": 30,
+  "three_live_inferences_passed": true,
+  "max_observed_llama_processes": 1,
+  "credential_metadata_check": "passed on nx5 without printing credential",
+  "model_profiles": [
+    "qwen36-128k",
+    "minicpm-64k"
+  ],
+  "full_context_tested": false
+}

@@ -1,0 +1,72 @@
+{
+  "health": {
+    "service_id": "nx5-ssd-llm",
+    "release": "nx5-ssd-llm-d90bbc3b9611",
+    "commit": "d748696e31861fa14ec7a69adb31dacd6fa32da6ab01f10ff95bb3cbd3e05ad9",
+    "source_commit": "d90bbc3b961142987c225cb0eaf13cf79ce52848",
+    "state": "ready",
+    "mode": "off",
+    "active": 0,
+    "model_loaded": false,
+    "observed_at": 1792578031.3316703,
+    "resource": "nx5-igpu",
+    "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+  },
+  "portals": {
+    "8300": {
+      "status": "available",
+      "contract_status": "current",
+      "source_commit": "d90bbc3b961142987c225cb0eaf13cf79ce52848",
+      "contract_version": "d748696e31861fa14ec7a69adb31dacd6fa32da6ab01f10ff95bb3cbd3e05ad9",
+      "capabilities": [
+        {
+          "capability_id": "qwen36",
+          "alias": "Qwen3.6-35B-A3B · 128K",
+          "description": "UD-IQ4_XS，SSD专家window128，MTP draft2；文本、代码与SVG；关闭思考。128K容量及8218-token输入已验证，未测满128K。"
+        },
+        {
+          "capability_id": "minicpm",
+          "alias": "MiniCPM-V4.7 · 64K",
+          "description": "SSD专家window176，DSpark draft7；文本、代码与SVG；关闭思考。64K容量及8218-token输入已验证，未测满64K。"
+        }
+      ],
+      "manual_matches_source": true,
+      "schema_paths": [
+        "/v1/jobs",
+        "/v1/jobs/{job_id}"
+      ]
+    },
+    "8301": {
+      "status": "available",
+      "contract_status": "current",
+      "source_commit": "d90bbc3b961142987c225cb0eaf13cf79ce52848",
+      "contract_version": "d748696e31861fa14ec7a69adb31dacd6fa32da6ab01f10ff95bb3cbd3e05ad9",
+      "capabilities": [
+        {
+          "capability_id": "qwen36",
+          "alias": "Qwen3.6-35B-A3B · 128K",
+          "description": "UD-IQ4_XS，SSD专家window128，MTP draft2；文本、代码与SVG；关闭思考。128K容量及8218-token输入已验证，未测满128K。"
+        },
+        {
+          "capability_id": "minicpm",
+          "alias": "MiniCPM-V4.7 · 64K",
+          "description": "SSD专家window176，DSpark draft7；文本、代码与SVG；关闭思考。64K容量及8218-token输入已验证，未测满64K。"
+        }
+      ],
+      "manual_matches_source": true,
+      "schema_paths": [
+        "/v1/jobs",
+        "/v1/jobs/{job_id}"
+      ]
+    }
+  },
+  "deployed_file_hashes": {
+    "/home/nx/fleet-resource-graph/config/capability_contracts.yaml": "5d2d8bfc913618578a544b59cf2fb04325d739924e54a8281901e19c86a9c99b",
+    "/home/nx/fleet-resource-graph/inventory.yaml": "1d734bd44075b5997d7d027f3edc92d8d1c1205bfcbe7048a74ebc7d7a04f633",
+    "/home/nx/fleet-resource-graph/server/fleet_graph/portal.py": "1b822c8b6d82d39aa466991977e63ba7f3eacecb348bebc5bb0fbd2a7c5928ee",
+    "/home/nx/fleet-resource-graph/server/fleet_graph/portal_assets/app.js": "9498cd1adc3e961acd57b453fa0f111d7223add75ef33dfd6fd47fe0099dd62e",
+    "/home/nx/fleet-resource-graph/server/fleet_graph/portal_catalog.py": "5c525e062064abdae38b07c2358bf331f21bb9e1ba262ef05b76ab5909ca1015"
+  },
+  "fleet_commit": "db02a48a646c12ec366118e323cbfe9a5815d337",
+  "all_passed": true
+}

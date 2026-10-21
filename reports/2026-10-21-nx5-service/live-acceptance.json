@@ -1,0 +1,143 @@
+{
+  "started_at": 1792577647.8386252,
+  "jobs": [
+    {
+      "request": {
+        "request_id": "nx5-api-1792577647-0",
+        "profile": "qwen36-128k",
+        "prompt": "请用中文回答：17×23等于多少？再用两句话解释SSD缓存专家是否会删除模型的专家。",
+        "max_tokens": 192
+      },
+      "receipt": {
+        "id": "op_1b8d04838898ea44c10b2ff1fbd4b3cd",
+        "status": "waiting",
+        "status_url": "/v1/jobs/op_1b8d04838898ea44c10b2ff1fbd4b3cd"
+      },
+      "idempotent_retry": true,
+      "changed_request_rejected": true,
+      "other_model_busy_rejected": true,
+      "final": {
+        "id": "op_1b8d04838898ea44c10b2ff1fbd4b3cd",
+        "request_id": "nx5-api-1792577647-0",
+        "profile": "qwen36-128k",
+        "status": "succeeded",
+        "created_at": 1792577647.845459,
+        "started_at": 1792577649.8503175,
+        "result": {
+          "text": "17 × 23 等于 391。\n\n关于“SSD缓存专家是否会删除模型的专家”这一问题，首先需要澄清的是，“SSD缓存专家”并非人工智能或大模型领域的标准术语，这很可能是一个概念混淆或误传；在大型语言模型中，并不存在名为“SSD缓存专家”的实体来对“模型专家”进行删除操作。\n\n通常涉及“专家”（Experts）的概念出现在混合专家模型（MoE, Mixture of Experts）架构中，而SSD（固态硬盘）是硬件存储设备，两者属于完全不同的技术领域，因此该前提本身在技术逻辑上是不成立的。",
+          "profile": "qwen36-128k",
+          "context_capacity": 131072,
+          "input_tokens": 37,
+          "output_tokens": 135,
+          "prefill_s": 3.1878699999999998,
+          "generation_s": 10.98418,
+          "decode_tps": 12.29,
+          "process_wall_s": 23.051315605000127,
+          "min_available_mib": 2133.81640625,
+          "finish_reason": "stop",
+          "model_loaded_after": false,
+          "lease_status": "released"
+        },
+        "finished_at": 1792577672.7795646
+      }
+    },
+    {
+      "request": {
+        "request_id": "nx5-api-1792577647-1",
+        "profile": "minicpm-64k",
+        "prompt": "请用中文回答：17×23等于多少？再用两句话解释SSD缓存专家是否会删除模型的专家。",
+        "max_tokens": 192
+      },
+      "receipt": {
+        "id": "op_908c99ace41f1343272713e8d5c87179",
+        "status": "waiting",
+        "status_url": "/v1/jobs/op_908c99ace41f1343272713e8d5c87179"
+      },
+      "idempotent_retry": true,
+      "changed_request_rejected": true,
+      "other_model_busy_rejected": true,
+      "final": {
+        "id": "op_908c99ace41f1343272713e8d5c87179",
+        "request_id": "nx5-api-1792577647-1",
+        "profile": "minicpm-64k",
+        "status": "succeeded",
+        "created_at": 1792577672.8231776,
+        "started_at": 1792577674.827547,
+        "result": {
+          "text": "17×23 等于 391。\n\nSSD 缓存专家不会删除模型的专家，因为前者是用于加速存储读写的硬件缓存机制，后者是混合专家模型（MoE）中的神经网络组件，两者属于完全不同的技术层面。SSD 缓存旨在提升数据访问速度，而模型专家负责特定的任务处理逻辑，二者互不干扰且协同工作。",
+          "profile": "minicpm-64k",
+          "context_capacity": 65536,
+          "input_tokens": 37,
+          "output_tokens": 82,
+          "prefill_s": 2.96202,
+          "generation_s": 12.37199,
+          "decode_tps": 6.63,
+          "process_wall_s": 25.056943201008835,
+          "min_available_mib": 1196.82421875,
+          "finish_reason": "stop",
+          "model_loaded_after": false,
+          "lease_status": "released"
+        },
+        "finished_at": 1792577699.8427486
+      }
+    },
+    {
+      "request": {
+        "request_id": "nx5-api-1792577647-2",
+        "profile": "qwen36-128k",
+        "prompt": "请用中文回答：17×23等于多少？再用两句话解释SSD缓存专家是否会删除模型的专家。",
+        "max_tokens": 192
+      },
+      "receipt": {
+        "id": "op_2b0ac049146d5d75cf0380010b765a4b",
+        "status": "waiting",
+        "status_url": "/v1/jobs/op_2b0ac049146d5d75cf0380010b765a4b"
+      },
+      "idempotent_retry": true,
+      "changed_request_rejected": true,
+      "other_model_busy_rejected": true,
+      "final": {
+        "id": "op_2b0ac049146d5d75cf0380010b765a4b",
+        "request_id": "nx5-api-1792577647-2",
+        "profile": "qwen36-128k",
+        "status": "succeeded",
+        "created_at": 1792577699.887175,
+        "started_at": 1792577701.9620292,
+        "result": {
+          "text": "17 × 23 等于 391。\n\n关于“SSD缓存专家是否会删除模型的专家”这一问题，首先需要澄清的是，“SSD缓存专家”并非人工智能或大模型领域的标准术语，这很可能是一个概念混淆或误传；在大型语言模型中，并不存在名为“SSD缓存专家”的实体来对“模型专家”进行删除操作。\n\n通常涉及“专家”（Experts）的概念出现在混合专家模型（MoE, Mixture of Experts）架构中，而SSD（固态硬盘）是硬件存储设备，两者属于完全不同的技术领域，因此该前提本身在技术逻辑上是不成立的。",
+          "profile": "qwen36-128k",
+          "context_capacity": 131072,
+          "input_tokens": 37,
+          "output_tokens": 135,
+          "prefill_s": 3.2056999999999998,
+          "generation_s": 10.97467,
+          "decode_tps": 12.3,
+          "process_wall_s": 23.049817595994682,
+          "min_available_mib": 2126.7890625,
+          "finish_reason": "stop",
+          "model_loaded_after": false,
+          "lease_status": "released"
+        },
+        "finished_at": 1792577724.9902346
+      }
+    }
+  ],
+  "max_llama_processes": 1,
+  "unauthorized_rejected": true,
+  "invalid_profile_rejected": true,
+  "health_after": {
+    "service_id": "nx5-ssd-llm",
+    "release": "nx5-ssd-llm-d90bbc3b9611",
+    "commit": "d748696e31861fa14ec7a69adb31dacd6fa32da6ab01f10ff95bb3cbd3e05ad9",
+    "source_commit": "d90bbc3b961142987c225cb0eaf13cf79ce52848",
+    "state": "ready",
+    "mode": "off",
+    "active": 0,
+    "model_loaded": false,
+    "observed_at": 1792577725.1784585,
+    "resource": "nx5-igpu",
+    "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+  },
+  "finished_at": 1792577725.1788461,
+  "passed": true
+}

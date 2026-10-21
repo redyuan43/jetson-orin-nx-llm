@@ -6,6 +6,14 @@
 并列明硬件适配差异。此前中文 HTML 动画题与带思考结果属于自定义实验。
 完整规则见 [鹈鹕 SVG 对照测试规范](docs/10-pelican-test-protocol.md)。
 
+**nx5双模型互斥API已上线：** `qwen36-128k` 与 `minicpm-64k` 通过同一异步接口按任务加载，
+每次一个模型，结束后卸载并释放中央GPU租约。Qwen→MiniCPM→Qwen三次真实HTTP调用通过，
+并发第二请求被拒绝，重复请求不重跑。入口 `http://nx5.taild500c8.ts.net:18347`，需要Tailscale与专用Bearer令牌。
+[舰队能力页](http://nx6.taild500c8.ts.net:8300/capabilities) ·
+[调用手册](http://nx6.taild500c8.ts.net:8300/agent/nx5-ssd-llm.md) ·
+[部署与验收](docs/13-nx5-dual-model-service-20261021.md)。
+当前API仅文本异步任务，非OpenAI兼容；模型不跨请求常驻。旧nx5 Ornith/ComfyUI自动启动已退出。
+
 **Qwen3.6-35B-A3B MTP（UD-IQ4_XS）已在nx5跑通SSD专家加载：** 约14.53 GiB专家在SSD，
 8K / window128 / MTP draft2。关闭思考的英文SVG原题实测 **17.85 token/s，完整输出2分19秒**，
 MTP接受率85.0%。修复了MTP缓存视图和Q3_K/IQ3_S等长编码被错误分组的问题。
