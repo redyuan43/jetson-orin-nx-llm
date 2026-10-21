@@ -24,12 +24,12 @@
 - API Key：本服务的专用 Bearer 令牌（不是 OpenAI 的云端 Key）。
 - Models：连接检测后自动发现 `qwen36-128k` 和 `minicpm-64k`。
 - OpenWebUI 后端/容器必须能访问这个 Tailscale 地址。只让浏览器加入 Tailnet 不够。
-- 使用普通文本聊天和 streaming；关闭工具调用、图片输入，以及自动标题、标签、后续问题等后台生成任务，避免和聊天争用单个 GPU 槽位。
+- 使用普通文本聊天和 streaming；关闭图片输入，以及自动标题、标签、后续问题等后台生成任务，避免和聊天争用单个 GPU 槽位。
 - 冷启动与长输入会增加等待时间；保持流式连接，客户端总超时建议至少 45 分钟。等待时每5秒有SSE注释心跳，首个内容到达前不会伪造答案。
 
 `GET /v1/models` 返回两个可选模型，不触发加载。
 `POST /v1/chat/completions` 支持同步 JSON 和 `stream:true` 的 SSE；支持多轮
-`system/user/assistant` 文本消息，最后一条须为 user，system 只允许在第一条。
+`system/user/assistant/tool` 文本消息，最后一条须为 user 或 tool，system 只允许在第一条。
 消息由模型自己的聊天模板渲染，每个请求携带完整历史；服务不保存可供后续自动续接的对话会话或 KV cache。
 
 ```python
@@ -50,16 +50,26 @@ for chunk in stream:
 `presence_penalty/frequency_penalty` (-2–2)、`stop` (最多4个字符串)、
 `max_tokens` 或 `max_completion_tokens` (1–7680，默认2048)。未指定时保留模型固定采样参数；
 重复惩罚扫描窗口仍沿用模型固定设置。两种 token 上限同时提供时必须相同。
-不支持多个候选 n>1、工具、图片、结构化 response_format、logprobs、Responses API 或 Embeddings；
+不支持多个候选 n>1、图片、结构化 response_format、logprobs、Responses API 或 Embeddings；
 这些参数会明确报错，不会默默忽略。`user` 仅接受为客户端标识，不影响推理。
 `enable_thinking`可设为布尔值true或false。原始API省略时保持关闭，以兼容已有调用和标准测试；
-OpenWebUI普通聊天默认开启，可在输入框旁的“模型控制”→“思考模式”选择开启或关闭（标准测试）。
+OpenWebUI普通聊天默认开启，可在输入框旁的“模型控件”→“思考模式”选择开启或关闭（标准测试）。
 选择按用户和模型保存；两个模型仍共用互斥槽位。
 开启时，JSON响应的`choices[0].message.reasoning_content`和SSE的`choices[0].delta.reasoning_content`
 返回模型实际生成的思考文本，与最终回答`content`分开；关闭时不人为填充思考内容。
 客户端可在assistant历史消息中携带可选`reasoning_content`，具体是否保留由模型聊天模板决定。
 思考和最终答案共用输出token上限；usage、TPS、生成耗时统计包含二者。
 如果输出额度在思考阶段耗尽，可能只有思考内容，finish_reason仍如实返回length。
+
+函数工具使用 OpenAI 标准 `tools:[{type:"function",function:{name,description,parameters}}]`，
+最多128个定义；`tool_choice`支持auto、none、required或指定函数名，`parallel_tool_calls`为布尔值。
+响应的`message.tool_calls`含id、函数名和JSON参数字符串；SSE按index发送`delta.tool_calls`片段。
+正常结束且有工具调用时`finish_reason=tool_calls`；输出额度耗尽仍返回length，不应执行未完成参数。
+客户端验证参数及权限、执行工具，然后把原assistant消息（保留tool_calls和reasoning_content）
+及`role:tool,tool_call_id:<原id>,content:<结果字符串>`追加到历史，发起下一轮。
+多工具结果须全部回传；未知或重复结果ID、缺失结果返回400。网关只生成调用，不在nx5执行工具。
+Octop可使用Chat Completions协议和`enable_thinking`适配器；普通聊天默认开启思考。
+每次模型往返分别加载、卸载并释放租约，工具执行期间不占用模型；完整智能体任务可能含多次冷启动。
 
 新旧接口共用同一个准入槽位。Chat 忙时返回 OpenAI 格式 HTTP429 `device_job_busy`，
 异步 jobs 忙时仍为409；没有后台排队。空闲时可以选择任意一个模型。

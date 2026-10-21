@@ -7,7 +7,7 @@ import time
 import unittest
 from unittest.mock import patch
 from test_nx5_service import module
-from compat_api import normalize, InvalidRequest, completion
+from compat_api import normalize, InvalidRequest, completion, collect_tool_calls
 
 
 class ChatTests(unittest.TestCase):
@@ -211,3 +211,71 @@ class ChatTests(unittest.TestCase):
         raw = r.read().decode()
         self.assertIn('context_length_exceeded', raw)
         self.assertNotIn('"finish_reason": "stop"', raw)
+
+    def tools(self):
+        return [{'type': 'function', 'function': {'name': 'add', 'description': 'Add two integers',
+                 'parameters': {'type': 'object', 'properties': {'a': {'type': 'integer'},
+                 'b': {'type': 'integer'}}, 'required': ['a', 'b']}}}]
+
+    def test_tools_round_trip_accepts_result_and_preserves_reasoning(self):
+        call = {'id': 'call_1', 'type': 'function', 'function': {'name': 'add', 'arguments': '{"a":17,"b":23}'}}
+        messages = [{'role': 'user', 'content': 'Add 17 and 23 using the tool'},
+                    {'role': 'assistant', 'content': None, 'reasoning_content': 'Use add.', 'tool_calls': [call]},
+                    {'role': 'tool', 'tool_call_id': 'call_1', 'name': 'add', 'content': '40'}]
+        payload = normalize(self.body(messages=messages, tools=self.tools(), enable_thinking=True,
+                                      parallel_tool_calls=False))[0]['chat']
+        self.assertEqual(payload['messages'][1]['content'], '')
+        self.assertEqual(payload['messages'][1]['tool_calls'], [call])
+        self.assertEqual(payload['messages'][1]['reasoning_content'], 'Use add.')
+        self.assertEqual(payload['messages'][2], messages[2])
+        self.assertEqual(payload['tool_choice'], 'auto')
+        self.assertFalse(payload['parallel_tool_calls'])
+        chosen = {'type': 'function', 'function': {'name': 'add'}}
+        self.assertEqual(normalize(self.body(tools=self.tools(), tool_choice=chosen))[0]['chat']['tool_choice'], chosen)
+
+    def test_malformed_tools_and_unmatched_results_never_start(self):
+        call = {'id': 'call_1', 'type': 'function', 'function': {'name': 'add', 'arguments': '{}'}}
+        bad = [dict(tools={}), dict(tools=False), dict(tools=[{'type': 'function'}]),
+               dict(tools=self.tools() * 2), dict(tools=self.tools(), parallel_tool_calls='false'),
+               dict(tools=self.tools(), tool_choice={'type': 'function', 'function': {'name': 'missing'}}),
+               dict(tools=self.tools(), tool_choice={'type': 'function', 'function': {'name': []}}),
+               dict(messages=[{'role': 'tool', 'tool_call_id': 'missing', 'content': '40'}]),
+               dict(messages=[{'role': 'assistant', 'tool_calls': [call], 'content': None},
+                              {'role': 'user', 'content': 'continue'}]),
+               dict(messages=[{'role': 'user', 'content': 'hello', 'tool_calls': [call]}])]
+        for item in bad:
+            with self.subTest(item=item):
+                r = self.request('POST', '/v1/chat/completions', self.body(**item))
+                self.assertEqual(r.status, 400)
+                r.read()
+        self.mock_run.assert_not_called()
+
+    def test_tool_stream_matches_final_and_replay_and_keeps_usage_single(self):
+        events = [
+            {'type': 'reasoning_delta', 'reasoning_content': 'Use add.'},
+            {'type': 'tool_call_delta', 'tool_call': {'index': 0, 'id': 'call_1', 'type': 'function', 'function': {'name': 'add'}}},
+            {'type': 'tool_call_delta', 'tool_call': {'index': 0, 'function': {'arguments': '{"a":17,'}}},
+            {'type': 'tool_call_delta', 'tool_call': {'index': 0, 'function': {'arguments': '"b":23}'}}},
+        ]
+        expected = [{'id': 'call_1', 'type': 'function', 'function': {'name': 'add', 'arguments': '{"a":17,"b":23}'}}]
+        self.assertEqual(collect_tool_calls(events), expected)
+        def execute(job, payload):
+            folder = self.service.state/job['id']; folder.mkdir()
+            (folder/'result.out').write_text('\n'.join(json.dumps(e) for e in events)+'\n')
+            self.finish(job, '')
+            job['result'].update(reasoning_content='Use add.', tool_calls=expected, finish_reason='tool_calls')
+        self.mock_run.side_effect = execute
+        body = self.body(tools=self.tools(), stream=True, stream_options={'include_usage': True}, enable_thinking=True)
+        r = self.request('POST', '/v1/chat/completions', body, {'Idempotency-Key': 'toolstream'})
+        self.assertEqual(r.status, 200)
+        chunks = [json.loads(line[6:]) for line in r.read().decode().splitlines() if line.startswith('data: {')]
+        wire = [{'type': 'tool_call_delta', 'tool_call': t} for c in chunks if c['choices']
+                for t in c['choices'][0]['delta'].get('tool_calls', [])]
+        self.assertEqual(collect_tool_calls(wire), expected)
+        self.assertEqual([c['choices'][0]['finish_reason'] for c in chunks if c['choices']][-1], 'tool_calls')
+        self.assertEqual(sum('usage' in c for c in chunks), 1)
+        r = self.request('POST', '/v1/chat/completions', {**body, 'stream': False, 'stream_options': None}, {'Idempotency-Key': 'toolstream'})
+        final = json.load(r)
+        self.assertEqual(final['choices'][0]['message']['tool_calls'], expected)
+        self.assertEqual(final['choices'][0]['message']['reasoning_content'], 'Use add.')
+        self.assertEqual(self.mock_run.call_count, 1)

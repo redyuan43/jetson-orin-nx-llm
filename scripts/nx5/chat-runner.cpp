@@ -44,6 +44,23 @@ int main(int argc, char ** argv) {
         common_chat_templates_inputs inputs;
         inputs.messages = messages;
         inputs.tool_choice = COMMON_CHAT_TOOL_CHOICE_NONE;
+        if (request.contains("tools")) {
+            auto tools = request.at("tools");
+            const auto choice = request.at("tool_choice");
+            if (choice.is_object()) {
+                const auto name = choice.at("function").at("name");
+                json selected = json::array();
+                for (const auto & tool : tools) {
+                    if (tool.at("function").at("name") == name) selected.push_back(tool);
+                }
+                tools = std::move(selected);
+                inputs.tool_choice = COMMON_CHAT_TOOL_CHOICE_REQUIRED;
+            } else {
+                inputs.tool_choice = common_chat_tool_choice_parse_oaicompat(choice.get<std::string>());
+            }
+            inputs.tools = common_chat_tools_parse_oaicompat(tools);
+            inputs.parallel_tool_calls = request.value("parallel_tool_calls", true);
+        }
         inputs.use_jinja = options.use_jinja;
         inputs.add_generation_prompt = true;
         inputs.enable_thinking = enable_thinking;
@@ -68,6 +85,26 @@ int main(int argc, char ** argv) {
             task.cli = true;
             task.cli_prompt = formatted.prompt;
             task.params.sampling = params.sampling;
+            if (!formatted.grammar.empty()) {
+                task.params.sampling.grammar = {COMMON_GRAMMAR_TYPE_TOOL_CALLS, formatted.grammar};
+                task.params.sampling.grammar_lazy = formatted.grammar_lazy;
+                task.params.sampling.generation_prompt = formatted.generation_prompt;
+                for (const auto & text : formatted.preserved_tokens) {
+                    auto ids = common_tokenize(vocab, text, false, true);
+                    if (ids.size() == 1) task.params.sampling.preserved_tokens.insert(ids[0]);
+                }
+                for (auto trigger : formatted.grammar_triggers) {
+                    if (trigger.type == COMMON_GRAMMAR_TRIGGER_TYPE_WORD) {
+                        auto ids = common_tokenize(vocab, trigger.value, false, true);
+                        if (ids.size() == 1) {
+                            trigger.type = COMMON_GRAMMAR_TRIGGER_TYPE_TOKEN;
+                            trigger.token = ids[0];
+                            task.params.sampling.preserved_tokens.insert(ids[0]);
+                        }
+                    }
+                    task.params.sampling.grammar_triggers.push_back(std::move(trigger));
+                }
+            }
             task.params.speculative = params.speculative;
             task.params.n_keep = params.n_keep;
             task.params.n_predict = params.n_predict;
@@ -100,6 +137,16 @@ int main(int argc, char ** argv) {
                         content += diff.content_delta;
                         emit({{"type", "delta"}, {"content", diff.content_delta}});
                     }
+                    if (diff.tool_call_index != std::string::npos) {
+                        json delta = {{"index", diff.tool_call_index}, {"function", json::object()}};
+                        if (!diff.tool_call_delta.id.empty()) {
+                            delta["id"] = diff.tool_call_delta.id;
+                            delta["type"] = "function";
+                        }
+                        if (!diff.tool_call_delta.name.empty()) delta["function"]["name"] = diff.tool_call_delta.name;
+                        if (!diff.tool_call_delta.arguments.empty()) delta["function"]["arguments"] = diff.tool_call_delta.arguments;
+                        emit({{"type", "tool_call_delta"}, {"tool_call", delta}});
+                    }
                 }
             };
             while (auto result = reader.next(stopped)) {
@@ -109,8 +156,10 @@ int main(int argc, char ** argv) {
                     emit_diffs(part->oaicompat_msg_diffs);
                 if (auto final = dynamic_cast<server_task_result_cmpl_final *>(result.get())) {
                     emit_diffs(final->oaicompat_msg_diffs);
+                    auto calls = final->oaicompat_msg.to_json_oaicompat().value("tool_calls", json::array());
                     emit({{"type", "final"}, {"content", content}, {"reasoning_content", reasoning_content},
-                          {"finish_reason", final->stop == STOP_TYPE_LIMIT ? "length" : "stop"},
+                          {"tool_calls", calls},
+                          {"finish_reason", final->stop == STOP_TYPE_LIMIT ? "length" : calls.empty() ? "stop" : "tool_calls"},
                           {"usage", final->usage_json_oaicompat()}, {"timings", final->timings.to_json()}});
                     rc = 0;
                     break;

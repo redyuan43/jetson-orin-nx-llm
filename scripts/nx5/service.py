@@ -13,7 +13,7 @@ import threading
 import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from compat_api import InvalidRequest, normalize, error as chat_error, completion
+from compat_api import InvalidRequest, normalize, error as chat_error, completion, collect_tool_calls
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PROFILES = {
@@ -173,10 +173,13 @@ class Service:
                     raise ValueError('incomplete_chat_result')
                 if final.get('reasoning_content', '') != ''.join(e['reasoning_content'] for e in events if e['type'] == 'reasoning_delta'):
                     raise ValueError('incomplete_reasoning_result')
+                if final.get('tool_calls', []) != collect_tool_calls(events):
+                    raise ValueError('incomplete_tool_calls')
                 with self.lock:
                     job.update(status='succeeded', finished_at=time.time(), result={
                         'text': final['content'], 'profile': payload['profile'],
                         'reasoning_content': final.get('reasoning_content', ''),
+                        'tool_calls': final.get('tool_calls', []),
                         'context_capacity': metrics['args']['ctx'],
                         'input_tokens': final['usage']['prompt_tokens'],
                         'output_tokens': final['usage']['completion_tokens'],
@@ -322,6 +325,8 @@ def make_server(config, service=None):
                                         event(completion(job, delta={'content': item['content']}))
                                     elif item['type'] == 'reasoning_delta':
                                         event(completion(job, delta={'reasoning_content': item['reasoning_content']}))
+                                    elif item['type'] == 'tool_call_delta':
+                                        event(completion(job, delta={'tool_calls': [item['tool_call']]}))
                         if snapshot['status'] == 'succeeded':
                             event(completion(snapshot, finish=snapshot['result']['finish_reason']))
                             if include_usage:
