@@ -47,7 +47,7 @@
       "parameters": {
         "ctx": 8192,
         "draft": 0,
-        "window": 32
+        "window": 40
       }
     }
   },

@@ -55,7 +55,7 @@ class Service:
     def __init__(self, config):
         self.config = config
         self.root = Path(config['root'])
-        self.repo = self.root / 'deployment'
+        self.repo = Path(config.get('deployment', self.root / 'deployment'))
         self.state = Path(config['state'])
         self.state.mkdir(parents=True, exist_ok=True)
         self.lock = threading.RLock()
