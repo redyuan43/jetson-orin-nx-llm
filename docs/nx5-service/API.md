@@ -65,6 +65,15 @@ for chunk in stream:
 同步响应包含 `choices[0].message.content`、真实 `usage` 和 `finish_reason`。
 SSE逐步返回 `choices[0].delta.content`；进程结束且租约释放后才发送最终finish，
 可选usage块及 `[DONE]`。若推理失败，SSE返回error对象后结束，不伪报成功。
+JSON成功响应和SSE最终usage块附带`timings`扩展：`decode_tps`为引擎测得的纯生成token/s，
+`generation_s`为生成耗时，`prefill_s`为输入处理耗时，`process_wall_s`为推理子进程耗时，
+`total_s`为服务受理至完成的总耗时（含资源准备、模型加载、生成和释放，不含客户端网络/渲染）。
+所有耗时单位均为秒。SSE需请求`stream_options.include_usage=true`；计时只发一次，不随delta重复。
+幂等重取保留原请求耗时，失败不返回成功统计。
+
+[OpenWebUI聊天页面](http://nx6.taild500c8.ts.net:18348)需Tailscale及独立WebUI登录。
+两模型的每条新回复完成后显示生成TPS、生成耗时和总耗时；回复下方ⓘ提供token数与详细统计。
+这些数据属于回复元数据，不会进入后续提示词或污染SVG正文。旧的无usage消息不补造统计。
 上下文超限在加载后按实际token数检测；同步400或SSE error `context_length_exceeded`。
 
 ## 原有异步调用顺序

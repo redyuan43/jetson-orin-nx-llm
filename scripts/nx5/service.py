@@ -172,7 +172,7 @@ class Service:
                 if final['type'] != 'final' or final['content'] != ''.join(e['content'] for e in events if e['type'] == 'delta'):
                     raise ValueError('incomplete_chat_result')
                 with self.lock:
-                    job.update(status='succeeded', result={
+                    job.update(status='succeeded', finished_at=time.time(), result={
                         'text': final['content'], 'profile': payload['profile'],
                         'context_capacity': metrics['args']['ctx'],
                         'input_tokens': final['usage']['prompt_tokens'],
@@ -192,7 +192,7 @@ class Service:
             if not generation or not prompt_timing:
                 raise ValueError('missing_metrics')
             with self.lock:
-                job.update(status='succeeded', result={
+                job.update(status='succeeded', finished_at=time.time(), result={
                     'text': answer, 'profile': payload['profile'],
                     'context_capacity': metrics['args']['ctx'],
                     'input_tokens': int(prompt_timing[2]), 'output_tokens': int(generation[2]),
@@ -223,7 +223,7 @@ class Service:
             print('job:', job['id'], type(exc).__name__, flush=True)
         finally:
             with self.lock:
-                job['finished_at'] = time.time()
+                job.setdefault('finished_at', time.time())
                 self.save(job)
 
 

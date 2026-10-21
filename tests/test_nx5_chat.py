@@ -7,7 +7,7 @@ import time
 import unittest
 from unittest.mock import patch
 from test_nx5_service import module
-from compat_api import normalize, InvalidRequest
+from compat_api import normalize, InvalidRequest, completion
 
 
 class ChatTests(unittest.TestCase):
@@ -53,8 +53,10 @@ class ChatTests(unittest.TestCase):
 
     def finish(self, job, text='青鹈鹕'):
         with self.service.lock:
-            job.update(status='succeeded', result={'text': text, 'input_tokens': 23, 'output_tokens': 4,
-                                                   'finish_reason': 'stop'})
+            job.update(status='succeeded', finished_at=job['created_at'] + 12,
+                       result={'text': text, 'input_tokens': 23, 'output_tokens': 4,
+                               'decode_tps': 10.0, 'generation_s': 0.4, 'prefill_s': 0.2,
+                               'process_wall_s': 4.5, 'finish_reason': 'stop'})
             self.service.save(job)
 
     def test_models_auth_and_invalid_requests_never_start(self):
@@ -85,6 +87,9 @@ class ChatTests(unittest.TestCase):
         data = json.load(r)
         self.assertEqual(data['choices'][0]['message']['content'], '青鹈鹕')
         self.assertEqual(data['usage'], {'prompt_tokens': 23, 'completion_tokens': 4, 'total_tokens': 27})
+        self.assertEqual(data['timings']['decode_tps'], 10.0)
+        self.assertEqual(data['timings']['total_s'], 12)
+        self.assertEqual(data['timings']['generation_s'], 0.4)
         payload = self.mock_run.call_args[0][1]
         self.assertEqual([x['role'] for x in payload['chat']['messages']], ['system', 'user', 'assistant', 'user'])
         self.assertEqual(payload['chat']['messages'][-1]['content'], '暗号？')
@@ -124,6 +129,19 @@ class ChatTests(unittest.TestCase):
         self.assertIn('"finish_reason": "stop"', rest)
         self.assertIn('"choices": [], "usage":', rest)
         self.assertTrue(rest.endswith('data: [DONE]\n\n'))
+        self.assertEqual(rest.count('"timings":'), 1)
+        self.assertIn('"total_s": 12', rest)
+
+    def test_timing_is_not_sent_with_content_or_finish_and_replay_is_stable(self):
+        job={'id':'op_abc','created_at':100,'profile':'qwen36-128k'}
+        self.assertNotIn('timings', completion(job, delta={'content':'hello'}))
+        self.finish(job)
+        self.assertNotIn('timings', completion(job, finish='stop'))
+        first=completion(job)
+        with patch('time.time', return_value=5000):
+            replay=completion(job)
+        self.assertEqual(first['timings'], replay['timings'])
+        self.assertEqual(replay['timings']['total_s'],12)
 
     def test_chat_and_legacy_share_admission_disconnect_keeps_busy(self):
         r = self.request('POST', '/v1/chat/completions', self.body(stream=True), {'Idempotency-Key': 'shared'})

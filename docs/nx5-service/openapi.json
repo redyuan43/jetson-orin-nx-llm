@@ -789,6 +789,9 @@
                 }
               }
             }
+          },
+          "timings": {
+            "$ref": "#/components/schemas/Timings"
           }
         }
       },
@@ -831,6 +834,37 @@
                 }
               }
             }
+          }
+        }
+      },
+      "Timings": {
+        "type": "object",
+        "description": "Measured successful-request timings. All durations are seconds. Streamed once with the final usage chunk when include_usage=true.",
+        "properties": {
+          "decode_tps": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Engine decode tokens per second, excluding model loading and prefill."
+          },
+          "generation_s": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Engine generation elapsed seconds."
+          },
+          "prefill_s": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Engine prompt processing seconds."
+          },
+          "process_wall_s": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Inference process wall seconds."
+          },
+          "total_s": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Original request admission through completion, including loading and lease lifecycle; excludes client network/rendering."
           }
         }
       }

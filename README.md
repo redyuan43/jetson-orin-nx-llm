@@ -84,6 +84,7 @@ DSpark 正确路径的接受率可达 82%，`SKIP_READ` 不是正确推理的硬
 `qwen36-128k` 或 `minicpm-64k`，一次选择一个。登录凭据单独保存在管理员的私有配置目录，不入库。
 内置工具与后台自动生成已关闭；输出上限7680，其他采样参数沿用各模型固定配置。
 Qwen已显式保存鹈鹕参考默认值：temperature 0.7、top-p 0.8、presence penalty 1.5；top-k 20、min-p 0、repeat penalty 1由后端生效。
+每条新回复完成后显示生成TPS、生成耗时和含模型加载的总耗时；回复下方ⓘ可查看token数及详细统计。
 部署、登录凭据位置和网页验收见[OpenWebUI使用说明](docs/15-openwebui-20261021.md)。
 
 OpenWebUI 管理员连接填写 Base URL `http://nx5.taild500c8.ts.net:18347/v1`，
