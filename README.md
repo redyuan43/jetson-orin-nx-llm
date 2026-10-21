@@ -77,6 +77,17 @@ DSpark 正确路径的接受率可达 82%，`SKIP_READ` 不是正确推理的硬
 
 ---
 
+## nx5 OpenWebUI / OpenAI 兼容接口
+
+OpenWebUI 管理员连接填写 Base URL `http://nx5.taild500c8.ts.net:18347/v1`，
+API Key 使用 nx5 服务专用令牌（管理员从 `~/.config/nx5-ssd-llm/client.key` 安全提供）。
+OpenWebUI 后端/容器须能访问 Tailnet。模型列表自动发现 `qwen36-128k` 和 `minicpm-64k`。
+支持文本多轮聊天、真实 SSE 流式、采样参数和 token 用量；模型按请求加载，完成后卸载，
+两个模型及原有 `/v1/jobs` 共用一个 GPU 准入槽位。Chat 忙时429，不会并行加载或杀掉正在运行的任务。
+关闭 OpenWebUI 自动标题/标签等后台模型任务，避免和聊天争用资源。
+目前不支持图片、tools 或跨请求 KV 缓存；思考关闭。详细配置、恢复规则和 SDK 示例见
+[调用手册](docs/nx5-service/API.md)；舰队页面为 `http://nx6.taild500c8.ts.net:8300/capabilities`。
+
 ## 硬件与环境
 
 | 项 | 值 |

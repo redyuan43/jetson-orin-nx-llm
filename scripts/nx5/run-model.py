@@ -34,6 +34,7 @@ def main():
     parser.add_argument('--no-spec-draft-backend-sampling', action='store_true', default=None)
     parser.add_argument('--sampling', choices=('benchmark', 'qwen-coding', 'qwen-instruct'))
     parser.add_argument('--reasoning', choices=('on', 'off'))
+    parser.add_argument('--chat-json', action='store_true', help='Prompt file contains validated chat JSON')
     args = parser.parse_args()
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', args.tag):
         parser.error('tag must be a plain basename')
@@ -57,6 +58,11 @@ def main():
     checks = {args.root / config['library_dir'] / k: v for k, v in config['library_sha256'].items()}
     checks[args.root / 'minicpm-les/llama.cpp-omni/build-jetson/bin/llama-cli'] = config['cli_sha256']
     checks[template] = template_hash
+    if args.chat_json:
+        runtime = json.loads((repo / 'configs/nx5-chat-runtime.json').read_text())
+        checks[args.root / runtime['binary']] = runtime['binary_sha256']
+        for name, expected in runtime['libraries'].items():
+            checks[args.root / name] = expected
     for path, expected in checks.items():
         assert hashlib.sha256(path.read_bytes()).hexdigest() == expected, str(path)
     parameters = config['parameters'].copy()
@@ -126,7 +132,7 @@ def main():
     request = {'model': config['model'], 'source_sha256': config.get('source_sha256'),
                'prompt_sha256': hashlib.sha256(args.prompt.read_bytes()).hexdigest(),
                'tag': args.tag, 'invocation_scope': str(args.output.resolve()),
-               'tokens': args.tokens, 'parameters': parameters}
+               'tokens': args.tokens, 'parameters': parameters, 'chat_json': args.chat_json}
     op = 'op_' + digest(request)[:32]
     proof = {'operation_id': op, 'request': request, 'created_at': time.time(),
              'initial_activity': activity, 'initial_units': inactive(), 'status': 'waiting',
@@ -169,6 +175,8 @@ def main():
                '--output', str(args.output), '--tokens', str(args.tokens),
                '--library-dir', str(args.root / config['library_dir']),
                '--chat-template-file', str(template)]
+    if args.chat_json:
+        command += ['--chat-runner', str(args.root / runtime['binary'])]
     if family == 'qwen36':
         command += ['--model-dir', str(model)]
     for key, value in parameters.items():

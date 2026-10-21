@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import subprocess
 
-FILES = ['scripts/nx5/service.py', 'scripts/nx5/run-model.py', 'scripts/minicpm/bench-audit.py',
+FILES = ['scripts/nx5/compat_api.py', 'configs/nx5-chat-runtime.json', 'scripts/nx5/chat-runner.cpp', 'scripts/nx5/service.py', 'scripts/nx5/run-model.py', 'scripts/minicpm/bench-audit.py',
          'configs/qwen36-iq4xs-128k.json', 'configs/nx5-minicpm-service.json',
          'configs/minicpm-v47-instruct.jinja', 'docs/nx5-service/API.md',
          'docs/nx5-service/catalog.json', 'docs/nx5-service/openapi.json',
@@ -27,7 +27,7 @@ for unit in legacy:
     if state_of(unit,'ActiveState') not in ('inactive','failed'):raise RuntimeError('legacy_active: '+unit)
 if state_of('nx5-ssd-llm.service','ActiveState') not in ('inactive','failed'):
     raise RuntimeError('existing_service_active: drain and stop it before upgrading')
-for f in state.glob('op_*.json'):
+for f in (state/'jobs').glob('op_*.json'):
     if json.loads(f.read_text())['status'] not in ('succeeded','failed'):raise RuntimeError('unresolved_job')
 for entry in Path('/proc').iterdir():
     if not entry.name.isdigit():continue
@@ -47,6 +47,10 @@ with opener.open(req,timeout=15) as r:activity=json.load(r)
 if activity['leases'] or activity['pending'] or activity['transition']:raise RuntimeError('resource_busy')
 for name,data in p['files'].items():
     if hashlib.sha256(base64.b64decode(data)).hexdigest()!=p['manifest']['files'][name]:raise RuntimeError('bundle_changed')
+runtime=json.loads(base64.b64decode(p['files']['configs/nx5-chat-runtime.json']))
+model_root=home/'github/qwen38-kvmem'
+for name,expected in {runtime['binary']:runtime['binary_sha256'],**runtime['libraries']}.items():
+    if hashlib.sha256((model_root/name).read_bytes()).hexdigest()!=expected:raise RuntimeError('chat_runtime_changed: '+name)
 if not p['apply']:
     print(json.dumps({'preflight':'passed','modified':False,'source_commit':p['manifest']['source_commit']}))
     raise SystemExit(0)

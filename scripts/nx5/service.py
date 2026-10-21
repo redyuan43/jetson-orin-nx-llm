@@ -11,6 +11,9 @@ import subprocess
 import sys
 import threading
 import time
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from compat_api import InvalidRequest, normalize, error as chat_error, completion
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PROFILES = {
@@ -103,7 +106,9 @@ class Service:
                     'availability_scope': 'API admission state; central lease and runtime verification are required before inference.'}
 
     def submit(self, payload):
-        payload = validate(payload)
+        return self.admit(validate(payload))
+
+    def admit(self, payload):
         identifier = 'op_' + hashlib.sha256(('nx5-ssd-llm:' + payload['request_id']).encode()).hexdigest()[:32]
         fingerprint = digest(payload)
         with self.lock:
@@ -126,12 +131,14 @@ class Service:
         try:
             folder.mkdir(mode=0o700, exist_ok=False)
             prompt = folder / 'prompt.txt'
-            prompt.write_text(payload['prompt'])
+            prompt.write_text(json.dumps(payload['chat'], ensure_ascii=False) if payload.get('kind') == 'chat' else payload['prompt'])
             prompt.chmod(0o600)
             command = [sys.executable, str(self.repo / 'scripts/nx5/run-model.py'), str(prompt),
                        '--config', str(self.repo / PROFILES[payload['profile']]),
                        '--root', self.config['root'], '--output', str(folder),
                        '--tag', 'result', '--tokens', str(payload['max_tokens'])]
+            if payload.get('kind') == 'chat':
+                command.append('--chat-json')
             with (folder / 'driver.log').open('w') as log:
                 child = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT)
                 with self.lock:
@@ -159,6 +166,25 @@ class Service:
             metrics = json.loads((folder / 'result.json').read_text())
             if metrics['rc'] or metrics['stop_reason']:
                 raise ValueError('inference_failed')
+            if payload.get('kind') == 'chat':
+                events = [json.loads(line) for line in (folder / 'result.out').read_text().splitlines()]
+                final = events[-1]
+                if final['type'] != 'final' or final['content'] != ''.join(e['content'] for e in events if e['type'] == 'delta'):
+                    raise ValueError('incomplete_chat_result')
+                with self.lock:
+                    job.update(status='succeeded', result={
+                        'text': final['content'], 'profile': payload['profile'],
+                        'context_capacity': metrics['args']['ctx'],
+                        'input_tokens': final['usage']['prompt_tokens'],
+                        'output_tokens': final['usage']['completion_tokens'],
+                        'prefill_s': final['timings']['prompt_ms'] / 1000,
+                        'generation_s': final['timings']['predicted_ms'] / 1000,
+                        'decode_tps': final['timings']['predicted_per_second'],
+                        'process_wall_s': metrics['wall_s'],
+                        'min_available_mib': metrics['min_available_kib'] / 1024,
+                        'finish_reason': final['finish_reason'],
+                        'model_loaded_after': False, 'lease_status': 'released'})
+                return
             answer = answer_from_cli((folder / 'result.out').read_text())
             timing = '\n'.join(metrics['metrics'])
             generation = re.search(r'\|\s+eval time =\s+([\d.]+) ms /\s+(\d+) tokens.*?([\d.]+) tokens per second', timing)
@@ -182,9 +208,18 @@ class Service:
             proof = json.loads(receipt.read_text()) if receipt.exists() else {}
             running = 'child' in locals() and child.poll() is None
             uncertain = running or bool(proof and proof.get('lease_after') != 'released')
+            code = 'inference_failed'
+            if not uncertain and payload.get('kind') == 'chat' and (folder / 'result.out').exists():
+                for line in (folder / 'result.out').read_text(errors='replace').splitlines():
+                    try:
+                        event = json.loads(line)
+                        if event.get('code') == 'context_length_exceeded':
+                            code = event['code']
+                    except ValueError:
+                        pass
             with self.lock:
                 job.update(status='unknown' if uncertain else 'failed',
-                           error='reconciliation_required' if uncertain else 'inference_failed')
+                           error='reconciliation_required' if uncertain else code)
             print('job:', job['id'], type(exc).__name__, flush=True)
         finally:
             with self.lock:
@@ -192,8 +227,8 @@ class Service:
                 self.save(job)
 
 
-def serve(config):
-    service = Service(config)
+def make_server(config, service=None):
+    service = service or Service(config)
     token = Path(config['client_token_file']).read_text().strip()
     if len(token) < 32:
         raise ValueError('invalid_client_token')
@@ -203,11 +238,14 @@ def serve(config):
         def log_message(self, *_):
             pass
 
-        def send(self, status, value):
+        def send(self, status, value, job=None):
             raw = json.dumps(value, ensure_ascii=False).encode()
             self.send_response(status)
             self.send_header('Content-Type', 'application/json; charset=utf-8')
             self.send_header('Content-Length', str(len(raw)))
+            if job:
+                self.send_header('X-Job-ID', job['id'])
+                self.send_header('X-Request-ID', job['request_id'])
             self.end_headers()
             try:
                 self.wfile.write(raw)
@@ -230,36 +268,118 @@ def serve(config):
                 contract['info']['version'] = service.release['commit']
                 return self.send(200, contract)
             if not self.authorized():
-                return self.send(401, {'error': 'unauthorized'})
+                return self.send(401, chat_error('unauthorized', kind='authentication_error'))
+            if self.path == '/v1/models':
+                return self.send(200, {'object': 'list', 'data': [
+                    {'id': name, 'object': 'model', 'created': 0, 'owned_by': 'nx5',
+                     'context_window': 131072 if name == 'qwen36-128k' else 65536}
+                    for name in PROFILES]})
             match = re.fullmatch(r'/v1/jobs/(op_[a-f0-9]{32})', self.path)
             with service.lock:
                 job = service.jobs.get(match[1]) if match else None
                 return self.send(200, service.public(job)) if job else self.send(404, {'error': 'not_found'})
 
+        def job_snapshot(self, job):
+            with service.lock:
+                return service.public(service.jobs[job['id']]).copy()
+
+        def chat(self, job, stream, include_usage):
+            if stream:
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/event-stream; charset=utf-8')
+                self.send_header('Cache-Control', 'no-cache')
+                self.send_header('X-Accel-Buffering', 'no')
+                self.send_header('Connection', 'close')
+                self.send_header('X-Job-ID', job['id'])
+                self.send_header('X-Request-ID', job['request_id'])
+                self.end_headers()
+                self.close_connection = True
+                self.connection.settimeout(20)
+
+                def event(value):
+                    self.wfile.write(('data: ' + json.dumps(value, ensure_ascii=False) + '\n\n').encode())
+                    self.wfile.flush()
+
+                try:
+                    event(completion(job, delta={'role': 'assistant', 'content': ''}))
+                    offset, last_heartbeat = 0, time.monotonic()
+                    path = service.state / job['id'] / 'result.out'
+                    while True:
+                        snapshot = self.job_snapshot(job)
+                        if path.exists():
+                            with path.open('rb') as source:
+                                source.seek(offset)
+                                while True:
+                                    line = source.readline()
+                                    if not line.endswith(b'\n'):
+                                        break
+                                    offset = source.tell()
+                                    item = json.loads(line)
+                                    if item['type'] == 'delta':
+                                        event(completion(job, delta={'content': item['content']}))
+                        if snapshot['status'] == 'succeeded':
+                            event(completion(snapshot, finish=snapshot['result']['finish_reason']))
+                            if include_usage:
+                                event(completion(snapshot, usage_only=True))
+                            break
+                        if snapshot['status'] in ('failed', 'unknown'):
+                            event(chat_error(snapshot['error'], kind='server_error'))
+                            break
+                        if time.monotonic() - last_heartbeat >= 5:
+                            self.wfile.write(b': loading or generating\n\n')
+                            self.wfile.flush()
+                            last_heartbeat = time.monotonic()
+                        time.sleep(0.1)
+                    self.wfile.write(b'data: [DONE]\n\n')
+                    self.wfile.flush()
+                except (BrokenPipeError, ConnectionResetError, TimeoutError, OSError):
+                    # Disconnect never releases a running model's lease or replays work.
+                    return
+            else:
+                while True:
+                    snapshot = self.job_snapshot(job)
+                    if snapshot['status'] == 'succeeded':
+                        return self.send(200, completion(snapshot), job)
+                    if snapshot['status'] in ('failed', 'unknown'):
+                        code = snapshot['error']
+                        return self.send(400 if code == 'context_length_exceeded' else 503,
+                                         chat_error(code, kind='server_error'), job)
+                    time.sleep(0.2)
+
         def do_POST(self):
+            is_chat = self.path == '/v1/chat/completions'
             if not self.authorized():
-                return self.send(401, {'error': 'unauthorized'})
-            if self.path != '/v1/jobs':
-                return self.send(404, {'error': 'not_found'})
+                return self.send(401, chat_error('unauthorized', kind='authentication_error') if is_chat else {'error': 'unauthorized'})
+            if self.path not in ('/v1/jobs', '/v1/chat/completions'):
+                return self.send(404, chat_error('not_found'))
             try:
                 self.connection.settimeout(20)
                 size = int(self.headers.get('Content-Length', '0'))
                 if not 1 <= size <= 2 * 1024**2:
-                    return self.send(413, {'error': 'invalid_body_size'})
+                    return self.send(413, chat_error('invalid_body_size') if is_chat else {'error': 'invalid_body_size'})
                 raw = self.rfile.read(size)
                 if len(raw) != size:
                     raise ValueError('incomplete_body')
-                job = service.submit(json.loads(raw))
+                body = json.loads(raw)
+                if is_chat:
+                    payload, stream, usage = normalize(body, self.headers.get('Idempotency-Key'))
+                    job = service.admit(payload)
+                    return self.chat(job, stream, usage)
+                job = service.submit(body)
                 return self.send(202, {'id': job['id'], 'status': job['status'], 'status_url': '/v1/jobs/' + job['id']})
             except RuntimeError as exc:
-                return self.send(409, {'error': str(exc)})
+                code = str(exc)
+                return self.send(429 if is_chat and code == 'device_job_busy' else 409,
+                                 chat_error(code, kind='rate_limit_error' if code == 'device_job_busy' else 'invalid_request_error') if is_chat else {'error': code})
+            except InvalidRequest as exc:
+                return self.send(404 if str(exc) == 'model_not_found' else 400, chat_error(str(exc), exc.param))
             except (ValueError, TypeError, TimeoutError):
-                return self.send(400, {'error': 'invalid_request'})
+                return self.send(400, chat_error('invalid_request') if is_chat else {'error': 'invalid_request'})
 
-    ThreadingHTTPServer((config['bind'], config.get('port', 18347)), Handler).serve_forever()
+    return ThreadingHTTPServer((config['bind'], config.get('port', 18347)), Handler)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', type=Path, required=True)
-    serve(json.loads(parser.parse_args().config.read_text()))
+    make_server(json.loads(parser.parse_args().config.read_text())).serve_forever()

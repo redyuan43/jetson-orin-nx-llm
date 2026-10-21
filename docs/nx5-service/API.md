@@ -16,7 +16,58 @@
 上下文是输入与输出共用容量；两者均已测试容量与8218-token实际输入，尚未测满各自上下文。
 此前Qwen标准SVG实测17.31 token/s；长文预处理另需时间，不能把生成速度当输入处理速度。
 
-## 调用顺序
+## OpenWebUI / OpenAI Chat Completions
+
+在 OpenWebUI 的管理员设置 → Connections → OpenAI API 添加连接：
+
+- Base URL：`http://nx5.taild500c8.ts.net:18347/v1`
+- API Key：本服务的专用 Bearer 令牌（不是 OpenAI 的云端 Key）。
+- Models：连接检测后自动发现 `qwen36-128k` 和 `minicpm-64k`。
+- OpenWebUI 后端/容器必须能访问这个 Tailscale 地址。只让浏览器加入 Tailnet 不够。
+- 使用普通文本聊天和 streaming；关闭工具调用、图片输入，以及自动标题、标签、后续问题等后台生成任务，避免和聊天争用单个 GPU 槽位。
+- 冷启动与长输入会增加等待时间；保持流式连接，客户端总超时建议至少 45 分钟。等待时每5秒有SSE注释心跳，首个内容到达前不会伪造答案。
+
+`GET /v1/models` 返回两个可选模型，不触发加载。
+`POST /v1/chat/completions` 支持同步 JSON 和 `stream:true` 的 SSE；支持多轮
+`system/user/assistant` 文本消息，最后一条须为 user，system 只允许在第一条。
+消息由模型自己的聊天模板渲染，每个请求携带完整历史；服务不保存可供后续自动续接的对话会话或 KV cache。
+
+```python
+import os
+from openai import OpenAI
+client = OpenAI(base_url="http://nx5.taild500c8.ts.net:18347/v1",
+                api_key=os.environ["NX5_SSD_LLM_TOKEN"], timeout=2700, max_retries=0)
+stream = client.chat.completions.create(
+    model="qwen36-128k",  # 切到 minicpm-64k 即在下次请求加载另一个模型
+    messages=[{"role": "user", "content": "用中文简述MoE模型。"}],
+    max_tokens=512, stream=True, stream_options={"include_usage": True})
+for chunk in stream:
+    if chunk.choices:
+        print(chunk.choices[0].delta.content or "", end="", flush=True)
+```
+
+可覆盖 `temperature` (0–2)、`top_p` (0–1)、`seed` (uint32)、
+`presence_penalty/frequency_penalty` (-2–2)、`stop` (最多4个字符串)、
+`max_tokens` 或 `max_completion_tokens` (1–7680，默认2048)。未指定时保留模型固定采样参数；
+重复惩罚扫描窗口仍沿用模型固定设置。两种 token 上限同时提供时必须相同。
+不支持多个候选 n>1、工具、图片、结构化 response_format、logprobs、Responses API 或 Embeddings；
+这些参数会明确报错，不会默默忽略。`user` 仅接受为客户端标识，不影响推理。
+思考固定关闭。
+
+新旧接口共用同一个准入槽位。Chat 忙时返回 OpenAI 格式 HTTP429 `device_job_busy`，
+异步 jobs 忙时仍为409；没有后台排队。空闲时可以选择任意一个模型。
+响应头 `X-Job-ID` 对应 `/v1/jobs/{id}`，可在断线后查询原任务。
+请求可带 `Idempotency-Key`（1–100个字母/数字/下划线/点/连字符）：
+相同键和相同规范化推理内容返回原任务结果；改变推理内容返回409。
+不带键的每次调用都是新任务；stream与include_usage仅改变传输形式，不改变幂等身份。
+客户端断开或点击停止不会终止后台推理，也不会提前释放租约；不要自动换键重试。
+
+同步响应包含 `choices[0].message.content`、真实 `usage` 和 `finish_reason`。
+SSE逐步返回 `choices[0].delta.content`；进程结束且租约释放后才发送最终finish，
+可选usage块及 `[DONE]`。若推理失败，SSE返回error对象后结束，不伪报成功。
+上下文超限在加载后按实际token数检测；同步400或SSE error `context_length_exceeded`。
+
+## 原有异步调用顺序
 
 1. 无需令牌即可GET `/healthz`、`/v1/service-catalog`、`/v1/client-contract`读取状态、版本和契约。
 2. 客户端先保存唯一`request_id`及完整请求，再认证POST `/v1/jobs`。
@@ -78,8 +129,8 @@ API的ready只表示本入口可受理，不承诺中央资源立即可用。
 nx5旧Ornith、ComfyUI及旧文本控制器的自动启动已退出，不能绕过本入口手动同时加载其他模型。
 这不改变其他节点的服务。旧进程不会为了新请求被强杀。
 
-当前接口仅支持纯文本异步任务，不是OpenAI Chat Completions；没有图片输入、streaming、tools、
-自动对话历史或跨请求模型常驻。每次请求需携带完整所需文本。500000字符、2MiB请求体、
+两个接口当前均为纯文本，没有图片输入、tools、自动保存的对话历史或跨请求模型常驻。
+每次请求需携带完整所需文本。500000字符（聊天历史总和）、最多1024条消息、2MiB请求体、
 1–7680输出token；运行阶段超时40分钟。超长输入还受模型token容量与实际处理时间限制。
 
 元数据公开的`commit`是发布文件集合指纹，`source_commit`是源码Git提交；

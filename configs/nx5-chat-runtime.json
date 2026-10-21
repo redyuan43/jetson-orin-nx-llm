@@ -1,0 +1,13 @@
+{
+  "binary": "nx5-chat-runtime/v3/llama-nx5-chat",
+  "binary_sha256": "73b04d34d091973d1e9de556a723253b9f0cd3dfbf6a68a86648f5443eda8fec",
+  "source_sha256": "885895eeb87c33b3b87cfd8c692c73b842cdbdd6aa0fca66c69168d9416acefe",
+  "libraries": {
+    "minicpm-les/llama.cpp-omni/build-jetson/bin/libllama-cli-impl.so": "a44c470bb494493ab44956873aecdbe34af4113edd080adf51ba249b6325e808",
+    "minicpm-les/llama.cpp-omni/build-jetson/bin/libllama-common.so.0": "8a30e9de55258c64e8d1c8dae9a059ce99ceb74c0ae01f8c942caddf156d51a3",
+    "minicpm-les/llama.cpp-omni/build-jetson/bin/libmtmd.so.0": "b74b1142351c3dfec4fa5e5c9880b95c57b9475d0c24d95ffb232fb639c147f4",
+    "minicpm-les/llama.cpp-omni/build-jetson/bin/libggml.so.0": "2b0158aac76b60a6883e875a8853a1ec48387e0561b17d7201022fa997e6d534",
+    "minicpm-les/llama.cpp-omni/build-jetson/bin/libggml-base.so.0": "3b3bfce1606d4d0fe6c53673601338a4c91f8b03c864bc1d1ec13b722c3a78f4",
+    "minicpm-les/llama.cpp-omni/build-jetson/bin/libggml-cpu.so.0": "fdba081b9221f17861833193f23cd556b6196faf9f1ba72ac943d6ec80524758"
+  }
+}

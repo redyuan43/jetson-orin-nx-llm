@@ -80,6 +80,7 @@ def main():
     parser.add_argument('--reasoning-budget', type=int)
     parser.add_argument('--chat-template-kwargs', help='JSON object of explicit chat-template options')
     parser.add_argument('--chat-template-file', type=Path)
+    parser.add_argument('--chat-runner', type=Path, help='Standalone structured chat adapter; prompt is JSON')
     parser.add_argument('--mmproj', type=Path, help='Vision projector for a measured image request')
     parser.add_argument('--image', type=Path, help='One local input image; requires --mmproj')
     parser.add_argument('--image-max-tokens', type=int, help='Optional vision token limit supported by the model')
@@ -159,6 +160,8 @@ def main():
            '-c', str(args.ctx), '-b', '2048', '-ub', str(args.ubatch), '-n', str(args.tokens),
            '--seed', str(args.seed), '-fit', 'off', '--perf', '-lv', str(args.log_verbosity),
            '-f', str(args.prompt), '--no-display-prompt', '-st']
+    if args.chat_runner:
+        cmd[0] = str(args.chat_runner.resolve(strict=True))
     if args.sampling == 'instruct':
         cmd += ['--temp', '0.7', '--top-p', '0.95', '--top-k', '100', '--min-p', '0',
                 '--presence-penalty', '0', '--repeat-penalty', '1.03', '--repeat-last-n', '-1']

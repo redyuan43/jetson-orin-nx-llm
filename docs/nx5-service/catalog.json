@@ -4,12 +4,12 @@
     {
       "capability_id": "qwen36",
       "alias": "Qwen3.6-35B-A3B · 128K",
-      "description": "UD-IQ4_XS，SSD专家window128，MTP draft2；文本、代码与SVG；关闭思考。128K容量及8218-token输入已验证，未测满128K。"
+      "description": "UD-IQ4_XS，SSD专家window128，MTP draft2；文本、代码与SVG；关闭思考。128K容量及8218-token输入已验证，未测满128K。 支持OpenWebUI / OpenAI文本多轮聊天和SSE流式。"
     },
     {
       "capability_id": "minicpm",
       "alias": "MiniCPM-V4.7 · 64K",
-      "description": "SSD专家window176，DSpark draft7；文本、代码与SVG；关闭思考。64K容量及8218-token输入已验证，未测满64K。"
+      "description": "SSD专家window176，DSpark draft7；文本、代码与SVG；关闭思考。64K容量及8218-token输入已验证，未测满64K。 支持OpenWebUI / OpenAI文本多轮聊天和SSE流式。"
     }
   ],
   "input": {
@@ -23,7 +23,15 @@
     ],
     "modalities": [
       "text"
-    ]
+    ],
+    "openai_base_url": "http://nx5.taild500c8.ts.net:18347/v1",
+    "protocols": [
+      "openai-chat-completions",
+      "async-jobs"
+    ],
+    "streaming": true,
+    "multi_turn": "full history in each request",
+    "max_messages": 1024
   },
-  "availability_scope": "API常驻；两个模型按任务加载、完成后卸载并释放中央nx5-igpu租约；互斥。ready只表示入口可受理，仍需租约与运行库校验。当前业务API仅文本，非OpenAI兼容，不提供图片、工具、流式或驻留多轮。"
+  "availability_scope": "API常驻；两个模型按请求加载、完成后卸载并释放中央nx5-igpu租约；互斥不排队。OpenAI Chat Completions、模型发现和SSE；当前仅文本，无图片/工具。ready只表示入口可受理，仍需租约与运行库校验。"
 }
