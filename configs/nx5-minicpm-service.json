@@ -1,0 +1,40 @@
+{
+  "family": "minicpm",
+  "model": "MiniCPM-V4.7 35B-A3B 64K SSD",
+  "revision": "a64932ec615e1463158129feaf2f0752d0c07a2e",
+  "model_dir": "models/MiniCPM-V-4.7",
+  "library_dir": "minicpm-audit-20261021/optimization/cuda-mapped-v2",
+  "library_sha256": {
+    "libggml-cuda.so.0": "ea6394c23526ad021d9f449063a1bdc820c7f697d2495169430d7412ffe0dac6",
+    "libllama.so.0": "5ede85f4c76d1299c9dc0e6089b72a6a8bee7e70a60cc5ad561ed112b58b3e6c"
+  },
+  "cli_sha256": "49e307ca0635f67cff3714357565147ab50db02d041c22357991c52c2b468ce5",
+  "chat_template": "configs/minicpm-v47-instruct.jinja",
+  "chat_template_sha256": "49c37bcc86c7f7f20ed2ebf79e9f872be41ba2b5f9d0d51e6712cc038ef51d6c",
+  "model_file_sizes": {
+    "stripped.gguf": 1662732800,
+    "dspark-Q4_K_M.gguf": 237004800
+  },
+  "parameters": {
+    "ctx": 65536,
+    "window": 176,
+    "bank": 64,
+    "rows": 8,
+    "draft": 7,
+    "mapped_experts": true,
+    "io_threads": 8,
+    "prefetch": 0,
+    "matmul_split": 0,
+    "offload_min_batch": 32,
+    "sampling": "instruct",
+    "seed": 42,
+    "reasoning": "off",
+    "ctx_checkpoints": 2,
+    "cache_ram_mib": 256,
+    "min_available_mib": 768,
+    "timeout": 2400,
+    "ubatch": 8,
+    "spec_type": "draft-dspark",
+    "reasoning_budget": 0
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "raw_prompt_tokens": 8207,
+  "records": 227,
+  "positions_zero_based": [
+    6,
+    45,
+    90,
+    135,
+    180,
+    219
+  ],
+  "expected": {
+    "R0006": "ZVTKHB8T",
+    "R0045": "MPAS84ZS",
+    "R0090": "3PLVRBX2",
+    "R0135": "E48JQW2X",
+    "R0180": "EP2T9N3P",
+    "R0219": "Z7GHWYFC"
+  },
+  "prompt_sha256": "385ec160f0d096ff514565ffc4ff27ab497f732790ff99d8beffc67261544a93",
+  "scope": "Six-field retrieval from synthetic records; not a full-context quality benchmark."
+}

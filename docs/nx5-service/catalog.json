@@ -1,0 +1,29 @@
+{
+  "service_id": "nx5-ssd-llm",
+  "capabilities": [
+    {
+      "capability_id": "qwen36",
+      "alias": "Qwen3.6-35B-A3B · 128K",
+      "description": "UD-IQ4_XS，SSD专家window128，MTP draft2；文本、代码与SVG；关闭思考。128K容量及8218-token输入已验证，未测满128K。"
+    },
+    {
+      "capability_id": "minicpm",
+      "alias": "MiniCPM-V4.7 · 64K",
+      "description": "SSD专家window176，DSpark draft7；文本、代码与SVG；关闭思考。64K容量及8218-token输入已验证，未测满64K。"
+    }
+  ],
+  "input": {
+    "max_parallel": 1,
+    "max_output_tokens": 7680,
+    "max_prompt_characters": 500000,
+    "max_request_bytes": 2097152,
+    "profiles": [
+      "qwen36-128k",
+      "minicpm-64k"
+    ],
+    "modalities": [
+      "text"
+    ]
+  },
+  "availability_scope": "API常驻；两个模型按任务加载、完成后卸载并释放中央nx5-igpu租约；互斥。ready只表示入口可受理，仍需租约与运行库校验。当前业务API仅文本，非OpenAI兼容，不提供图片、工具、流式或驻留多轮。"
+}

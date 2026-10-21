@@ -1,0 +1,322 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "nx5 Qwen / MiniCPM SSD 互斥推理",
+    "version": "runtime-source-sha256"
+  },
+  "servers": [
+    {
+      "url": "http://nx5.taild500c8.ts.net:18347"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/v1/jobs": {
+      "post": {
+        "summary": "提交指定模型；统一单任务准入和中央GPU独占租约",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Submit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "已受理，请查询status_url",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "字段、档位或输出限制无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "需要服务专用Bearer Token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "设备任务忙或request_id冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求体超过2MiB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/jobs/{job_id}": {
+      "get": {
+        "summary": "查询原任务及最终文字结果",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^op_[a-f0-9]{32}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "任务状态；仅succeeded为成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "需要服务专用Bearer Token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "没有该任务",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "nx5-ssd-llm专用Bearer令牌；仅Tailnet。由nx5管理员安全提供。"
+      }
+    },
+    "schemas": {
+      "Submit": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "request_id",
+          "profile",
+          "prompt"
+        ],
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,100}$"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500000
+          },
+          "profile": {
+            "type": "string",
+            "enum": [
+              "qwen36-128k",
+              "minicpm-64k"
+            ]
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7680,
+            "default": 2048
+          }
+        },
+        "description": "必须指定模型档位。相同request_id和规范化请求只返回原任务；进行中拒绝其他新任务。输入与输出之和须适配所选上下文；当前仅文本。"
+      },
+      "Receipt": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "status_url"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "running",
+              "succeeded",
+              "failed",
+              "unknown"
+            ]
+          },
+          "status_url": {
+            "type": "string"
+          }
+        }
+      },
+      "Job": {
+        "type": "object",
+        "required": [
+          "id",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "running",
+              "succeeded",
+              "failed",
+              "unknown"
+            ]
+          },
+          "error": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "profile": {
+                "type": "string"
+              },
+              "context_capacity": {
+                "type": "integer"
+              },
+              "input_tokens": {
+                "type": "integer"
+              },
+              "output_tokens": {
+                "type": "integer"
+              },
+              "finish_reason": {
+                "type": "string",
+                "enum": [
+                  "stop",
+                  "length"
+                ]
+              },
+              "model_loaded_after": {
+                "type": "boolean"
+              },
+              "lease_status": {
+                "type": "string",
+                "enum": [
+                  "released"
+                ]
+              },
+              "prefill_s": {
+                "type": "number"
+              },
+              "generation_s": {
+                "type": "number"
+              },
+              "decode_tps": {
+                "type": "number"
+              },
+              "process_wall_s": {
+                "type": "number"
+              },
+              "min_available_mib": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "text",
+              "profile",
+              "context_capacity",
+              "input_tokens",
+              "output_tokens",
+              "finish_reason",
+              "model_loaded_after",
+              "lease_status",
+              "prefill_s",
+              "generation_s",
+              "decode_tps",
+              "process_wall_s",
+              "min_available_mib"
+            ]
+          },
+          "profile": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "number"
+          },
+          "started_at": {
+            "type": "number"
+          },
+          "finished_at": {
+            "type": "number"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

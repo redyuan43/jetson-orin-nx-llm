@@ -12,6 +12,10 @@ MTP接受率85.0%。修复了MTP缓存视图和Q3_K/IQ3_S等长编码被错误�
 [原始SVG](reports/2026-10-21-qwen36-nx5/pelican/pelican.svg) 仍有前轮与车架断开、缺少腿脚的问题，
 未修图；硬件适配差异和复现入口见 [Qwen SSD部署记录](docs/11-qwen36-nx5-ssd-20261021.md)。
 
+**Qwen也已跑通128K容量：** 保持window128 / MTP draft2，标准SVG生成**17.31 token/s**，
+输出与8K逐字节一致；实际8218-token输入检索六项全对，最低可用内存1.93 GiB。
+已保存独立128K参数，**尚未测试填满128K**。详见[128K验证与入口](docs/12-qwen36-128k-20261021.md)。
+
 **nano5（Orin Nano 8GB）也已跑通同一份 MiniCPM 权重：** 专家缓冲缩小到约 2.50–2.90 GiB，
 完整 12.89 GiB 专家文件仍在 SSD，全部专家均可参与路由。512-token 短测中，
 8K / window56 / draft3 达到 **6.69 token/s**；64K / window48 / 关闭 DSpark 达到 **5.63 token/s**。

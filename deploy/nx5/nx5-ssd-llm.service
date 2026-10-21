@@ -1,0 +1,17 @@
+[Unit]
+Description=nx5 mutually exclusive Qwen and MiniCPM SSD inference
+After=network-online.target
+Conflicts=siyuan-fleet-control.service siyuan-text-ingress.service siyuan-text-compat-bridge.service siyuan-image-comfy.service nx5-ornith-35b-a3b-iq2s.service qwen38-kvmem.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/nx/.local/share/nx5-ssd-llm/current/scripts/nx5/service.py --config /home/nx/.config/nx5-ssd-llm/service.json
+Restart=on-failure
+RestartSec=5
+KillMode=control-group
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target
