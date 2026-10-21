@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run one exclusive, measured LES/DSpark trial on nx5; never kill other jobs."""
+"""Run one exclusive, measured Jetson LES/DSpark trial; never kill other jobs."""
 import argparse
 import fcntl
 import json
@@ -44,6 +44,8 @@ def main():
     parser.add_argument('--window', type=int, default=192)
     parser.add_argument('--bank', type=int, default=400)
     parser.add_argument('--rows', type=int, default=8)
+    parser.add_argument('--ubatch', type=int, choices=(1, 2, 4, 8), default=8,
+                        help='Microbatch size; smaller values allow smaller expert windows on 8GB devices')
     parser.add_argument('--tokens', type=int, default=2048)
     parser.add_argument('--draft', type=int, choices=range(8), default=0,
                         help='0 disables DSpark; otherwise draft length, at most ubatch - 1')
@@ -69,18 +71,28 @@ def main():
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--reasoning', choices=['auto', 'on', 'off'], default='auto')
     parser.add_argument('--chat-template-file', type=Path)
+    parser.add_argument('--mmproj', type=Path, help='Vision projector for a measured image request')
+    parser.add_argument('--image', type=Path, help='One local input image; requires --mmproj')
+    parser.add_argument('--image-max-tokens', type=int, help='Optional vision token limit supported by the model')
+    parser.add_argument('--no-mmproj-offload', action='store_true')
     parser.add_argument('--library-dir', type=Path, help='Directory with an isolated patched libllama.so.0')
     parser.add_argument('--min-available-mib', type=int, default=384)
     parser.add_argument('--timeout', type=int, default=1200)
     args = parser.parse_args()
+    if bool(args.mmproj) != bool(args.image):
+        parser.error('--mmproj and --image must be supplied together')
+    if args.image_max_tokens is not None and (not args.image or args.image_max_tokens <= 0):
+        parser.error('--image-max-tokens requires an image and a positive limit')
     if not re.fullmatch(r'[A-Za-z0-9_.-]+', args.tag) or args.tag in {'.', '..'}:
         parser.error('tag must be a plain basename')
-    if not (1 <= args.rows <= 8 and 8 * args.rows <= args.window <= 256):
-        parser.error('rows must be 1..8 and window must hold the worst-case expert union')
+    if not (1 <= args.rows <= args.ubatch and 8 * args.rows <= args.window <= 256):
+        parser.error('rows must be 1..ubatch and window must hold the worst-case expert union')
+    if args.draft >= args.ubatch:
+        parser.error('draft must be smaller than ubatch so verification fits one microbatch')
     if min(args.ctx, args.tokens, args.timeout, args.min_available_mib) <= 0:
         parser.error('sizes and limits must be positive')
-    if args.bank < 64:
-        parser.error('bank must hold 8 tokens x 8 experts for the fixed ubatch=8')
+    if args.bank < 8 * args.ubatch:
+        parser.error('bank must hold ubatch x 8 experts')
     if args.io_threads < 1 or args.io_threads > 32:
         parser.error('io-threads must be 1..32')
     if args.offload_min_batch < 1:
@@ -123,7 +135,7 @@ def main():
     cmd = [str(base / 'build-jetson/bin/llama-cli'), '-m', str(model / 'stripped.gguf'),
            '--moe-experts', str(model / 'experts'), '--moe-slot-bank', str(args.bank),
            '--cache-type-k', 'q8_0', '--cache-type-v', 'q8_0', '-ngl', '99', '-fa', 'on',
-           '-c', str(args.ctx), '-b', '2048', '-ub', '8', '-n', str(args.tokens),
+           '-c', str(args.ctx), '-b', '2048', '-ub', str(args.ubatch), '-n', str(args.tokens),
            '--seed', str(args.seed), '-fit', 'off', '--perf', '-lv', str(args.log_verbosity),
            '-f', str(args.prompt), '--no-display-prompt', '-st']
     if args.sampling == 'instruct':
@@ -145,6 +157,12 @@ def main():
     if args.draft:
         cmd += ['--spec-type', 'draft-dspark', '--spec-draft-model', str(model / 'dspark-Q4_K_M.gguf'),
                 '--spec-draft-n-max', str(args.draft)]
+    if args.image:
+        cmd += ['--mmproj', str(args.mmproj.resolve(strict=True)), '--image', str(args.image.resolve(strict=True))]
+        if args.image_max_tokens is not None:
+            cmd += ['--image-max-tokens', str(args.image_max_tokens)]
+        if args.no_mmproj_offload:
+            cmd += ['--no-mmproj-offload']
 
     # Coordinate trials launched by this script and refuse existing inference.
     with open('/tmp/minicpm-bench-audit.lock', 'w') as lock:

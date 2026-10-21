@@ -1,0 +1,25 @@
+{
+  "service_id": "nano5-minicpm",
+  "capabilities": [
+    {
+      "capability_id": "text",
+      "alias": "MiniCPM 文本 / HTML / SVG",
+      "description": "Orin Nano 8GB；8K 或64K容量；按需从SSD读取完整专家权重；与ComfyUI SDXL互斥。"
+    },
+    {
+      "capability_id": "vision",
+      "alias": "单张图片理解与文字识别",
+      "description": "原始JPEG/PNG，最多12MiB / 1600万像素；8K专用参数；小字识别准确率需按样本检查。"
+    }
+  ],
+  "input": {
+    "max_parallel": 1,
+    "max_output_tokens": 6144,
+    "profiles": [
+      "fast-8k",
+      "long-64k",
+      "vision-8k"
+    ]
+  },
+  "availability_scope": "HTTP服务常驻；MiniCPM每次任务加载并在结束后释放。资源组模式就绪不代表权重已经驻留。"
+}

@@ -1,0 +1,299 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "nano5 MiniCPM 按需推理",
+    "version": "runtime-source-sha256"
+  },
+  "servers": [
+    {
+      "url": "http://nano5-1.taild500c8.ts.net:18347"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/v1/jobs": {
+      "post": {
+        "summary": "提交推理或模式选择；受中央同一GPU租约约束",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Submit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "已受理，请查询status_url",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求格式或图片无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "需要服务专用Bearer Token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "设备任务忙或request_id冲突",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求体超过17MiB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/jobs/{job_id}": {
+      "get": {
+        "summary": "查询原任务及最终文字结果",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^op_[a-f0-9]{32}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "任务状态；仅succeeded为成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "需要服务专用Bearer Token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "没有该任务",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "nano5专用客户端凭据；不能复用舰队管理员或媒体令牌"
+      }
+    },
+    "schemas": {
+      "Submit": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "request_id"
+        ],
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,100}$"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 30000
+          },
+          "profile": {
+            "type": "string",
+            "enum": [
+              "fast-8k",
+              "long-64k",
+              "vision-8k"
+            ]
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6144,
+            "default": 2048
+          },
+          "image_base64": {
+            "type": "string",
+            "description": "裸base64编码的单张JPEG/PNG；不是URL或data URI。仅vision-8k；最多12MiB，1600万像素。"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "select_mode"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "comfy",
+              "minicpm"
+            ]
+          }
+        },
+        "description": "推理需要prompt。图片必须使用vision-8k。切换模式使用action=select_mode和mode，无需prompt。request_id相同且规范化请求相同只返回原任务，不重新推理。"
+      },
+      "Receipt": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "status_url"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "running",
+              "releasing",
+              "succeeded",
+              "failed",
+              "cancelled",
+              "unknown"
+            ]
+          },
+          "status_url": {
+            "type": "string"
+          }
+        }
+      },
+      "Job": {
+        "type": "object",
+        "required": [
+          "id",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "running",
+              "releasing",
+              "succeeded",
+              "failed",
+              "cancelled",
+              "unknown"
+            ]
+          },
+          "mode": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "wall_s": {
+            "type": "number"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "profile": {
+                "type": "string"
+              },
+              "inference_wall_s": {
+                "type": "number"
+              },
+              "min_available_mib": {
+                "type": "number"
+              },
+              "metrics": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "mode": {
+                "type": "string"
+              },
+              "model_loaded": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
