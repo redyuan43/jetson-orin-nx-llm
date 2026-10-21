@@ -1,0 +1,9 @@
+{
+  "hostname": "nano5",
+  "mem_available_mib": 5614.1640625,
+  "swap_total_kib": 0,
+  "oom_kill": 0,
+  "llama_processes": [],
+  "comfy": "ActiveState=inactive\nSubState=dead\nUnitFileState=enabled\n",
+  "disk": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p1  233G   57G  164G  26% /\n"
+}

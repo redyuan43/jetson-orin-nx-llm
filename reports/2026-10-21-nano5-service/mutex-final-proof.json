@@ -1,0 +1,39 @@
+{
+  "units": {
+    "nano5-minicpm.service": {
+      "MainPID": "2766163",
+      "ActiveState": "active",
+      "SubState": "running",
+      "process_name": "python"
+    },
+    "siyuan-image-comfy.service": {
+      "MainPID": "2833835",
+      "ActiveState": "active",
+      "SubState": "running",
+      "process_name": "python"
+    }
+  },
+  "leases": [
+    {
+      "operation_id": "op_6885d7ad82021a72d635dbb0faaf13bb",
+      "status": "released",
+      "terminal_status": null,
+      "resources": null,
+      "released_at": null
+    },
+    {
+      "operation_id": "op_540545ed83e77632d217e28221887d70",
+      "status": "released",
+      "terminal_status": null,
+      "resources": null,
+      "released_at": null
+    },
+    {
+      "operation_id": "op_02145b66ba0357cf1da98d0967846068",
+      "status": "released",
+      "terminal_status": null,
+      "resources": null,
+      "released_at": null
+    }
+  ]
+}

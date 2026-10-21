@@ -1,0 +1,66 @@
+{
+  "files": [
+    {
+      "path": "models/MiniCPM-V-4.7/mmproj-model-f16.gguf",
+      "size": 1119575840,
+      "sha256": "bff3b688e14c300eca273092c37c50a0ddfcc2054e079af1a0480edeed5d20f1",
+      "mode": 436
+    },
+    {
+      "path": "minicpm-les/llama.cpp-omni/build-jetson/bin/llama-cli",
+      "size": 72480,
+      "sha256": "49e307ca0635f67cff3714357565147ab50db02d041c22357991c52c2b468ce5",
+      "mode": 509
+    },
+    {
+      "path": "minicpm-les/llama.cpp-omni/build-jetson/bin/libllama-cli-impl.so",
+      "size": 1572808,
+      "sha256": "a44c470bb494493ab44956873aecdbe34af4113edd080adf51ba249b6325e808",
+      "mode": 509
+    },
+    {
+      "path": "minicpm-les/llama.cpp-omni/build-jetson/bin/libmtmd.so.0",
+      "size": 1245272,
+      "sha256": "b74b1142351c3dfec4fa5e5c9880b95c57b9475d0c24d95ffb232fb639c147f4",
+      "mode": 509
+    },
+    {
+      "path": "minicpm-les/llama.cpp-omni/build-jetson/bin/libllama-common.so.0",
+      "size": 4729344,
+      "sha256": "8a30e9de55258c64e8d1c8dae9a059ce99ceb74c0ae01f8c942caddf156d51a3",
+      "mode": 509
+    },
+    {
+      "path": "minicpm-les/llama.cpp-omni/build-jetson/bin/libllama.so.0",
+      "size": 3863736,
+      "sha256": "c57cf8e263d2fd112985d5e656dab4cbf5cad1ba2ccc788e0f32817109b36139",
+      "mode": 509
+    },
+    {
+      "path": "minicpm-les/llama.cpp-omni/build-jetson/bin/libggml.so.0",
+      "size": 77880,
+      "sha256": "2b0158aac76b60a6883e875a8853a1ec48387e0561b17d7201022fa997e6d534",
+      "mode": 509
+    },
+    {
+      "path": "minicpm-les/llama.cpp-omni/build-jetson/bin/libggml-base.so.0",
+      "size": 807624,
+      "sha256": "3b3bfce1606d4d0fe6c53673601338a4c91f8b03c864bc1d1ec13b722c3a78f4",
+      "mode": 509
+    },
+    {
+      "path": "minicpm-les/llama.cpp-omni/build-jetson/bin/libggml-cpu.so.0",
+      "size": 995312,
+      "sha256": "fdba081b9221f17861833193f23cd556b6196faf9f1ba72ac943d6ec80524758",
+      "mode": 509
+    },
+    {
+      "path": "minicpm-les/llama.cpp-omni/build-jetson/bin/libggml-cuda.so.0",
+      "size": 60009712,
+      "sha256": "c5b858d48d247e2cf3e6e15b3805504761594b8613390e279ce175d2873416c7",
+      "mode": 509
+    }
+  ],
+  "seconds": 48.90447062300518,
+  "bytes": 1192950008
+}

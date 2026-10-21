@@ -1,0 +1,232 @@
+[
+  {
+    "path": "models/MiniCPM-V-4.7/stripped.gguf",
+    "size": 1662732800,
+    "sha256": "e0b25fd3fa49580286101ad6e97e885bb22e31e61596ca2c8e30fb447384754b"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/dspark-Q4_K_M.gguf",
+    "size": 237004800,
+    "sha256": "7e48251cf7f717298235e92aaf22d969cba365e27f1d285260d01986185d0a1d"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_000.bin",
+    "size": 346030080,
+    "sha256": "1f9654c9fb6b25637cf03d8b14e659bfbd89a1aea7f4cac4a789b181e4f4a1ca"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_001.bin",
+    "size": 346030080,
+    "sha256": "40d3c167dde4b1ff98291b539b153f25f94a0b5e25c64c08d535aaf6c837f6af"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_002.bin",
+    "size": 346030080,
+    "sha256": "d865fc3e45b30e966de6f97e982c9f519c4baa46a46ed223a483067fc7caa1de"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_003.bin",
+    "size": 346030080,
+    "sha256": "88f361388537f7165f0713b9d375559e9751b2ba6a2243b5e68979cd16dc272b"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_004.bin",
+    "size": 346030080,
+    "sha256": "732861fc81194ff92950b9386ebdd6eb0d3ff5b986799c55debbe47e63f24429"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_005.bin",
+    "size": 346030080,
+    "sha256": "1e4b7fff94281723beed8e3b54e416b2c7d8642fa6323caa1cfcf8557390b18d"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_006.bin",
+    "size": 346030080,
+    "sha256": "e1d325385b036482269f1def2b0c0823dbac8e5fb9e6ce660f02fb07482c4634"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_007.bin",
+    "size": 346030080,
+    "sha256": "f106d2b67d9ff85fa26057f5a48a79751e761e79b4a2656f9b282dc6c411668b"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_008.bin",
+    "size": 346030080,
+    "sha256": "153cc1893f2ad0c6f2b9524f75c03fd193d377b639908f9653f4643fb98c38fa"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_009.bin",
+    "size": 346030080,
+    "sha256": "854e3d25678c0382fa8de2cba4f34161f2ad3621c63bfba1c1127f8a4fcdebce"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_010.bin",
+    "size": 346030080,
+    "sha256": "c131ae1b2fba341f6ef45e083dc240133f86c7fa8cf2580867da5e0586e8f4ca"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_011.bin",
+    "size": 346030080,
+    "sha256": "9a1b86b34ac0ea05086cc513fd6a880a9243aaeec05a8eb72bd79d80b1380f2a"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_012.bin",
+    "size": 346030080,
+    "sha256": "ddee2f5ce14e4d24c3d2db5803df9c63b6a8f40d888b48708d92d18dcc7246d4"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_013.bin",
+    "size": 346030080,
+    "sha256": "6cd00f7aaa197bca95a99e61eee8dea124de7a37e1aa854871c02e84f60f2404"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_014.bin",
+    "size": 346030080,
+    "sha256": "311b4f38bbd784cfb38181bad3a8ed7a8789024d76aa26ce26eaabf85e8fee2a"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_015.bin",
+    "size": 346030080,
+    "sha256": "0c50d32e8ba833a771a7766f654631c2b8e227f47b41dc6a74548f4f0894ef71"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_016.bin",
+    "size": 346030080,
+    "sha256": "00ac8c46bed718c8c940e3fd84836e81cdd780a3d3d6ead6cacf88a8b805c98d"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_017.bin",
+    "size": 346030080,
+    "sha256": "fffa5fa6a328a6b2be2a80429dfcf2295560e3551f8b127fb122441b6da93882"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_018.bin",
+    "size": 346030080,
+    "sha256": "10377ee6c5ff037d116d9f4caab168621fb3956740f9b4b80350113da5302cef"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_019.bin",
+    "size": 346030080,
+    "sha256": "4633114d8b87977a202e04dbebaa52ca3c8f5c6794ef104a43c5231b2a0becd1"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_020.bin",
+    "size": 346030080,
+    "sha256": "d967bcc92c004e11668791688fcb0247da850018a45553f811c6881e71d03815"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_021.bin",
+    "size": 346030080,
+    "sha256": "a05575256072135db61248cb0d80e89f996bf635e416b615727dd7ec99b4eb77"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_022.bin",
+    "size": 346030080,
+    "sha256": "0f5c394d9b7bd2d2c8ca210020e76015a8bbbfac211cd107c9081433bc2dd238"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_023.bin",
+    "size": 346030080,
+    "sha256": "38e8157cc464ce82c5b6c7ec07283f939054122702242c16c5f31fb3ba7b0839"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_024.bin",
+    "size": 346030080,
+    "sha256": "f517c345f29839b1c8a72048099907a91b1fd52f8e2a0941731bbac71b112d38"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_025.bin",
+    "size": 346030080,
+    "sha256": "7206723d8d9ea943b60d647508c86de60ecad2c35a1b006064e3e43359218334"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_026.bin",
+    "size": 346030080,
+    "sha256": "7f89c3d6acb0f562e9a34b9ea128f2c12e6badd4f7b64cd98f7f3b2596ec6a1e"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_027.bin",
+    "size": 346030080,
+    "sha256": "0881b723a12a7a9af43e50a214313344660357ae2c783a7db96472e800f96956"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_028.bin",
+    "size": 346030080,
+    "sha256": "e80a5e6b41c923ae38cf1b28f05576016fb9a90691fa10acbaad8365a801a9bf"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_029.bin",
+    "size": 346030080,
+    "sha256": "45e746c3a8f466a659d21c9a05bc0c26fa5cb08a31720599e40c4604c8b6cf54"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_030.bin",
+    "size": 346030080,
+    "sha256": "5cbc97a4abe9ba59cdf0ce39033ec7055ae010645e460cdb9ce63a4dbb430410"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_031.bin",
+    "size": 346030080,
+    "sha256": "71ecf577e3f19734bfcbba0727d57b2726c0a6e947773a764c6f99c935aeb051"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_032.bin",
+    "size": 346030080,
+    "sha256": "1bd1eb63b2c9190a51ce8517b1ae27bceaf6ac11dcb3360c22f80f1e2ffdeee3"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_033.bin",
+    "size": 346030080,
+    "sha256": "76df4426c0ac90b986ab07898aace394fcd4f029e0053d574622f48fb2dbc1ab"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_034.bin",
+    "size": 346030080,
+    "sha256": "3f483cfd3a9650d870be3bf1b5e4f69d1221a4884881ea43c7612fb1ed4db5c9"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_035.bin",
+    "size": 346030080,
+    "sha256": "1155ad7cf8ea92770f2696834f612ed6da28c7ebcf29d3c481246a9b54f5452b"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_036.bin",
+    "size": 346030080,
+    "sha256": "7aef016b6188a5d482cee40b75759d0867aaf4c2ac1d6d14ab34068b705cde02"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_037.bin",
+    "size": 346030080,
+    "sha256": "d49097a466270cc3b8e829b97662c4cc84ba3333eedd27b7baec614eb87ca20e"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_038.bin",
+    "size": 346030080,
+    "sha256": "00607a0d9809afdc32f694cf4c14a816b7831fad0fef33bddb6367029c25ae4f"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/layer_039.bin",
+    "size": 346030080,
+    "sha256": "f1fa720c473167725563728aaba799a31f6627d0768f871afef8e6f2552a0cdf"
+  },
+  {
+    "path": "models/MiniCPM-V-4.7/experts/manifest.json",
+    "size": 79718,
+    "sha256": "aef1c6dc708816cadcfcc8f1050601ee75297e1ebf8e5039fa93e1223f7cb642"
+  },
+  {
+    "path": "minicpm/prewarm_top128.txt",
+    "size": 4314,
+    "sha256": "5bc21ffb19ea202e30165d1f397dd7517777dda572c0f0bbffb6924ea0afd068"
+  },
+  {
+    "path": "optimization/cuda-mapped-v2/libllama.so.0",
+    "size": 3863584,
+    "sha256": "5ede85f4c76d1299c9dc0e6089b72a6a8bee7e70a60cc5ad561ed112b58b3e6c"
+  },
+  {
+    "path": "optimization/cuda-mapped-v2/libggml-cuda.so.0",
+    "size": 60010648,
+    "sha256": "ea6394c23526ad021d9f449063a1bdc820c7f697d2495169430d7412ffe0dac6"
+  }
+]

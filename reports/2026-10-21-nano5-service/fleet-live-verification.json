@@ -1,0 +1,97 @@
+{
+  "/agent/catalog.json": {
+    "status": 200,
+    "contract_status": null
+  },
+  "nano5": {
+    "id": "nano5-minicpm",
+    "name": "nano5 · MiniCPM 文本与单图识别",
+    "entry": "http://nano5-1.taild500c8.ts.net:18347",
+    "scope": "Tailscale + nano5 专用 Bearer Token；与 ComfyUI SDXL 互斥、按任务加载",
+    "observed_at": 1792562525.1936893,
+    "capabilities": [
+      {
+        "capability_id": "text",
+        "alias": "MiniCPM 文本 / HTML / SVG",
+        "description": "Orin Nano 8GB；8K 或64K容量；按需从SSD读取完整专家权重；与ComfyUI SDXL互斥。"
+      },
+      {
+        "capability_id": "vision",
+        "alias": "单张图片理解与文字识别",
+        "description": "原始JPEG/PNG，最多12MiB / 1600万像素；8K专用参数；小字识别准确率需按样本检查。"
+      }
+    ],
+    "contract_observed_at": 1792562525.2332654,
+    "contract_hash": "3f04f6fa6a494aa86d28afc1cf723a56f90bb2df037294ab0002c82e1e2d28a8",
+    "resource_mappings": {
+      "nano5-minicpm": [
+        "nano5-igpu"
+      ]
+    },
+    "guide_markdown": "# nano5 MiniCPM 调用手册\n\n入口：`http://nano5-1.taild500c8.ts.net:18347`，只监听 Tailscale 地址。\n请求使用服务专用 `Authorization: Bearer <NANO5_MINICPM_TOKEN>`。\n凭据由 nano5 管理员从节点本地配置安全提供，不在图谱、提示词或日志中公开。\n\n## 提交与获取结果\n\n1. `GET /healthz` 和 `GET /v1/service-catalog` 查看控制面、资源组和版本；无需凭据。模式就绪不表示权重已加载。\n2. 保存一个唯一 `request_id` 和完整请求，再认证调用 `POST /v1/jobs`。\n3. HTTP 202 返回 `id` 和 `status_url`。轮询原 `status_url`（`GET /v1/jobs/{id}`），不要换 request_id 重投。\n4. `succeeded` 才可取 `result.text`。HTML/SVG 是模型生成的原文，应保存后检查，API 成功不保证视觉正确。\n5. `failed` 是已确认失败；`unknown` 表示需要管理员核对原进程和原租约，禁止自动重新生成。断线、排队或客户端超时也不等于失败。\n\n文字示例：\n\n```json\n{\"request_id\":\"my-text-001\",\"prompt\":\"用中文解释稀疏专家模型\",\"profile\":\"fast-8k\",\"max_tokens\":512}\n```\n\n单图示例：\n\n```json\n{\"request_id\":\"my-ocr-001\",\"prompt\":\"抄录图中能辨认的文字，不要猜测\",\"profile\":\"vision-8k\",\"image_base64\":\"JPEG或PNG的裸base64内容\",\"max_tokens\":1024}\n```\n\n输入不支持远程图片 URL 或多图。单图上限 12 MiB、1600 万像素，总 JSON 请求体上限 17 MiB。\n文本上限30000字符，输出1–6144 token。64K 是上下文容量，尚未验收填满64K的历史。\n本接口是异步单任务 API，不是 OpenAI Chat Completions，不提供 streaming、tools 或多轮会话驻留。\n\n## 内存互斥与按需加载\n\nMiniCPM 与 nano5 既有 ComfyUI SDXL 共用中央资源 `nano5-igpu`、组 `nano5-igpu-group`。\n提交后先预约同一物理资源；只有原模式排空、中央封锁允许切换、目标模式确认就绪且租约 held 后才执行。\n不会为了新请求杀掉正在推理或排队的旧任务。\n\nHTTP 控制面常驻。MiniCPM 每次任务按所选参数加载；完成后退出推理进程并释放内存。\n空闲时可处于 `minicpm` 模式，但 `model_loaded=false`。ComfyUI 切回时启动原服务，图像权重按原 Comfy 工作流加载。\n原服务不是 LTX；现场确认安装的是 SDXL Q8_CR。\n\n显式选择模式也使用同一请求与租约流程：\n\n```json\n{\"request_id\":\"choose-comfy-001\",\"action\":\"select_mode\",\"mode\":\"comfy\"}\n```\n\n`mode` 可为 `comfy`、`minicpm`。不能把客户端自行结束轮询当作取消。\n每次只受理一个 MiniCPM/模式任务，忙时返回409；中央等待其他业务完成时，原任务保持waiting。\n\n完整请求和响应见 `/v1/client-contract`。原 request_id 重发相同请求返回同一任务；不同内容返回409。\n服务重启不会重放未完成推理，原操作保留为unknown，需管理员核对资源后恢复。\n",
+    "release": {
+      "release": "nano5-minicpm-20261021-r1",
+      "commit": "13eaa434d7c03194b8b6ccf36aac25771025b2a0e23d0a4983d5228a3a63d109"
+    },
+    "input": {
+      "max_parallel": 1,
+      "max_output_tokens": 6144,
+      "profiles": [
+        "fast-8k",
+        "long-64k",
+        "vision-8k"
+      ]
+    },
+    "availability_scope": "HTTP服务常驻；MiniCPM每次任务加载并在结束后释放。资源组模式就绪不代表权重已经驻留。",
+    "runtime": {
+      "mode": "comfy",
+      "state": "ready",
+      "active": 0,
+      "model_loaded": false,
+      "observed_at": 1792562523.041954,
+      "coordinator_reachable": true
+    },
+    "status": "available",
+    "version": "nano5-minicpm-20261021-r1",
+    "error": null,
+    "contract_status": "current",
+    "stale": false
+  },
+  "group": [
+    {
+      "group_id": "nano5-igpu-group",
+      "resources": [
+        "nano5-igpu"
+      ],
+      "modes": [
+        "comfy",
+        "off",
+        "minicpm"
+      ],
+      "mode": "comfy",
+      "state": "ready",
+      "active": 0,
+      "observed_at": 1792562523.047241,
+      "transition_pending": false,
+      "target_mode": null,
+      "stale": false,
+      "reason": null
+    }
+  ],
+  "/agent/nano5-minicpm.md": {
+    "status": 200,
+    "contract_status": null
+  },
+  "/agent/nano5-minicpm/openapi.json": {
+    "status": 200,
+    "contract_status": "current"
+  },
+  "contract_info": {
+    "title": "nano5 MiniCPM 按需推理",
+    "version": "13eaa434d7c03194b8b6ccf36aac25771025b2a0e23d0a4983d5228a3a63d109"
+  },
+  "/llms.txt": {
+    "status": 200,
+    "contract_status": null
+  }
+}

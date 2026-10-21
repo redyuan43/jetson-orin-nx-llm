@@ -1,0 +1,85 @@
+{
+  "unauthorized": 401,
+  "idempotent": true,
+  "conflict": 409,
+  "busy_mode_rejected": 409,
+  "qa": {
+    "id": "op_6885d7ad82021a72d635dbb0faaf13bb",
+    "request_id": "api-qa-20261021-01",
+    "status": "succeeded",
+    "mode": "minicpm",
+    "created_at": 1792562000.5198336,
+    "started_at": 1792562003.606534,
+    "result": {
+      "text": "nano5 凭借 8GB 统一内存运行 MiniCPM-V 4.7，核心在于利用 NVMe SSD 存储 12.89GiB 专家文件，内存仅保留每层部分专家的缓存。虽然总参数 35.5B 远超内存容量，但通过稀疏激活（每 token 仅激活 3B）和按需读取机制，实现了模型加载。\n\n付出的代价是：缩小缓存会增加磁盘读取频率，导致推理速度低于 nx5。\n\n缩小缓存不等于删掉专家。所有 256 个路由专家依然保留在 SSD 中并参与路由选择，只是内存中驻留的缓存规模变小了。",
+      "profile": "fast-8k",
+      "inference_wall_s": 58.16078789602034,
+      "min_available_mib": 712.51953125,
+      "metrics": [
+        "0.04.620.713 W llama_context: n_ctx_seq (8192) < n_ctx_train (262144) -- the full capacity of the model will not be utilized",
+        "0.07.698.666 W llama_context: n_ctx_seq (8192) < n_ctx_train (262144) -- the full capacity of the model will not be utilized",
+        "0.08.031.829 I common_speculative_impl_draft_dflash: adding speculative implementation 'draft-dspark'",
+        "0.08.032.173 I srv    load_model: speculative decoding context initialized",
+        "0.56.372.406 I slot print_timing: id  0 | task 0 | prompt eval time =   22869.90 ms /   215 tokens (  106.37 ms per token,     9.40 tokens per second)",
+        "0.56.372.416 I slot print_timing: id  0 | task 0 |        eval time =   25374.69 ms /   145 tokens (  175.00 ms per token,     5.71 tokens per second)",
+        "0.56.372.417 I slot print_timing: id  0 | task 0 |       total time =   48244.59 ms /   360 tokens",
+        "0.56.373.639 I slot print_timing: id  0 | task 0 | draft acceptance = 0.45161 (   84 accepted /   186 generated)",
+        "[moe-ssd] total[final]: miss=23335 bytes=30080.3 MiB pread=132956ms"
+      ]
+    },
+    "finished_at": 1792562062.0569515,
+    "wall_s": 61.534718090028036,
+    "terminal_status": "succeeded"
+  },
+  "image": {
+    "id": "op_540545ed83e77632d217e28221887d70",
+    "request_id": "api-image-20261021-01",
+    "status": "succeeded",
+    "mode": "minicpm",
+    "created_at": 1792562063.6720476,
+    "started_at": 1792562063.7446454,
+    "result": {
+      "text": "机械键盘",
+      "profile": "vision-8k",
+      "inference_wall_s": 98.750895915,
+      "min_available_mib": 921.8125,
+      "metrics": [
+        "0.03.446.150 W llama_context: n_ctx_seq (8192) < n_ctx_train (262144) -- the full capacity of the model will not be utilized",
+        "1.34.359.741 I slot print_timing: id  0 | task 0 | prompt eval time =   85800.11 ms /   681 tokens (  125.99 ms per token,     7.94 tokens per second)",
+        "1.34.359.748 I slot print_timing: id  0 | task 0 |        eval time =     514.83 ms /     3 tokens (  171.61 ms per token,     5.83 tokens per second)",
+        "1.34.359.749 I slot print_timing: id  0 | task 0 |       total time =   86314.93 ms /   684 tokens",
+        "[moe-ssd] total[final]: miss=58217 bytes=75045.4 MiB pread=342610ms"
+      ]
+    },
+    "finished_at": 1792562162.8044102,
+    "wall_s": 99.13044704601634,
+    "terminal_status": "succeeded"
+  },
+  "return_comfy": {
+    "id": "op_02145b66ba0357cf1da98d0967846068",
+    "request_id": "return-comfy-20261021-01",
+    "status": "succeeded",
+    "mode": "comfy",
+    "created_at": 1792562165.7559428,
+    "started_at": 1792562196.0510614,
+    "result": {
+      "mode": "comfy",
+      "model_loaded": false
+    },
+    "finished_at": 1792562196.0529125,
+    "wall_s": 30.292527269979473,
+    "terminal_status": "succeeded"
+  },
+  "health": {
+    "service_id": "nano5-minicpm",
+    "version": "nano5-minicpm-20261021-r1",
+    "commit": "13eaa434d7c03194b8b6ccf36aac25771025b2a0e23d0a4983d5228a3a63d109",
+    "mode": "comfy",
+    "state": "ready",
+    "active": 0,
+    "model_loaded": false,
+    "inference_or_switch_request_active": false,
+    "observed_at": 1792562196.9202378,
+    "coordinator_reachable": true
+  }
+}

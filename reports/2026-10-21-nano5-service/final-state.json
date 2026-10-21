@@ -1,0 +1,27 @@
+{
+  "at": 1792562564.531795,
+  "health": {
+    "service_id": "nano5-minicpm",
+    "version": "nano5-minicpm-20261021-r1",
+    "commit": "13eaa434d7c03194b8b6ccf36aac25771025b2a0e23d0a4983d5228a3a63d109",
+    "mode": "comfy",
+    "state": "ready",
+    "active": 0,
+    "model_loaded": false,
+    "inference_or_switch_request_active": false,
+    "observed_at": 1792562562.592389,
+    "coordinator_reachable": true
+  },
+  "processes": [],
+  "comfy_queue_counts": {
+    "queue_running": 0,
+    "queue_pending": 0
+  },
+  "oom": "oom_kill 0",
+  "meminfo": {
+    "MemTotal": "7727248 kB",
+    "MemAvailable": "5595652 kB",
+    "SwapTotal": "0 kB"
+  },
+  "process_scan_scope": "llama executable names; ComfyUI process state is verified separately by systemd and /queue"
+}

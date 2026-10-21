@@ -1,0 +1,566 @@
+0.00.076.664 I srv    load_model: loading model '/home/nano/minicpm-v47/models/MiniCPM-V-4.7/stripped.gguf'
+[moe-ssd] init pack=on pack_layers=40/40 bank=64 shared=on experts=256 io_threads=8 stride0=1351680 preadv=on park_window=on
+[moe-ssd] lookahead-prefetch: off (LLAMA_MOE_LOOKAHEAD_PREFETCH=unset)
+[moe-ssd] decode-cache: 预读与缓存共用一个 LRU 窗口（窗口 32 slot，K=0）
+[moe-ssd] decode-cache: 按层宽度 off（均匀）（前几层 0:32 1:32 2:32 3:32 4:32 5:32 ）
+[moe-ssd] decode-cache: 窗口覆盖批宽 1..4（投机验证也走窗口）
+[moe-ssd] decode-cache: on cache=32 + prefetch=0 slots/layer × 40 层 = 1280 slots (1650 MiB，与 64-slot 的 prefill 共享 bank 同处一块 base)
+[moe-ssd] decode-cache: 40 层绑定 decode 张量（每层 32 = cache 32 + prefetch 0 slot，pack ok）
+[moe-ssd] prewarm: 表 /home/nano/minicpm-v47/minicpm/prewarm_top128.txt -> 40 层 / 1203 个专家, decode_window=32, enabled=on
+0.03.787.912 W llama_context: n_ctx_seq (8192) < n_ctx_train (262144) -- the full capacity of the model will not be utilized
+0.03.867.762 I common_init_from_params: warming up the model with an empty run - please wait ... (--no-warmup to disable)
+[moe-ssd] prewarm: 表 1203 专家 -> 认领 1191 / 读入 1191 / 发布 1191，1535.3 MiB，wall=1234.3 ms (8 线程，缓存区)
+[moe-ssd] layer l=0 tok=2 used=8 unique=13 miss=4 hit=9 pack=1 nth=4 pread_wall=4.1ms pread_sum=14.4ms pread_max=3.9ms bytes=5.2MiB par=3.51
+[moe-ssd] layer l=1 tok=2 used=8 unique=13 miss=5 hit=8 pack=1 nth=5 pread_wall=3.3ms pread_sum=9.5ms pread_max=2.9ms bytes=6.4MiB par=2.87
+[moe-ssd] layer l=19 tok=2 used=8 unique=14 miss=6 hit=8 pack=1 nth=6 pread_wall=5.8ms pread_sum=29.7ms pread_max=5.2ms bytes=7.7MiB par=5.10
+[moe-ssd] layer l=39 tok=2 used=8 unique=14 miss=1 hit=13 pack=1 nth=1 pread_wall=1.9ms pread_sum=1.9ms pread_max=1.9ms bytes=1.3MiB par=1.00
+[moe-ssd] prefill #1 tok=2 used=8 layers=40 unique/l=13 miss=158 hit=343 pack=40/40 nth=8 pread_wall=183ms pread_sum=765ms bytes=204MiB par=4.17 io=1112MiB/s readall=1739MiB calls=1349 realio=9492MiB/s span=1 pmgmt=1416.5ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=93 pevforced=0 pfcached=0 usedpf=0 runs=158 avg_run=1.0 max_run=1 zerocopy=100%
+0.07.375.723 I srv    load_model: loaded multimodal model, '/home/nano/minicpm-v47/models/MiniCPM-V-4.7/mmproj-model-f16.gguf'
+0.07.375.747 I srv    load_model: initializing slots, n_slots = 1
+[moe-ssd] layer l=0 tok=2 used=8 unique=15 miss=2 hit=13 pack=1 nth=2 pread_wall=2.2ms pread_sum=4.1ms pread_max=2.1ms bytes=2.6MiB par=1.84
+[moe-ssd] layer l=1 tok=2 used=8 unique=16 miss=5 hit=11 pack=1 nth=5 pread_wall=4.6ms pread_sum=20.7ms pread_max=4.3ms bytes=6.4MiB par=4.51
+[moe-ssd] layer l=19 tok=2 used=8 unique=15 miss=4 hit=11 pack=1 nth=4 pread_wall=2.0ms pread_sum=2.8ms pread_max=1.8ms bytes=5.2MiB par=1.46
+[moe-ssd] layer l=39 tok=2 used=8 unique=15 miss=2 hit=13 pack=1 nth=2 pread_wall=2.9ms pread_sum=5.0ms pread_max=2.8ms bytes=2.6MiB par=1.71
+[moe-ssd] prefill #2 tok=2 used=8 layers=40 unique/l=15 miss=81 hit=500 pack=40/40 nth=7 pread_wall=100ms pread_sum=250ms bytes=104MiB par=2.50 io=1042MiB/s readall=104MiB calls=81 realio=1042MiB/s span=1 pmgmt=99.9ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=164 pevforced=0 pfcached=0 usedpf=0 runs=81 avg_run=1.0 max_run=1 zerocopy=100%
+0.07.644.330 W srv    load_model: speculative decoding will use checkpoints
+0.07.644.527 W common_speculative_init: no implementations specified for speculative decoding
+0.07.644.535 I slot   load_model: id  0 | task -1 | new slot, n_ctx = 8192
+0.07.644.708 I srv    load_model: prompt cache is enabled, size limit: 64 MiB
+0.07.644.712 I srv    load_model: use `--cache-ram 0` to disable the prompt cache
+0.07.644.713 I srv    load_model: for more info see https://github.com/ggml-org/llama.cpp/pull/16391
+0.07.644.714 I srv    load_model: context checkpoints enabled, max = 2, min spacing = 256
+0.07.644.760 W srv          init: --cache-idle-slots requires --kv-unified, disabling
+0.07.680.784 I init: chat template, example_format: '<|im_start|>system
+You are a helpful assistant<|im_end|>
+<|im_start|>user
+Hello<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+Hi there<|im_end|>
+<|im_start|>user
+How are you?<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+'
+0.07.706.448 I srv          init: init: chat template, thinking = 0
+0.07.706.932 I srv  update_slots: all slots are idle
+0.08.341.041 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = -1
+0.08.341.051 I srv  get_availabl: updating prompt cache
+0.08.341.062 I srv          load:  - looking for better prompt, base f_keep = -1.000, sim = 0.000
+0.08.341.097 I srv        update:  - cache state: 0 prompts, 0.000 MiB (limits: 64.000 MiB, 8192 tokens, 67108864 est)
+0.08.341.101 I srv  get_availabl: prompt cache update took 0.05 ms
+0.08.341.225 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+[moe-ssd] prefill #3 tok=4 used=8 layers=40 unique/l=22 miss=236 hit=626 pack=40/40 nth=8 pread_wall=266ms pread_sum=1381ms bytes=304MiB par=5.19 io=1144MiB/s readall=304MiB calls=236 realio=1144MiB/s span=1 pmgmt=264.0ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=388 pevforced=0 pfcached=0 usedpf=0 runs=236 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] prefill #4 tok=3 used=8 layers=40 unique/l=16 miss=283 hit=344 pack=40/40 nth=8 pread_wall=293ms pread_sum=1671ms bytes=365MiB par=5.70 io=1244MiB/s readall=365MiB calls=283 realio=1244MiB/s span=1 pmgmt=289.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=669 pevforced=0 pfcached=0 usedpf=0 runs=283 avg_run=1.0 max_run=1 zerocopy=100%
+0.09.276.330 I srv  process_chun: processing image...
+0.09.679.272 W find_slot: non-consecutive token position 7 after 6 for sequence 0 with 4 new tokens
+0.09.679.281 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.282 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.282 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.283 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.284 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.285 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.285 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.286 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.287 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.288 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.288 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.289 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.304 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.306 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.09.679.307 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 3 new tokens
+0.09.679.540 W find_slot: non-consecutive token position 7 after 6 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #5 tok=4 used=8 layers=40 unique/l=21 miss=519 hit=336 pack=40/40 nth=8 pread_wall=533ms pread_sum=3433ms bytes=669MiB par=6.44 io=1254MiB/s readall=669MiB calls=519 realio=1254MiB/s span=1 pmgmt=529.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=1188 pevforced=0 pfcached=0 usedpf=0 runs=517 avg_run=1.0 max_run=2 zerocopy=99%
+0.10.375.384 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #6 tok=4 used=8 layers=40 unique/l=23 miss=445 hit=474 pack=40/40 nth=8 pread_wall=474ms pread_sum=3020ms bytes=574MiB par=6.38 io=1211MiB/s readall=574MiB calls=445 realio=1211MiB/s span=1 pmgmt=478.4ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=1633 pevforced=0 pfcached=0 usedpf=0 runs=440 avg_run=1.0 max_run=2 zerocopy=98%
+0.11.137.708 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #7 tok=4 used=8 layers=40 unique/l=21 miss=413 hit=437 pack=40/40 nth=8 pread_wall=421ms pread_sum=2651ms bytes=532MiB par=6.30 io=1265MiB/s readall=532MiB calls=413 realio=1265MiB/s span=1 pmgmt=421.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=2046 pevforced=0 pfcached=0 usedpf=0 runs=412 avg_run=1.0 max_run=2 zerocopy=100%
+0.11.708.352 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #8 tok=4 used=8 layers=40 unique/l=24 miss=373 hit=599 pack=40/40 nth=8 pread_wall=378ms pread_sum=2323ms bytes=481MiB par=6.15 io=1273MiB/s readall=481MiB calls=373 realio=1273MiB/s span=1 pmgmt=382.4ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=2419 pevforced=0 pfcached=0 usedpf=0 runs=373 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=3699 bytes=4768.2 MiB pread=25202ms
+0.12.236.255 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.12.795.565 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.13.355.234 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.13.869.980 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.14.443.760 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.15.008.574 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.15.480.129 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.16.089.854 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #16 tok=4 used=8 layers=40 unique/l=24 miss=389 hit=565 pack=40/40 nth=8 pread_wall=346ms pread_sum=2044ms bytes=501MiB par=5.90 io=1448MiB/s readall=4077MiB calls=3163 realio=11777MiB/s span=8 pmgmt=3150.9ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=5582 pevforced=0 pfcached=0 usedpf=0 runs=386 avg_run=1.0 max_run=2 zerocopy=98%
+[moe-ssd] total[prefill]: miss=6862 bytes=8845.5 MiB pread=44294ms
+0.16.587.071 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.17.100.110 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.17.615.473 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 4 new tokens
+0.17.996.589 W find_slot: non-consecutive token position 7 after 7 for sequence 0 with 3 new tokens
+0.18.450.771 I srv  process_chun: image processed in 9174 ms
+0.18.946.031 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =     72, progress = 0.09, t =  10.60 s / 6.79 tokens per second
+0.18.946.062 I srv  process_chun: processing image...
+0.19.186.956 W find_slot: non-consecutive token position 10 after 9 for sequence 0 with 4 new tokens
+0.19.186.964 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.965 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.966 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.967 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.967 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.968 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.969 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.971 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.973 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.974 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.975 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.975 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.976 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.977 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.19.186.978 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 3 new tokens
+0.19.187.232 W find_slot: non-consecutive token position 10 after 9 for sequence 0 with 4 new tokens
+0.19.869.695 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.20.533.877 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #24 tok=4 used=8 layers=40 unique/l=24 miss=361 hit=583 pack=40/40 nth=8 pread_wall=355ms pread_sum=2175ms bytes=465MiB par=6.12 io=1309MiB/s readall=4085MiB calls=3169 realio=11491MiB/s span=8 pmgmt=2995.9ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=8751 pevforced=0 pfcached=0 usedpf=0 runs=359 avg_run=1.0 max_run=2 zerocopy=99%
+[moe-ssd] total[prefill]: miss=10031 bytes=12930.6 MiB pread=62569ms
+0.21.037.759 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.21.441.576 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.21.811.793 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.22.136.190 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.22.531.959 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.22.931.604 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.23.350.141 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.23.679.745 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #32 tok=4 used=8 layers=40 unique/l=22 miss=343 hit=536 pack=40/40 nth=8 pread_wall=303ms pread_sum=1793ms bytes=442MiB par=5.92 io=1459MiB/s readall=2743MiB calls=2128 realio=9053MiB/s span=8 pmgmt=1967.8ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=10879 pevforced=0 pfcached=0 usedpf=0 runs=343 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=12159 bytes=15673.7 MiB pread=72870ms
+0.24.113.813 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.24.431.493 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.24.792.056 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.25.167.531 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 4 new tokens
+0.25.494.445 W find_slot: non-consecutive token position 10 after 10 for sequence 0 with 3 new tokens
+0.25.702.002 I srv  process_chun: image processed in 6756 ms
+0.26.224.899 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    137, progress = 0.18, t =  17.88 s / 7.66 tokens per second
+0.26.224.929 I srv  process_chun: processing image...
+0.26.435.423 W find_slot: non-consecutive token position 13 after 12 for sequence 0 with 4 new tokens
+0.26.435.433 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.434 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.435 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.436 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.437 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.438 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.439 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.440 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.443 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.444 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.445 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.445 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.446 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.447 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.26.435.447 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 3 new tokens
+0.26.435.614 W find_slot: non-consecutive token position 13 after 12 for sequence 0 with 4 new tokens
+0.26.995.940 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #40 tok=4 used=8 layers=40 unique/l=26 miss=599 hit=437 pack=40/40 nth=8 pread_wall=557ms pread_sum=3744ms bytes=772MiB par=6.72 io=1386MiB/s readall=3193MiB calls=2477 realio=5732MiB/s span=8 pmgmt=2306.6ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=13356 pevforced=0 pfcached=0 usedpf=0 runs=598 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] total[prefill]: miss=14636 bytes=18866.7 MiB pread=85888ms
+0.27.713.662 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.28.286.738 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.28.705.803 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.29.139.922 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.29.545.457 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.30.031.388 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.30.518.160 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.31.011.402 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #48 tok=4 used=8 layers=40 unique/l=24 miss=449 hit=524 pack=40/40 nth=8 pread_wall=363ms pread_sum=2214ms bytes=579MiB par=6.10 io=1595MiB/s readall=3955MiB calls=3068 realio=10901MiB/s span=8 pmgmt=2635.0ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=16424 pevforced=0 pfcached=0 usedpf=0 runs=446 avg_run=1.0 max_run=2 zerocopy=99%
+[moe-ssd] total[prefill]: miss=17704 bytes=22821.6 MiB pread=101399ms
+0.31.523.298 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.32.037.616 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.32.576.451 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.33.028.634 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.33.526.504 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 4 new tokens
+0.34.039.260 W find_slot: non-consecutive token position 13 after 13 for sequence 0 with 3 new tokens
+0.34.469.656 I srv  process_chun: image processed in 8245 ms
+0.34.955.747 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    202, progress = 0.26, t =  26.61 s / 7.59 tokens per second
+0.34.955.778 I srv  process_chun: processing image...
+0.35.166.229 W find_slot: non-consecutive token position 16 after 15 for sequence 0 with 4 new tokens
+0.35.166.238 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.240 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.240 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.241 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.242 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.243 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.247 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.248 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.249 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.249 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.250 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.251 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.252 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.252 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.35.166.253 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 3 new tokens
+0.35.166.423 W find_slot: non-consecutive token position 16 after 15 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #56 tok=4 used=8 layers=40 unique/l=22 miss=548 hit=331 pack=40/40 nth=8 pread_wall=528ms pread_sum=3432ms bytes=706MiB par=6.50 io=1337MiB/s readall=4275MiB calls=3316 realio=8091MiB/s span=8 pmgmt=2958.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=19740 pevforced=0 pfcached=0 usedpf=0 runs=547 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] total[prefill]: miss=21020 bytes=27096.1 MiB pread=119111ms
+0.35.861.873 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.36.631.479 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.37.205.541 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.37.698.253 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.38.094.329 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.38.550.535 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.38.968.121 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.39.331.019 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #64 tok=4 used=8 layers=40 unique/l=22 miss=373 hit=499 pack=40/40 nth=8 pread_wall=337ms pread_sum=1993ms bytes=481MiB par=5.92 io=1429MiB/s readall=3818MiB calls=2962 realio=11345MiB/s span=8 pmgmt=2734.8ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=22702 pevforced=0 pfcached=0 usedpf=0 runs=373 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=23982 bytes=30914.3 MiB pread=135361ms
+0.39.816.973 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.40.234.302 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.40.696.789 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.41.216.851 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.41.676.367 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.42.203.859 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 4 new tokens
+0.42.599.132 W find_slot: non-consecutive token position 16 after 16 for sequence 0 with 3 new tokens
+0.43.094.317 I srv  process_chun: image processed in 8138 ms
+[moe-ssd] prefill #72 tok=3 used=8 layers=40 unique/l=19 miss=471 hit=276 pack=40/40 nth=8 pread_wall=443ms pread_sum=2804ms bytes=607MiB par=6.33 io=1371MiB/s readall=3790MiB calls=2940 realio=8560MiB/s span=8 pmgmt=2682.4ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=25642 pevforced=0 pfcached=0 usedpf=0 runs=468 avg_run=1.0 max_run=2 zerocopy=99%
+[moe-ssd] total[prefill]: miss=26922 bytes=34704.1 MiB pread=150983ms
+0.43.708.177 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    268, progress = 0.35, t =  35.37 s / 7.58 tokens per second
+0.43.708.207 I srv  process_chun: processing image...
+0.43.917.872 W find_slot: non-consecutive token position 20 after 19 for sequence 0 with 4 new tokens
+0.43.917.882 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.883 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.884 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.885 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.886 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.887 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.890 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.892 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.892 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.893 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.894 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.895 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.895 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.896 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.43.917.897 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 3 new tokens
+0.43.918.060 W find_slot: non-consecutive token position 20 after 19 for sequence 0 with 4 new tokens
+0.44.704.061 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.45.400.869 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.45.932.251 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.46.365.877 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.46.812.778 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.47.196.600 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.47.671.068 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #80 tok=4 used=8 layers=40 unique/l=22 miss=273 hit=594 pack=40/40 nth=8 pread_wall=286ms pread_sum=1575ms bytes=352MiB par=5.50 io=1230MiB/s readall=3639MiB calls=2823 realio=12715MiB/s span=8 pmgmt=2925.6ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=28465 pevforced=0 pfcached=0 usedpf=0 runs=272 avg_run=1.0 max_run=2 zerocopy=99%
+[moe-ssd] total[prefill]: miss=29745 bytes=38343.2 MiB pread=168064ms
+0.48.109.706 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.48.703.905 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.49.058.686 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.49.482.645 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.50.012.574 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.50.504.470 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.50.902.639 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 4 new tokens
+0.51.392.770 W find_slot: non-consecutive token position 20 after 20 for sequence 0 with 3 new tokens
+[moe-ssd] prefill #88 tok=3 used=8 layers=40 unique/l=22 miss=381 hit=508 pack=40/40 nth=8 pread_wall=357ms pread_sum=2133ms bytes=491MiB par=5.98 io=1377MiB/s readall=3502MiB calls=2717 realio=9823MiB/s span=8 pmgmt=2601.4ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=31182 pevforced=0 pfcached=0 usedpf=0 runs=380 avg_run=1.0 max_run=2 zerocopy=99%
+[moe-ssd] total[prefill]: miss=32462 bytes=41845.5 MiB pread=183049ms
+0.51.895.620 I srv  process_chun: image processed in 8187 ms
+0.52.306.704 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    333, progress = 0.43, t =  43.97 s / 7.57 tokens per second
+0.52.306.735 I srv  process_chun: processing image...
+0.52.517.111 W find_slot: non-consecutive token position 23 after 22 for sequence 0 with 4 new tokens
+0.52.517.122 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.123 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.124 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.125 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.126 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.127 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.128 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.131 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.133 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.133 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.134 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.135 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.136 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.136 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.52.517.137 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 3 new tokens
+0.52.517.312 W find_slot: non-consecutive token position 23 after 22 for sequence 0 with 4 new tokens
+0.53.192.547 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.53.866.790 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.54.470.433 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.55.025.248 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.55.575.114 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.56.039.802 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #96 tok=4 used=8 layers=40 unique/l=26 miss=553 hit=480 pack=40/40 nth=8 pread_wall=507ms pread_sum=3337ms bytes=713MiB par=6.58 io=1405MiB/s readall=4736MiB calls=3674 realio=9338MiB/s span=8 pmgmt=3374.0ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=34856 pevforced=0 pfcached=0 usedpf=0 runs=551 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] total[prefill]: miss=36136 bytes=46581.6 MiB pread=204171ms
+0.56.696.477 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.57.269.658 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.57.753.958 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.58.300.284 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.58.918.996 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.59.453.199 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+0.59.842.919 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+1.00.364.515 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #104 tok=4 used=8 layers=40 unique/l=23 miss=378 hit=544 pack=40/40 nth=8 pread_wall=338ms pread_sum=1972ms bytes=487MiB par=5.82 io=1440MiB/s readall=4178MiB calls=3241 realio=12343MiB/s span=8 pmgmt=2974.0ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=38097 pevforced=0 pfcached=0 usedpf=0 runs=375 avg_run=1.0 max_run=2 zerocopy=98%
+[moe-ssd] total[prefill]: miss=39377 bytes=50759.4 MiB pread=222150ms
+1.00.852.747 W find_slot: non-consecutive token position 23 after 23 for sequence 0 with 3 new tokens
+1.01.292.420 I srv  process_chun: image processed in 8986 ms
+1.01.811.876 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    398, progress = 0.52, t =  53.47 s / 7.44 tokens per second
+1.01.811.909 I srv  process_chun: processing image...
+1.02.022.316 W find_slot: non-consecutive token position 26 after 25 for sequence 0 with 4 new tokens
+1.02.022.326 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.327 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.328 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.329 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.329 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.330 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.331 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.332 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.332 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.333 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.337 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.338 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.339 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.339 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.02.022.340 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 3 new tokens
+1.02.022.514 W find_slot: non-consecutive token position 26 after 25 for sequence 0 with 4 new tokens
+1.02.762.614 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.03.538.531 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.03.979.032 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.04.455.595 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.04.964.295 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #112 tok=4 used=8 layers=40 unique/l=22 miss=341 hit=553 pack=40/40 nth=8 pread_wall=298ms pread_sum=1707ms bytes=440MiB par=5.72 io=1473MiB/s readall=4374MiB calls=3393 realio=14661MiB/s span=8 pmgmt=3143.9ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=41490 pevforced=0 pfcached=0 usedpf=0 runs=340 avg_run=1.0 max_run=2 zerocopy=99%
+[moe-ssd] total[prefill]: miss=42770 bytes=55133.2 MiB pread=241609ms
+1.05.411.685 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.05.959.663 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.06.420.606 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.06.926.353 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.07.325.581 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.07.738.496 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.08.181.904 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.08.551.756 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #120 tok=4 used=8 layers=40 unique/l=23 miss=282 hit=634 pack=40/40 nth=8 pread_wall=250ms pread_sum=1255ms bytes=364MiB par=5.01 io=1452MiB/s readall=3355MiB calls=2603 realio=13400MiB/s span=8 pmgmt=2358.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=44093 pevforced=0 pfcached=0 usedpf=0 runs=279 avg_run=1.0 max_run=2 zerocopy=98%
+[moe-ssd] total[prefill]: miss=45373 bytes=58488.6 MiB pread=254837ms
+1.08.951.196 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 4 new tokens
+1.09.399.268 W find_slot: non-consecutive token position 26 after 26 for sequence 0 with 3 new tokens
+1.09.822.634 I srv  process_chun: image processed in 8011 ms
+1.10.523.128 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    464, progress = 0.60, t =  62.18 s / 7.46 tokens per second
+1.10.523.160 I srv  process_chun: processing image...
+1.10.733.501 W find_slot: non-consecutive token position 30 after 29 for sequence 0 with 4 new tokens
+1.10.733.512 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.513 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.514 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.514 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.515 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.516 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.517 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.520 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.522 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.523 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.523 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.524 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.525 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.525 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.10.733.526 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 3 new tokens
+1.10.733.710 W find_slot: non-consecutive token position 30 after 29 for sequence 0 with 4 new tokens
+1.11.521.986 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.12.140.315 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.12.554.497 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.13.102.167 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #128 tok=4 used=8 layers=40 unique/l=20 miss=308 hit=493 pack=40/40 nth=8 pread_wall=284ms pread_sum=1562ms bytes=397MiB par=5.51 io=1400MiB/s readall=4305MiB calls=3340 realio=15185MiB/s span=8 pmgmt=3096.9ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=47433 pevforced=0 pfcached=0 usedpf=0 runs=307 avg_run=1.0 max_run=2 zerocopy=99%
+[moe-ssd] total[prefill]: miss=48713 bytes=62794.1 MiB pread=273816ms
+1.13.533.091 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.13.979.822 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.14.331.129 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.14.931.836 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.15.545.593 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.15.987.384 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.16.501.583 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.17.060.499 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #136 tok=4 used=8 layers=40 unique/l=25 miss=528 hit=467 pack=40/40 nth=8 pread_wall=522ms pread_sum=3333ms bytes=681MiB par=6.39 io=1305MiB/s readall=4220MiB calls=3274 realio=8090MiB/s span=8 pmgmt=3008.9ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=50707 pevforced=0 pfcached=0 usedpf=0 runs=527 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] total[prefill]: miss=51987 bytes=67014.5 MiB pread=292272ms
+1.17.740.698 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.18.476.382 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 4 new tokens
+1.19.103.920 W find_slot: non-consecutive token position 30 after 30 for sequence 0 with 3 new tokens
+1.19.664.445 I srv  process_chun: image processed in 9142 ms
+1.20.128.160 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    529, progress = 0.69, t =  71.79 s / 7.37 tokens per second
+1.20.128.195 I srv  process_chun: processing image...
+1.20.346.261 W find_slot: non-consecutive token position 33 after 32 for sequence 0 with 4 new tokens
+1.20.346.272 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.273 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.273 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.274 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.275 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.276 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.290 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.292 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.293 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.293 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.294 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.295 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.296 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.296 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.20.346.297 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 3 new tokens
+1.20.346.489 W find_slot: non-consecutive token position 33 after 32 for sequence 0 with 4 new tokens
+1.21.080.896 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.21.802.527 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.22.359.042 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #144 tok=4 used=8 layers=40 unique/l=23 miss=486 hit=422 pack=40/40 nth=8 pread_wall=434ms pread_sum=2794ms bytes=626MiB par=6.44 io=1444MiB/s readall=4860MiB calls=3770 realio=11205MiB/s span=8 pmgmt=3765.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=54477 pevforced=0 pfcached=0 usedpf=0 runs=485 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] total[prefill]: miss=55757 bytes=71874.3 MiB pread=315830ms
+1.22.943.786 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.23.526.750 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.24.171.307 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.24.865.414 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.25.428.704 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.26.133.816 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.26.615.636 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.27.092.288 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #152 tok=4 used=8 layers=40 unique/l=19 miss=183 hit=588 pack=40/40 nth=8 pread_wall=183ms pread_sum=820ms bytes=236MiB par=4.49 io=1292MiB/s readall=4487MiB calls=3481 realio=24573MiB/s span=8 pmgmt=3294.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=57958 pevforced=0 pfcached=0 usedpf=0 runs=183 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=59238 bytes=76361.5 MiB pread=336440ms
+1.27.422.698 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.27.757.391 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.28.089.743 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 4 new tokens
+1.28.611.961 W find_slot: non-consecutive token position 33 after 33 for sequence 0 with 3 new tokens
+1.28.970.540 I srv  process_chun: image processed in 8842 ms
+1.29.506.638 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    594, progress = 0.77, t =  81.17 s / 7.32 tokens per second
+1.29.506.672 I srv  process_chun: processing image...
+1.29.717.284 W find_slot: non-consecutive token position 36 after 35 for sequence 0 with 4 new tokens
+1.29.717.294 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.296 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.297 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.298 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.299 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.299 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.303 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.305 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.305 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.306 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.307 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.308 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.309 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.309 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.29.717.310 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 3 new tokens
+1.29.717.516 W find_slot: non-consecutive token position 36 after 35 for sequence 0 with 4 new tokens
+1.30.366.462 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.30.876.081 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #160 tok=4 used=8 layers=40 unique/l=19 miss=254 hit=504 pack=40/40 nth=8 pread_wall=243ms pread_sum=1278ms bytes=327MiB par=5.25 io=1346MiB/s readall=3260MiB calls=2529 realio=13401MiB/s span=8 pmgmt=2436.8ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=60487 pevforced=0 pfcached=0 usedpf=0 runs=253 avg_run=1.0 max_run=2 zerocopy=99%
+[moe-ssd] total[prefill]: miss=61767 bytes=79621.5 MiB pread=350253ms
+1.31.267.973 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.31.680.845 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.32.334.474 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.33.001.011 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.33.510.951 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.34.036.326 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.34.551.922 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.35.190.864 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+[moe-ssd] prefill #168 tok=4 used=8 layers=40 unique/l=22 miss=440 hit=429 pack=40/40 nth=8 pread_wall=417ms pread_sum=2563ms bytes=567MiB par=6.15 io=1360MiB/s readall=4530MiB calls=3514 realio=10860MiB/s span=8 pmgmt=3302.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=64001 pevforced=0 pfcached=0 usedpf=0 runs=439 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] total[prefill]: miss=65281 bytes=84151.3 MiB pread=370859ms
+1.35.757.194 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.36.230.631 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.36.738.206 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.37.113.074 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 4 new tokens
+1.37.633.726 W find_slot: non-consecutive token position 36 after 36 for sequence 0 with 3 new tokens
+1.38.122.622 I srv  process_chun: image processed in 8616 ms
+[moe-ssd] prefill #176 tok=4 used=8 layers=40 unique/l=21 miss=356 hit=470 pack=40/40 nth=8 pread_wall=343ms pread_sum=2086ms bytes=459MiB par=6.08 io=1337MiB/s readall=3982MiB calls=3089 realio=11599MiB/s span=8 pmgmt=2927.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=67090 pevforced=0 pfcached=0 usedpf=0 runs=355 avg_run=1.0 max_run=2 zerocopy=99%
+[moe-ssd] total[prefill]: miss=68370 bytes=88133.2 MiB pread=388723ms
+[moe-ssd] prefill #184 tok=4 used=8 layers=40 unique/l=18 miss=252 hit=486 pack=40/40 nth=8 pread_wall=247ms pread_sum=1250ms bytes=325MiB par=5.07 io=1318MiB/s readall=3627MiB calls=2814 realio=14712MiB/s span=8 pmgmt=2715.5ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=69904 pevforced=0 pfcached=0 usedpf=0 runs=252 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=71184 bytes=91760.6 MiB pread=404600ms
+[moe-ssd] prefill #192 tok=4 used=8 layers=40 unique/l=21 miss=417 hit=406 pack=40/40 nth=8 pread_wall=389ms pread_sum=2390ms bytes=538MiB par=6.15 io=1382MiB/s readall=3143MiB calls=2438 realio=8082MiB/s span=8 pmgmt=2238.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=72342 pevforced=0 pfcached=0 usedpf=0 runs=416 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] total[prefill]: miss=73622 bytes=94903.4 MiB pread=416992ms
+[moe-ssd] layer l=0 tok=1 used=8 unique=8 miss=8 hit=0 pack=1 nth=8 pread_wall=6.7ms pread_sum=45.2ms pread_max=6.0ms bytes=10.3MiB par=6.71
+[moe-ssd] layer l=1 tok=1 used=8 unique=8 miss=5 hit=3 pack=1 nth=5 pread_wall=4.8ms pread_sum=20.9ms pread_max=4.5ms bytes=6.4MiB par=4.33
+[moe-ssd] layer l=19 tok=1 used=8 unique=8 miss=1 hit=7 pack=1 nth=1 pread_wall=1.8ms pread_sum=1.8ms pread_max=1.8ms bytes=1.3MiB par=1.00
+[moe-ssd] layer l=39 tok=1 used=8 unique=8 miss=2 hit=6 pack=1 nth=2 pread_wall=3.0ms pread_sum=5.6ms pread_max=2.9ms bytes=2.6MiB par=1.85
+[moe-ssd] decode #1 tok=1 used=8 layers=40 unique/l=8 miss=118 hit=202 pack=40/40 nth=8 pread_wall=162ms pread_sum=481ms bytes=152MiB par=2.98 io=941MiB/s readall=3198MiB calls=2481 realio=19786MiB/s span=1 pmgmt=2436.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=74823 pevforced=0 pfcached=0 usedpf=0 runs=118 avg_run=1.0 max_run=1 zerocopy=100%
+1.50.711.952 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    762, progress = 0.99, t = 102.37 s / 7.44 tokens per second
+[moe-ssd] prefill #200 tok=4 used=8 layers=40 unique/l=20 miss=504 hit=299 pack=40/40 nth=8 pread_wall=541ms pread_sum=3483ms bytes=650MiB par=6.43 io=1200MiB/s readall=650MiB calls=504 realio=1200MiB/s span=199 pmgmt=539.0ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=75327 pevforced=0 pfcached=0 usedpf=0 runs=502 avg_run=1.0 max_run=2 zerocopy=99%
+[moe-ssd] total[prefill]: miss=76607 bytes=98751.2 MiB pread=434068ms
+1.51.421.364 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    766, progress = 0.99, t = 103.08 s / 7.43 tokens per second
+1.51.465.419 I slot create_check: id  0 | task 0 | created context checkpoint 1 of 2 (pos_min = 145, pos_max = 145, n_tokens = 766, size = 62.813 MiB)
+[moe-ssd] layer l=0 tok=1 used=8 unique=8 miss=5 hit=3 pack=1 nth=5 pread_wall=5.9ms pread_sum=24.9ms pread_max=5.6ms bytes=6.4MiB par=4.21
+[moe-ssd] layer l=1 tok=1 used=8 unique=8 miss=6 hit=2 pack=1 nth=6 pread_wall=6.3ms pread_sum=26.4ms pread_max=5.9ms bytes=7.7MiB par=4.22
+[moe-ssd] layer l=19 tok=1 used=8 unique=8 miss=2 hit=6 pack=1 nth=2 pread_wall=2.8ms pread_sum=5.0ms pread_max=2.6ms bytes=2.6MiB par=1.83
+[moe-ssd] layer l=39 tok=1 used=8 unique=8 miss=3 hit=5 pack=1 nth=3 pread_wall=3.3ms pread_sum=9.2ms pread_max=3.1ms bytes=3.9MiB par=2.78
+[moe-ssd] decode #2 tok=1 used=8 layers=40 unique/l=8 miss=124 hit=196 pack=40/40 nth=7 pread_wall=149ms pread_sum=465ms bytes=160MiB par=3.11 io=1070MiB/s readall=418MiB calls=324 realio=2797MiB/s span=1 pmgmt=377.5ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=75651 pevforced=0 pfcached=0 usedpf=0 runs=124 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] decode #3 tok=1 used=8 layers=40 unique/l=8 miss=154 hit=166 pack=40/40 nth=8 pread_wall=186ms pread_sum=704ms bytes=199MiB par=3.79 io=1069MiB/s readall=199MiB calls=154 realio=1069MiB/s span=1 pmgmt=188.2ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=75805 pevforced=0 pfcached=0 usedpf=0 runs=154 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] decode #4 tok=1 used=8 layers=40 unique/l=8 miss=108 hit=212 pack=40/40 nth=5 pread_wall=135ms pread_sum=348ms bytes=139MiB par=2.59 io=1034MiB/s readall=139MiB calls=108 realio=1034MiB/s span=1 pmgmt=136.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=75913 pevforced=0 pfcached=0 usedpf=0 runs=107 avg_run=1.0 max_run=2 zerocopy=98%
+[moe-ssd] decode #5 tok=1 used=8 layers=40 unique/l=8 miss=116 hit=204 pack=40/40 nth=6 pread_wall=145ms pread_sum=431ms bytes=150MiB par=2.98 io=1034MiB/s readall=150MiB calls=116 realio=1034MiB/s span=1 pmgmt=141.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=76029 pevforced=0 pfcached=0 usedpf=0 runs=116 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] decode #6 tok=1 used=8 layers=40 unique/l=8 miss=77 hit=243 pack=40/40 nth=6 pread_wall=107ms pread_sum=283ms bytes=99MiB par=2.65 io=930MiB/s readall=99MiB calls=77 realio=930MiB/s span=1 pmgmt=109.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=76106 pevforced=0 pfcached=0 usedpf=0 runs=77 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] decode #7 tok=1 used=8 layers=40 unique/l=8 miss=142 hit=178 pack=40/40 nth=7 pread_wall=165ms pread_sum=611ms bytes=183MiB par=3.71 io=1111MiB/s readall=183MiB calls=142 realio=1111MiB/s span=1 pmgmt=164.6ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=76248 pevforced=0 pfcached=0 usedpf=0 runs=142 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] decode #8 tok=1 used=8 layers=40 unique/l=8 miss=94 hit=226 pack=40/40 nth=8 pread_wall=121ms pread_sum=342ms bytes=121MiB par=2.84 io=1005MiB/s readall=121MiB calls=94 realio=1005MiB/s span=1 pmgmt=123.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=76342 pevforced=0 pfcached=0 usedpf=0 runs=94 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[decode]: miss=77622 bytes=100059.6 MiB pread=438296ms
+[moe-ssd] total[decode]: miss=78195 bytes=100798.2 MiB pread=440115ms
+[moe-ssd] total[decode]: miss=78823 bytes=101607.8 MiB pread=442233ms
+[moe-ssd] decode #32 tok=1 used=8 layers=40 unique/l=8 miss=56 hit=264 pack=40/40 nth=5 pread_wall=84ms pread_sum=166ms bytes=72MiB par=1.97 io=854MiB/s readall=2659MiB calls=2063 realio=31475MiB/s span=24 pmgmt=2451.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=78405 pevforced=0 pfcached=0 usedpf=0 runs=56 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[decode]: miss=79685 bytes=102718.9 MiB pread=445092ms
+[moe-ssd] total[decode]: miss=80279 bytes=103484.6 MiB pread=446705ms
+[moe-ssd] total[decode]: miss=80593 bytes=103889.4 MiB pread=447483ms
+[moe-ssd] total[decode]: miss=80812 bytes=104171.7 MiB pread=447956ms
+[moe-ssd] decode #64 tok=1 used=8 layers=40 unique/l=8 miss=25 hit=295 pack=40/40 nth=5 pread_wall=27ms pread_sum=34ms bytes=32MiB par=1.27 io=1201MiB/s readall=1713MiB calls=1329 realio=63841MiB/s span=32 pmgmt=1778.4ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=79734 pevforced=0 pfcached=0 usedpf=0 runs=25 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[decode]: miss=81014 bytes=104432.1 MiB pread=448298ms
+[moe-ssd] total[decode]: miss=81680 bytes=105290.6 MiB pread=450279ms
+[moe-ssd] total[decode]: miss=82541 bytes=106400.5 MiB pread=453092ms
+[moe-ssd] total[decode]: miss=83007 bytes=107001.2 MiB pread=454706ms
+[moe-ssd] decode #96 tok=1 used=8 layers=40 unique/l=8 miss=117 hit=203 pack=40/40 nth=8 pread_wall=120ms pread_sum=392ms bytes=151MiB par=3.27 io=1258MiB/s readall=3211MiB calls=2491 realio=26776MiB/s span=32 pmgmt=3326.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=82225 pevforced=0 pfcached=0 usedpf=0 runs=117 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[decode]: miss=83505 bytes=107643.2 MiB pread=456026ms
+2.07.987.678 I slot print_timing: id  0 | task 0 | n_decoded =    100, tg =   6.21 t/s
+[moe-ssd] total[decode]: miss=83889 bytes=108138.2 MiB pread=456685ms
+[moe-ssd] total[decode]: miss=84235 bytes=108584.2 MiB pread=457132ms
+[moe-ssd] total[decode]: miss=84631 bytes=109094.6 MiB pread=457640ms
+2.10.999.590 I slot print_timing: id  0 | task 0 | n_decoded =    127, tg =   6.64 t/s
+[moe-ssd] decode #128 tok=1 used=8 layers=40 unique/l=8 miss=28 hit=292 pack=40/40 nth=6 pread_wall=15ms pread_sum=21ms bytes=36MiB par=1.36 io=2351MiB/s readall=1909MiB calls=1481 realio=124376MiB/s span=32 pmgmt=1221.2ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=83706 pevforced=0 pfcached=0 usedpf=0 runs=28 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[decode]: miss=84986 bytes=109552.3 MiB pread=458031ms
+[moe-ssd] total[decode]: miss=85308 bytes=109967.3 MiB pread=458406ms
+[moe-ssd] total[decode]: miss=85644 bytes=110400.5 MiB pread=458753ms
+[moe-ssd] total[decode]: miss=86040 bytes=110910.9 MiB pread=459313ms
+2.14.067.421 I slot print_timing: id  0 | task 0 | n_decoded =    156, tg =   7.03 t/s
+[moe-ssd] decode #160 tok=1 used=8 layers=40 unique/l=8 miss=88 hit=232 pack=40/40 nth=7 pread_wall=86ms pread_sum=151ms bytes=113MiB par=1.75 io=1319MiB/s readall=1881MiB calls=1459 realio=21870MiB/s span=32 pmgmt=1101.2ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=85165 pevforced=0 pfcached=0 usedpf=0 runs=88 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[decode]: miss=86445 bytes=111433.0 MiB pread=459862ms
+[moe-ssd] total[decode]: miss=86865 bytes=111974.4 MiB pread=460333ms
+[moe-ssd] total[decode]: miss=87177 bytes=112376.6 MiB pread=460631ms
+[moe-ssd] total[decode]: miss=87542 bytes=112847.1 MiB pread=461033ms
+2.17.123.238 I slot print_timing: id  0 | task 0 | n_decoded =    185, tg =   7.33 t/s
+[moe-ssd] decode #192 tok=1 used=8 layers=40 unique/l=8 miss=72 hit=248 pack=40/40 nth=8 pread_wall=69ms pread_sum=106ms bytes=93MiB par=1.54 io=1349MiB/s readall=1980MiB calls=1536 realio=28776MiB/s span=32 pmgmt=1087.9ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=86701 pevforced=0 pfcached=0 usedpf=0 runs=72 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[decode]: miss=87981 bytes=113413.0 MiB pread=461621ms
+[moe-ssd] total[decode]: miss=88383 bytes=113931.2 MiB pread=462057ms
+[moe-ssd] total[decode]: miss=88727 bytes=114374.6 MiB pread=462367ms
+2.20.168.118 I slot print_timing: id  0 | task 0 | n_decoded =    213, tg =   7.53 t/s
+[moe-ssd] total[decode]: miss=89114 bytes=114873.5 MiB pread=462842ms
+[moe-ssd] decode #224 tok=1 used=8 layers=40 unique/l=8 miss=66 hit=254 pack=40/40 nth=7 pread_wall=42ms pread_sum=69ms bytes=85MiB par=1.64 io=2030MiB/s readall=1974MiB calls=1531 realio=47099MiB/s span=32 pmgmt=1019.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=88232 pevforced=0 pfcached=0 usedpf=0 runs=66 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[decode]: miss=89512 bytes=115386.6 MiB pread=463250ms
+[moe-ssd] total[decode]: miss=89847 bytes=115818.4 MiB pread=463545ms
+[moe-ssd] total[decode]: miss=90178 bytes=116245.1 MiB pread=463872ms
+2.23.201.772 I slot print_timing: id  0 | task 0 | n_decoded =    243, tg =   7.76 t/s
+[moe-ssd] total[decode]: miss=90543 bytes=116715.6 MiB pread=464227ms
+[moe-ssd] decode #256 tok=1 used=8 layers=40 unique/l=8 miss=46 hit=274 pack=40/40 nth=8 pread_wall=33ms pread_sum=51ms bytes=59MiB par=1.52 io=1788MiB/s readall=1819MiB calls=1411 realio=54831MiB/s span=32 pmgmt=943.0ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=89643 pevforced=0 pfcached=0 usedpf=0 runs=46 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[decode]: miss=90923 bytes=117205.4 MiB pread=464773ms
+[moe-ssd] total[decode]: miss=91268 bytes=117650.2 MiB pread=465218ms
+[moe-ssd] total[decode]: miss=91617 bytes=118100.0 MiB pread=465623ms
+2.26.272.928 I slot print_timing: id  0 | task 0 | n_decoded =    272, tg =   7.91 t/s
+[moe-ssd] total[decode]: miss=92076 bytes=118691.7 MiB pread=466404ms
+[moe-ssd] decode #288 tok=1 used=8 layers=40 unique/l=8 miss=121 hit=199 pack=40/40 nth=6 pread_wall=137ms pread_sum=412ms bytes=156MiB par=2.99 io=1135MiB/s readall=2801MiB calls=2173 realio=20381MiB/s span=32 pmgmt=2011.5ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=91816 pevforced=0 pfcached=0 usedpf=0 runs=121 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[decode]: miss=93096 bytes=120006.6 MiB pread=470244ms
+2.29.400.177 I slot print_timing: id  0 | task 0 | n_decoded =    290, tg =   7.73 t/s
+[moe-ssd] total[decode]: miss=93937 bytes=121090.7 MiB pread=473011ms
+[moe-ssd] total[decode]: miss=94264 bytes=121512.2 MiB pread=473728ms
+2.32.445.639 I slot print_timing: id  0 | task 0 | n_decoded =    311, tg =   7.67 t/s
+[moe-ssd] total[decode]: miss=94652 bytes=122012.3 MiB pread=474473ms
+[moe-ssd] decode #320 tok=1 used=8 layers=40 unique/l=8 miss=42 hit=278 pack=40/40 nth=8 pread_wall=47ms pread_sum=65ms bytes=54MiB par=1.38 io=1143MiB/s readall=2547MiB calls=1976 realio=53759MiB/s span=32 pmgmt=2260.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=93792 pevforced=0 pfcached=0 usedpf=0 runs=42 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[decode]: miss=95072 bytes=122553.8 MiB pread=475250ms
+[moe-ssd] total[decode]: miss=95509 bytes=123117.1 MiB pread=475880ms
+2.35.456.058 I slot print_timing: id  0 | task 0 | n_decoded =    335, tg =   7.69 t/s
+[moe-ssd] total[decode]: miss=95973 bytes=123715.2 MiB pread=476534ms
+[moe-ssd] total[decode]: miss=96485 bytes=124375.2 MiB pread=477473ms
+[moe-ssd] decode #352 tok=1 used=8 layers=40 unique/l=8 miss=113 hit=207 pack=40/40 nth=8 pread_wall=101ms pread_sum=219ms bytes=146MiB par=2.16 io=1437MiB/s readall=2648MiB calls=2054 realio=26123MiB/s span=32 pmgmt=1819.5ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=95846 pevforced=0 pfcached=0 usedpf=0 runs=113 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[decode]: miss=97126 bytes=125201.5 MiB pread=478713ms
+2.38.465.500 I slot print_timing: id  0 | task 0 | n_decoded =    357, tg =   7.66 t/s
+[moe-ssd] total[decode]: miss=97688 bytes=125925.9 MiB pread=479575ms
+[moe-ssd] total[decode]: miss=98156 bytes=126529.2 MiB pread=480154ms
+[moe-ssd] total[decode]: miss=98659 bytes=127177.6 MiB pread=480896ms
+2.41.472.415 I slot print_timing: id  0 | task 0 | n_decoded =    381, tg =   7.68 t/s
+[moe-ssd] decode #384 tok=1 used=8 layers=40 unique/l=8 miss=51 hit=269 pack=40/40 nth=4 pread_wall=44ms pread_sum=64ms bytes=66MiB par=1.46 io=1508MiB/s readall=2628MiB calls=2039 realio=60281MiB/s span=32 pmgmt=1719.2ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=97885 pevforced=0 pfcached=0 usedpf=0 runs=51 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[decode]: miss=99165 bytes=127829.9 MiB pread=481557ms
+[moe-ssd] total[decode]: miss=99838 bytes=128697.4 MiB pread=482957ms
+[moe-ssd] total[decode]: miss=100462 bytes=129501.8 MiB pread=484463ms
+2.44.350.339 I slot print_timing: id  0 | task 0 | prompt eval time =  103545.16 ms /   770 tokens (  134.47 ms per token,     7.44 tokens per second)
+2.44.350.348 I slot print_timing: id  0 | task 0 |        eval time =   52462.63 ms /   400 tokens (  131.16 ms per token,     7.62 tokens per second)
+2.44.350.350 I slot print_timing: id  0 | task 0 |       total time =  156007.79 ms /  1170 tokens
+2.44.352.005 I slot print_timing: id  0 | task 0 |    graphs reused =        561
+2.44.353.380 I slot      release: id  0 | task 0 | stop processing: n_tokens = 1169, truncated = 0
+2.44.353.531 I srv  update_slots: all slots are idle
+[moe-ssd] park expert memory: 0 metal buffer(s)
+[moe-ssd] miss position (score order, avg over 16000 steps): 0:0.11 1:0.13 2:0.15 3:0.16 4:0.18 5:0.21 6:0.25 7:0.29 
+[moe-ssd] miss/layer (avg over 400 steps): 0:5.62 1:3.88 2:3.94 3:4.86 4:4.55 5:2.62 6:2.37 7:1.86 8:1.15 9:1.26 10:2.15 11:2.00 12:0.90 13:1.29 14:0.81 15:0.86 16:0.84 17:0.83 18:0.78 19:0.65 20:0.89 21:0.78 22:1.10 23:1.09 24:0.82 25:0.87 26:0.54 27:0.70 28:0.56 29:0.72 30:0.71 31:0.61 32:0.82 33:0.80 34:0.91 35:0.69 36:0.71 37:1.07 38:0.87 39:0.97 
+[moe-ssd] total[final]: miss=100462 bytes=129501.8 MiB pread=484463ms
+[moe-ssd] merge-scan: experts=99271 runs=98964 avg_run=1.00 max_run=3 zerocopy=99.4% scatter_experts=591 syscalls=99.7% of current (avg read = 1.00 experts)

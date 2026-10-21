@@ -1,0 +1,9 @@
+{
+  "mode": "O_DIRECT read-only",
+  "threads": 8,
+  "requests": 256,
+  "request_bytes": 1351680,
+  "total_bytes": 346030080,
+  "elapsed_seconds": 0.2877674869960174,
+  "MiB_per_second": 1146.759154221502
+}

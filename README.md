@@ -2,7 +2,17 @@
 
 在 **Jetson Orin NX 16GB Super** 上用 llama.cpp 跑两个模型的完整过程：**坑、实测数据、以及为什么某些"优化"是负收益**。
 
-**当前固定配置为 64K：** window176 / bank64 / DSpark draft7 / GPU 映射专家缓存。
+**nano5（Orin Nano 8GB）也已跑通同一份 MiniCPM 权重：** 专家缓冲缩小到约 2.50–2.90 GiB，
+完整 12.89 GiB 专家文件仍在 SSD，全部专家均可参与路由。512-token 短测中，
+8K / window56 / draft3 达到 **6.69 token/s**；64K / window48 / 关闭 DSpark 达到 **5.63 token/s**。
+64K 仅验证容量与短输入，尚未验证实际长历史。运行入口为
+[run-nano5.py](scripts/minicpm/run-nano5.py)，部署路径、互斥服务与完整数据见
+[nano5 部署验证](docs/09-nano5-deployment-20261021.md)。
+HTTP异步服务已上线，与原ComfyUI **SDXL**互斥；任务完成后释放MiniCPM内存，已切回原业务。
+[舰队调用手册](http://nx6.taild500c8.ts.net:8300/agent/nano5-minicpm.md) · [本地API说明](docs/nano5-service/API.md)。
+完整鹈鹕生成6分30秒，但画面错位；原图OCR157秒，密集小字有识别错误，不能只按调用成功判断质量。
+
+**nx5 当前固定配置为 64K：** window176 / bank64 / DSpark draft7 / GPU 映射专家缓存。
 容量短测 **17.16 token/s**；实际输入 **8218 token** 的检索测试六项全对，回答 **14.22 token/s**，
 最低可用内存约 1.10 GiB。固定入口的中文原题完整生成 **15.54 token/s、2 分 41 秒**，
 HTML 与前轮 8K/GPU/draft7 逐字节一致。已验证 64K 容量与约 8K 实际输入，尚未测满 64K。

@@ -1,0 +1,8 @@
+{
+  "live": true,
+  "mobile_width": 390,
+  "no_horizontal_overflow": true,
+  "stale_mode_hidden": true,
+  "page_errors": [],
+  "card_text": "nano5 · MiniCPM 文本与单图识别\n网关可达\n\nhttp://nano5-1.taild500c8.ts.net:18347\n\nTailscale + nano5 专用 Bearer Token；与 ComfyUI SDXL 互斥、按任务加载\n\n采集：2026/10/21 14:02:26 · 契约：current\n\nHTTP服务常驻；MiniCPM每次任务加载并在结束后释放。资源组模式就绪不代表权重已经驻留。\n\n模式：comfy · 状态：ready · 模型驻留：未驻留（按需加载）\n\n查看 MiniCPM API 契约 →\nMiniCPM 文本 / HTML / SVG\n\nOrin Nano 8GB；8K 或64K容量；按需从SSD读取完整专家权重；与ComfyUI SDXL互斥。\n\n单张图片理解与文字识别\n\n原始JPEG/PNG，最多12MiB / 1600万像素；8K专用参数；小字识别准确率需按样本检查。\n\n查看调用手册 →"
+}

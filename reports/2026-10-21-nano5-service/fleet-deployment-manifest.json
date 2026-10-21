@@ -1,0 +1,38 @@
+{
+  "release": "nano5-fleet-20261021-r1",
+  "units": [
+    "nx-fleet-graph.service"
+  ],
+  "files": [
+    {
+      "source": "runtime-candidate/nano5/candidate/inventory.yaml",
+      "target": "/home/nx/fleet-resource-graph/inventory.yaml",
+      "expected_before": "ea7c2fe49403170bd23beb386b1e7c1a32d9774cbfc45292f1c3dedaa6b50e0e",
+      "sha256": "0eb8e86902cf8fa50fa5b328f9f83432745e6160e43337121700c2515cc29703"
+    },
+    {
+      "source": "runtime-candidate/nano5/candidate/config/capability_contracts.yaml",
+      "target": "/home/nx/fleet-resource-graph/config/capability_contracts.yaml",
+      "expected_before": "2ddd63e05aa71c64c80184bea9aaee28bc80022e07b6b4900030f05b9a3871ba",
+      "sha256": "0b0453e399a0a796aa34fee4b745ed2490fc3a963c88c8925e2e076b716a4088"
+    },
+    {
+      "source": "runtime-candidate/nano5/candidate/server/fleet_graph/portal.py",
+      "target": "/home/nx/fleet-resource-graph/server/fleet_graph/portal.py",
+      "expected_before": "73f567a1afa34bc116a355429b66a4f5c0a84faec9550c0f63546f5296f64d6f",
+      "sha256": "1fa87a26157dc16b8622698b0846a4fd240f6c00e7c48facc5d1762a50bca57e"
+    },
+    {
+      "source": "runtime-candidate/nano5/candidate/server/fleet_graph/portal_catalog.py",
+      "target": "/home/nx/fleet-resource-graph/server/fleet_graph/portal_catalog.py",
+      "expected_before": "1a0dcd8b6ee76f0ab0bc3f4c67d6284454cda0fd914f7c4017aa323e2e818362",
+      "sha256": "e7ee2a6fd3e90cc4ac53fe619bd499bc7a5c5ec1915ef786250a11233ab611fd"
+    },
+    {
+      "source": "runtime-candidate/nano5/candidate/server/fleet_graph/portal_assets/app.js",
+      "target": "/home/nx/fleet-resource-graph/server/fleet_graph/portal_assets/app.js",
+      "expected_before": "d8a4b9bb19b87707fcd8a042060911518fb00e97c3e71ec9a92c854cd92f0df2",
+      "sha256": "498c9d569634c53b1e3b2529d0460b640c66876147923851b4f8bf3c041d28b7"
+    }
+  ]
+}
