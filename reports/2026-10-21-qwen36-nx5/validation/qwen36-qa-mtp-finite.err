@@ -1,0 +1,722 @@
+0.00.066.367 W Setting 'enable_thinking' via --chat-template-kwargs is deprecated. Use --reasoning on / --reasoning off instead.
+0.00.099.140 I srv    load_model: loading model '/home/nx/github/qwen38-kvmem/models/Qwen3.6-35B-A3B-MTP-UD-IQ4_XS/stripped.gguf'
+[moe-ssd] init pack=on pack_layers=41/41 bank=64 shared=on experts=256 io_threads=8 stride0=1458176 preadv=on park_window=on
+[moe-ssd] lookahead-prefetch: off (LLAMA_MOE_LOOKAHEAD_PREFETCH=unset)
+[moe-ssd] decode-cache: 预读与缓存共用一个 LRU 窗口（窗口 128 slot，K=0）
+[moe-ssd] decode-cache: 按层宽度 off（均匀）（前几层 0:128 1:128 2:128 3:128 4:128 5:128 ）
+[moe-ssd] decode-cache: 窗口覆盖批宽 1..8（投机验证也走窗口）
+[moe-ssd] decode-cache: on cache=128 + prefetch=0 slots/layer × 41 层 = 5248 slots (7298 MiB，与 64-slot 的 prefill 共享 bank 同处一块 base)
+[moe-ssd] decode-cache: 41 层绑定 decode 张量（每层 128 = cache 128 + prefetch 0 slot，pack ok）
+0.04.220.265 W llama_context: n_ctx_seq (8192) < n_ctx_train (262144) -- the full capacity of the model will not be utilized
+0.04.347.628 I common_init_from_params: warming up the model with an empty run - please wait ... (--no-warmup to disable)
+[moe-ssd] layer l=0 tok=2 used=8 unique=15 miss=15 hit=0 pack=1 nth=8 pread_wall=6.3ms pread_sum=36.8ms pread_max=3.2ms bytes=20.9MiB par=5.88
+[moe-ssd] layer l=1 tok=2 used=8 unique=16 miss=16 hit=0 pack=1 nth=8 pread_wall=5.9ms pread_sum=36.9ms pread_max=3.9ms bytes=22.2MiB par=6.29
+[moe-ssd] layer l=20 tok=2 used=8 unique=15 miss=15 hit=0 pack=1 nth=8 pread_wall=6.3ms pread_sum=39.3ms pread_max=3.8ms bytes=20.9MiB par=6.24
+0.04.848.239 I srv    load_model: creating MTP draft context against the target model '/home/nx/github/qwen38-kvmem/models/Qwen3.6-35B-A3B-MTP-UD-IQ4_XS/stripped.gguf'
+[moe-ssd] init pack=on pack_layers=41/41 bank=64 shared=on experts=256 io_threads=8 stride0=1458176 preadv=on park_window=on
+[moe-ssd] lookahead-prefetch: off (LLAMA_MOE_LOOKAHEAD_PREFETCH=unset)
+[moe-ssd] decode-cache: 预读与缓存共用一个 LRU 窗口（窗口 128 slot，K=0）
+[moe-ssd] decode-cache: 按层宽度 off（均匀）（前几层 0:128 1:128 2:128 3:128 4:128 5:128 ）
+[moe-ssd] decode-cache: 窗口覆盖批宽 1..8（投机验证也走窗口）
+[moe-ssd] decode-cache: on cache=128 + prefetch=0 slots/layer × 41 层 = 5248 slots (7298 MiB，与 64-slot 的 prefill 共享 bank 同处一块 base)
+[moe-ssd] decode-cache: 41 层绑定 decode 张量（每层 128 = cache 128 + prefetch 0 slot，pack ok）
+0.04.848.642 W llama_context: n_ctx_seq (8192) < n_ctx_train (262144) -- the full capacity of the model will not be utilized
+MTP_FINITE mtp_tok_embd-40 bad=0/4096 max=0.128868
+MTP_FINITE norm-40 bad=0/4096 max=14.1094
+MTP_FINITE mtp_enorm-40 bad=0/4096 max=8.10191
+MTP_FINITE norm-40 bad=0/4096 max=0
+MTP_FINITE mtp_hnorm-40 bad=0/4096 max=0
+MTP_FINITE mtp_concat-40 bad=0/8192 max=8.10191
+MTP_FINITE mtp_eh_proj-40 bad=0/4096 max=2.87464
+MTP_FINITE norm-40 bad=0/4096 max=21.8169
+MTP_FINITE mtp_attn_norm-40 bad=0/4096 max=22.0672
+MTP_FINITE mtp_Qcur_full-40 bad=0/16384 max=23.9304
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/8192 max=23.9304
+MTP_FINITE norm-40 bad=0/8192 max=9.62599
+MTP_FINITE mtp_Qcur_normed-40 bad=0/8192 max=12.3655
+MTP_FINITE node_13 bad=0/8192 max=12.3655
+MTP_FINITE node_14 bad=0/1024 max=9.09279
+MTP_FINITE mtp_Vcur-40 bad=0/1024 max=9.09279
+MTP_FINITE node_16 bad=0/1024 max=2.80064
+MTP_FINITE  (reshaped) bad=0/1024 max=2.80064
+MTP_FINITE norm-40 bad=0/1024 max=5.41617
+MTP_FINITE mtp_Kcur_normed-40 bad=0/1024 max=12.4826
+MTP_FINITE node_20 bad=0/1024 max=12.4826
+MTP_FINITE node_20 (view) bad=0/1024 max=12.4826
+MTP_FINITE mtp_Vcur-40 (view) bad=0/1024 max=9.09279
+MTP_FINITE node_13 (view) bad=0/8192 max=12.3655
+MTP_FINITE node_13 (view) (permuted) bad=0/8192 max=12.3655
+MTP_FINITE __fattn__-40 bad=0/8192 max=9.09458
+MTP_FINITE mtp_attn_pregate-40 bad=0/8192 max=9.09458
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/8192 max=23.9304
+MTP_FINITE mtp_gate-40 bad=0/8192 max=23.9304
+MTP_FINITE node_35 bad=0/8192 max=0.888372
+MTP_FINITE node_36 bad=0/8192 max=4.54353
+MTP_FINITE mtp_attn_out-40 bad=0/4096 max=2.0739
+MTP_FINITE mtp_attn_residual-40 bad=0/4096 max=4.94854
+MTP_FINITE norm-40 bad=0/4096 max=28.1215
+MTP_FINITE mtp_attn_post_norm-40 bad=0/4096 max=24.1669
+MTP_FINITE ffn_moe_logits-40 bad=0/512 max=8.14195
+MTP_FINITE ffn_moe_probs-40 bad=0/512 max=0.0539072
+MTP_FINITE ffn_moe_probs-40 (reshaped) bad=0/512 max=0.0539072
+MTP_FINITE ffn_moe_weights-40 bad=0/16 max=0.0539072
+MTP_FINITE ffn_moe_weights-40 (reshaped) bad=0/16 max=0.0539072
+MTP_FINITE ffn_moe_weights_sum-40 bad=0/2 max=0.208307
+MTP_FINITE ffn_moe_weights_sum_clamped-40 bad=0/2 max=0.208307
+MTP_FINITE ffn_moe_weights_norm-40 bad=0/16 max=0.258787
+MTP_FINITE ffn_moe_weights_norm-40 (reshaped) bad=0/16 max=0.258787
+MTP_FINITE mtp_attn_post_norm-40 (reshaped) bad=0/4096 max=24.1669
+[moe-ssd] layer l=40 tok=2 used=8 unique=8 miss=8 hit=0 pack=1 nth=8 pread_wall=4.6ms pread_sum=26.9ms pread_max=4.0ms bytes=11.4MiB par=5.82
+[moe-ssd] prefill #0 tok=0 used=0 layers=1 unique/l=8 miss=8 hit=0 pack=1/1 nth=8 pread_wall=5ms pread_sum=27ms bytes=11MiB par=5.82 io=2462MiB/s readall=11MiB calls=8 realio=2462MiB/s span=1 pmgmt=0.0ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=8 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE ffn_moe_gate-40 bad=3258/8192 max=1.0264e+09
+0.04.885.093 I srv    load_model: initializing slots, n_slots = 1
+[moe-ssd] prefill #1 tok=2 used=8 layers=40 unique/l=16 miss=623 hit=0 pack=40/40 nth=8 pread_wall=298ms pread_sum=1725ms bytes=883MiB par=5.79 io=2967MiB/s readall=896MiB calls=632 realio=3009MiB/s span=1 pmgmt=298.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=625 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] layer l=0 tok=2 used=8 unique=14 miss=9 hit=5 pack=1 nth=8 pread_wall=3.9ms pread_sum=22.0ms pread_max=2.9ms bytes=12.5MiB par=5.64
+[moe-ssd] layer l=1 tok=2 used=8 unique=15 miss=14 hit=1 pack=1 nth=8 pread_wall=4.9ms pread_sum=30.6ms pread_max=3.7ms bytes=19.5MiB par=6.27
+[moe-ssd] layer l=20 tok=2 used=8 unique=11 miss=10 hit=1 pack=1 nth=8 pread_wall=5.3ms pread_sum=29.4ms pread_max=3.6ms bytes=13.9MiB par=5.56
+0.05.238.411 I common_context_can_seq_rm: the context supports bounded partial sequence removal
+0.05.250.149 I common_speculative_impl_draft_mtp: adding speculative implementation 'draft-mtp'
+0.05.250.160 I common_speculative_impl_draft_mtp: - n_max=2, n_min=0, p_min=0.00, n_embd=2048, backend_sampling=1
+0.05.250.165 I common_speculative_impl_draft_mtp: - gpu_layers=-1, cache_k=f16, cache_v=f16, ctx_tgt=yes, ctx_dft=yes, devices=[default]
+0.05.250.421 I srv    load_model: speculative decoding context initialized
+0.05.250.425 I slot   load_model: id  0 | task -1 | new slot, n_ctx = 8192
+0.05.250.549 I srv    load_model: prompt cache is enabled, size limit: 64 MiB
+0.05.250.552 I srv    load_model: use `--cache-ram 0` to disable the prompt cache
+0.05.250.553 I srv    load_model: for more info see https://github.com/ggml-org/llama.cpp/pull/16391
+0.05.250.553 I srv    load_model: context checkpoints enabled, max = 2, min spacing = 256
+0.05.250.597 W srv          init: --cache-idle-slots requires --kv-unified, disabling
+0.05.283.227 I init: chat template, example_format: '<|im_start|>system
+You are a helpful assistant<|im_end|>
+<|im_start|>user
+Hello<|im_end|>
+<|im_start|>assistant
+Hi there<|im_end|>
+<|im_start|>user
+How are you?<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+'
+0.05.308.360 I srv          init: init: chat template, thinking = 0
+0.05.308.899 I srv  update_slots: all slots are idle
+0.05.335.566 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = -1
+0.05.335.571 I srv  get_availabl: updating prompt cache
+0.05.335.578 I srv          load:  - looking for better prompt, base f_keep = -1.000, sim = 0.000
+0.05.335.589 I srv        update:  - cache state: 0 prompts, 0.000 MiB (limits: 64.000 MiB, 8192 tokens, 67108864 est)
+0.05.335.592 I srv  get_availabl: prompt cache update took 0.02 ms
+0.05.335.788 I reasoning-budget: activated, budget=0 tokens
+0.05.335.792 I reasoning-budget: budget=0, forcing immediately
+0.05.335.792 I reasoning-budget: forced sequence complete, done
+0.05.335.811 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+[moe-ssd] prefill #2 tok=2 used=8 layers=40 unique/l=14 miss=465 hit=97 pack=40/40 nth=8 pread_wall=221ms pread_sum=1284ms bytes=657MiB par=5.82 io=2978MiB/s readall=711MiB calls=504 realio=3224MiB/s span=1 pmgmt=221.4ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=503 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] prefill #3 tok=8 used=8 layers=40 unique/l=35 miss=979 hit=423 pack=40/40 nth=8 pread_wall=472ms pread_sum=3227ms bytes=1386MiB par=6.83 io=2936MiB/s readall=1350MiB calls=953 realio=2859MiB/s span=1 pmgmt=473.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=947 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] prefill #4 tok=8 used=8 layers=40 unique/l=29 miss=528 hit=622 pack=40/40 nth=8 pread_wall=265ms pread_sum=1637ms bytes=752MiB par=6.17 io=2837MiB/s readall=760MiB calls=534 realio=2868MiB/s span=1 pmgmt=265.9ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=534 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] prefill #5 tok=8 used=8 layers=40 unique/l=35 miss=710 hit=695 pack=40/40 nth=8 pread_wall=343ms pread_sum=2258ms bytes=1005MiB par=6.58 io=2927MiB/s readall=993MiB calls=701 realio=2891MiB/s span=1 pmgmt=344.2ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=13 pevforced=0 pfcached=0 usedpf=0 runs=698 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] prefill #6 tok=8 used=8 layers=40 unique/l=41 miss=718 hit=912 pack=40/40 nth=8 pread_wall=341ms pread_sum=2258ms bytes=1019MiB par=6.62 io=2987MiB/s readall=1023MiB calls=721 realio=2999MiB/s span=1 pmgmt=341.9ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=35 pevforced=0 pfcached=0 usedpf=0 runs=719 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] prefill #7 tok=8 used=8 layers=40 unique/l=31 miss=480 hit=774 pack=40/40 nth=8 pread_wall=225ms pread_sum=1360ms bytes=678MiB par=6.06 io=3020MiB/s readall=667MiB calls=472 realio=2970MiB/s span=1 pmgmt=225.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=111 pevforced=0 pfcached=0 usedpf=0 runs=468 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] prefill #8 tok=8 used=8 layers=40 unique/l=31 miss=306 hit=934 pack=40/40 nth=8 pread_wall=152ms pread_sum=822ms bytes=429MiB par=5.39 io=2815MiB/s readall=426MiB calls=304 realio=2797MiB/s span=1 pmgmt=153.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=191 pevforced=0 pfcached=0 usedpf=0 runs=302 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] prefill #9 tok=8 used=8 layers=40 unique/l=34 miss=244 hit=1130 pack=40/40 nth=8 pread_wall=125ms pread_sum=585ms bytes=341MiB par=4.69 io=2730MiB/s readall=337MiB calls=241 realio=2697MiB/s span=1 pmgmt=125.5ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=276 pevforced=0 pfcached=0 usedpf=0 runs=239 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] prefill #10 tok=8 used=8 layers=40 unique/l=30 miss=179 hit=1003 pack=40/40 nth=8 pread_wall=103ms pread_sum=438ms bytes=252MiB par=4.26 io=2448MiB/s readall=257MiB calls=183 realio=2502MiB/s span=1 pmgmt=103.4ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=365 pevforced=0 pfcached=0 usedpf=0 runs=183 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE mtp_tok_embd-40 bad=0/16384 max=0.227578
+MTP_FINITE norm-40 bad=0/16384 max=31.4842
+MTP_FINITE mtp_enorm-40 bad=0/16384 max=15.1272
+MTP_FINITE norm-40 bad=0/16384 max=22.5949
+MTP_FINITE mtp_hnorm-40 bad=0/16384 max=11.6482
+MTP_FINITE mtp_concat-40 bad=0/32768 max=15.1272
+MTP_FINITE mtp_eh_proj-40 bad=0/16384 max=15.3365
+MTP_FINITE norm-40 bad=0/16384 max=36.1759
+MTP_FINITE mtp_attn_norm-40 bad=0/16384 max=36.591
+MTP_FINITE mtp_Qcur_full-40 bad=0/65536 max=24.0321
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=24.0321
+MTP_FINITE norm-40 bad=0/32768 max=11.0856
+MTP_FINITE mtp_Qcur_normed-40 bad=0/32768 max=14.5798
+MTP_FINITE node_13 bad=0/32768 max=14.5798
+MTP_FINITE node_14 bad=0/4096 max=18.0761
+MTP_FINITE mtp_Vcur-40 bad=0/4096 max=18.0761
+MTP_FINITE node_16 bad=0/4096 max=37.4548
+MTP_FINITE  (reshaped) bad=0/4096 max=37.4548
+MTP_FINITE norm-40 bad=0/4096 max=6.11514
+MTP_FINITE mtp_Kcur_normed-40 bad=0/4096 max=14.082
+MTP_FINITE node_20 bad=0/4096 max=14.082
+MTP_FINITE node_20 (view) bad=0/4096 max=14.082
+MTP_FINITE mtp_Vcur-40 (view) bad=0/4096 max=18.0761
+MTP_FINITE node_13 (view) bad=0/32768 max=14.5798
+MTP_FINITE node_13 (view) (permuted) bad=0/32768 max=14.5798
+MTP_FINITE __fattn__-40 bad=0/32768 max=18.0756
+MTP_FINITE mtp_attn_pregate-40 bad=0/32768 max=18.0756
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=24.0321
+MTP_FINITE mtp_gate-40 bad=0/32768 max=24.0321
+MTP_FINITE node_35 bad=0/32768 max=0.999985
+MTP_FINITE node_36 bad=0/32768 max=11.9824
+MTP_FINITE mtp_attn_out-40 bad=0/16384 max=9.89545
+MTP_FINITE mtp_attn_residual-40 bad=0/16384 max=6.32014
+MTP_FINITE norm-40 bad=0/16384 max=35.8308
+MTP_FINITE mtp_attn_post_norm-40 bad=0/16384 max=30.7921
+MTP_FINITE ffn_moe_logits-40 bad=0/2048 max=12.2657
+MTP_FINITE ffn_moe_probs-40 bad=0/2048 max=0.0829976
+MTP_FINITE ffn_moe_probs-40 (reshaped) bad=0/2048 max=0.0829976
+MTP_FINITE ffn_moe_weights-40 bad=0/64 max=0.0829976
+MTP_FINITE ffn_moe_weights-40 (reshaped) bad=0/64 max=0.0829976
+MTP_FINITE ffn_moe_weights_sum-40 bad=0/8 max=0.233418
+MTP_FINITE ffn_moe_weights_sum_clamped-40 bad=0/8 max=0.233418
+MTP_FINITE ffn_moe_weights_norm-40 bad=0/64 max=0.386431
+MTP_FINITE ffn_moe_weights_norm-40 (reshaped) bad=0/64 max=0.386431
+MTP_FINITE mtp_attn_post_norm-40 (reshaped) bad=0/16384 max=30.7921
+[moe-ssd] layer l=40 tok=8 used=8 unique=50 miss=48 hit=2 pack=1 nth=8 pread_wall=20.0ms pread_sum=146.8ms pread_max=4.1ms bytes=68.2MiB par=7.35
+[moe-ssd] prefill #0 tok=0 used=0 layers=1 unique/l=50 miss=48 hit=2 pack=1/1 nth=8 pread_wall=20ms pread_sum=147ms bytes=68MiB par=7.35 io=3416MiB/s readall=68MiB calls=48 realio=3416MiB/s span=1 pmgmt=4.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=48 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE ffn_moe_gate-40 bad=13161/32768 max=1.19533e+09
+MTP_FINITE mtp_tok_embd-40 bad=0/16384 max=0.255798
+MTP_FINITE norm-40 bad=0/16384 max=33.1585
+MTP_FINITE mtp_enorm-40 bad=0/16384 max=19.0402
+MTP_FINITE norm-40 bad=0/16384 max=24.7181
+MTP_FINITE mtp_hnorm-40 bad=0/16384 max=17.656
+MTP_FINITE mtp_concat-40 bad=0/32768 max=19.0402
+MTP_FINITE mtp_eh_proj-40 bad=0/16384 max=4.77047
+MTP_FINITE norm-40 bad=0/16384 max=25.8863
+MTP_FINITE mtp_attn_norm-40 bad=0/16384 max=26.1833
+MTP_FINITE mtp_Qcur_full-40 bad=0/65536 max=28.5432
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=25.0914
+MTP_FINITE norm-40 bad=0/32768 max=11.3709
+MTP_FINITE mtp_Qcur_normed-40 bad=0/32768 max=12.7343
+MTP_FINITE node_13 bad=0/32768 max=12.7339
+MTP_FINITE node_14 bad=0/4096 max=9.38392
+MTP_FINITE mtp_Vcur-40 bad=0/4096 max=9.38392
+MTP_FINITE node_16 bad=0/4096 max=7.58946
+MTP_FINITE  (reshaped) bad=0/4096 max=7.58946
+MTP_FINITE norm-40 bad=0/4096 max=6.4865
+MTP_FINITE mtp_Kcur_normed-40 bad=0/4096 max=15.1723
+MTP_FINITE node_20 bad=0/4096 max=15.1723
+MTP_FINITE node_20 (view) bad=0/4096 max=15.1723
+MTP_FINITE mtp_Vcur-40 (view) bad=0/4096 max=9.38392
+MTP_FINITE node_13 (view) bad=0/32768 max=12.7339
+MTP_FINITE node_13 (view) (permuted) bad=0/32768 max=12.7339
+MTP_FINITE __fattn__-40 bad=0/32768 max=10.765
+MTP_FINITE mtp_attn_pregate-40 bad=0/32768 max=10.765
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=25.0914
+MTP_FINITE mtp_gate-40 bad=0/32768 max=23.9125
+MTP_FINITE node_35 bad=0/32768 max=0.985235
+MTP_FINITE node_36 bad=0/32768 max=4.57583
+MTP_FINITE mtp_attn_out-40 bad=0/16384 max=3.80388
+MTP_FINITE mtp_attn_residual-40 bad=0/16384 max=7.47969
+MTP_FINITE norm-40 bad=0/16384 max=34.5743
+MTP_FINITE mtp_attn_post_norm-40 bad=0/16384 max=29.7123
+MTP_FINITE ffn_moe_logits-40 bad=0/2048 max=8.89275
+MTP_FINITE ffn_moe_probs-40 bad=0/2048 max=0.0697293
+MTP_FINITE ffn_moe_probs-40 (reshaped) bad=0/2048 max=0.0697293
+MTP_FINITE ffn_moe_weights-40 bad=0/64 max=0.0697293
+MTP_FINITE ffn_moe_weights-40 (reshaped) bad=0/64 max=0.0697293
+MTP_FINITE ffn_moe_weights_sum-40 bad=0/8 max=0.228391
+MTP_FINITE ffn_moe_weights_sum_clamped-40 bad=0/8 max=0.228391
+MTP_FINITE ffn_moe_weights_norm-40 bad=0/64 max=0.384902
+MTP_FINITE ffn_moe_weights_norm-40 (reshaped) bad=0/64 max=0.384902
+MTP_FINITE mtp_attn_post_norm-40 (reshaped) bad=0/16384 max=29.7123
+[moe-ssd] layer l=40 tok=8 used=8 unique=38 miss=23 hit=15 pack=1 nth=8 pread_wall=9.6ms pread_sum=67.0ms pread_max=3.9ms bytes=32.7MiB par=7.00
+[moe-ssd] prefill #0 tok=0 used=0 layers=1 unique/l=38 miss=23 hit=15 pack=1/1 nth=8 pread_wall=10ms pread_sum=67ms bytes=33MiB par=7.00 io=3417MiB/s readall=33MiB calls=23 realio=3417MiB/s span=1 pmgmt=20.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=23 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE ffn_moe_gate-40 bad=13196/32768 max=1.01314e+09
+MTP_FINITE mtp_tok_embd-40 bad=0/16384 max=0.231454
+MTP_FINITE norm-40 bad=0/16384 max=31.4842
+MTP_FINITE mtp_enorm-40 bad=0/16384 max=15.3794
+MTP_FINITE norm-40 bad=0/16384 max=26.8904
+MTP_FINITE mtp_hnorm-40 bad=0/16384 max=21.7959
+MTP_FINITE mtp_concat-40 bad=0/32768 max=21.7959
+MTP_FINITE mtp_eh_proj-40 bad=0/16384 max=5.23085
+MTP_FINITE norm-40 bad=0/16384 max=27.0703
+MTP_FINITE mtp_attn_norm-40 bad=0/16384 max=27.3809
+MTP_FINITE mtp_Qcur_full-40 bad=0/65536 max=24.6022
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=24.6022
+MTP_FINITE norm-40 bad=0/32768 max=10.3587
+MTP_FINITE mtp_Qcur_normed-40 bad=0/32768 max=13.7779
+MTP_FINITE node_13 bad=0/32768 max=13.7769
+MTP_FINITE node_14 bad=0/4096 max=9.69793
+MTP_FINITE mtp_Vcur-40 bad=0/4096 max=9.69793
+MTP_FINITE node_16 bad=0/4096 max=7.84765
+MTP_FINITE  (reshaped) bad=0/4096 max=7.84765
+MTP_FINITE norm-40 bad=0/4096 max=6.21494
+MTP_FINITE mtp_Kcur_normed-40 bad=0/4096 max=15.5725
+MTP_FINITE node_20 bad=0/4096 max=15.5724
+MTP_FINITE node_20 (view) bad=0/4096 max=15.5724
+MTP_FINITE mtp_Vcur-40 (view) bad=0/4096 max=9.69793
+MTP_FINITE node_13 (view) bad=0/32768 max=13.7769
+MTP_FINITE node_13 (view) (permuted) bad=0/32768 max=13.7769
+MTP_FINITE __fattn__-40 bad=0/32768 max=14.0317
+MTP_FINITE mtp_attn_pregate-40 bad=0/32768 max=14.0317
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=24.6022
+MTP_FINITE mtp_gate-40 bad=0/32768 max=21.8618
+MTP_FINITE node_35 bad=0/32768 max=0.973816
+MTP_FINITE node_36 bad=0/32768 max=4.39135
+MTP_FINITE mtp_attn_out-40 bad=0/16384 max=3.38161
+MTP_FINITE mtp_attn_residual-40 bad=0/16384 max=7.15086
+MTP_FINITE norm-40 bad=0/16384 max=32.754
+MTP_FINITE mtp_attn_post_norm-40 bad=0/16384 max=28.148
+MTP_FINITE ffn_moe_logits-40 bad=0/2048 max=8.84772
+MTP_FINITE ffn_moe_probs-40 bad=0/2048 max=0.0585775
+MTP_FINITE ffn_moe_probs-40 (reshaped) bad=0/2048 max=0.0585775
+MTP_FINITE ffn_moe_weights-40 bad=0/64 max=0.0585775
+MTP_FINITE ffn_moe_weights-40 (reshaped) bad=0/64 max=0.0585775
+MTP_FINITE ffn_moe_weights_sum-40 bad=0/8 max=0.191011
+MTP_FINITE ffn_moe_weights_sum_clamped-40 bad=0/8 max=0.191011
+MTP_FINITE ffn_moe_weights_norm-40 bad=0/64 max=0.30667
+MTP_FINITE ffn_moe_weights_norm-40 (reshaped) bad=0/64 max=0.30667
+MTP_FINITE mtp_attn_post_norm-40 (reshaped) bad=0/16384 max=28.148
+[moe-ssd] layer l=40 tok=8 used=8 unique=35 miss=8 hit=27 pack=1 nth=8 pread_wall=3.4ms pread_sum=20.9ms pread_max=3.0ms bytes=11.4MiB par=6.10
+[moe-ssd] prefill #0 tok=0 used=0 layers=1 unique/l=35 miss=8 hit=27 pack=1/1 nth=8 pread_wall=3ms pread_sum=21ms bytes=11MiB par=6.10 io=3317MiB/s readall=11MiB calls=8 realio=3317MiB/s span=1 pmgmt=9.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=8 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE ffn_moe_gate-40 bad=13278/32768 max=1.16655e+09
+MTP_FINITE mtp_tok_embd-40 bad=0/16384 max=0.255798
+MTP_FINITE norm-40 bad=0/16384 max=33.1585
+MTP_FINITE mtp_enorm-40 bad=0/16384 max=19.0402
+MTP_FINITE norm-40 bad=0/16384 max=29.6333
+MTP_FINITE mtp_hnorm-40 bad=0/16384 max=24.0192
+MTP_FINITE mtp_concat-40 bad=0/32768 max=24.0192
+MTP_FINITE mtp_eh_proj-40 bad=0/16384 max=5.27859
+MTP_FINITE norm-40 bad=0/16384 max=23.4229
+MTP_FINITE mtp_attn_norm-40 bad=0/16384 max=23.6917
+MTP_FINITE mtp_Qcur_full-40 bad=0/65536 max=25.9017
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=25.9017
+MTP_FINITE norm-40 bad=0/32768 max=10.4538
+MTP_FINITE mtp_Qcur_normed-40 bad=0/32768 max=12.8337
+MTP_FINITE node_13 bad=0/32768 max=12.8332
+MTP_FINITE node_14 bad=0/4096 max=10.1288
+MTP_FINITE mtp_Vcur-40 bad=0/4096 max=10.1288
+MTP_FINITE node_16 bad=0/4096 max=8.35928
+MTP_FINITE  (reshaped) bad=0/4096 max=8.35928
+MTP_FINITE norm-40 bad=0/4096 max=6.30317
+MTP_FINITE mtp_Kcur_normed-40 bad=0/4096 max=14.8222
+MTP_FINITE node_20 bad=0/4096 max=14.8222
+MTP_FINITE node_20 (view) bad=0/4096 max=14.8222
+MTP_FINITE mtp_Vcur-40 (view) bad=0/4096 max=10.1288
+MTP_FINITE node_13 (view) bad=0/32768 max=12.8332
+MTP_FINITE node_13 (view) (permuted) bad=0/32768 max=12.8332
+MTP_FINITE __fattn__-40 bad=0/32768 max=14.2766
+MTP_FINITE mtp_attn_pregate-40 bad=0/32768 max=14.2766
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=25.9017
+MTP_FINITE mtp_gate-40 bad=0/32768 max=25.9017
+MTP_FINITE node_35 bad=0/32768 max=0.971117
+MTP_FINITE node_36 bad=0/32768 max=4.70786
+MTP_FINITE mtp_attn_out-40 bad=0/16384 max=4.4155
+MTP_FINITE mtp_attn_residual-40 bad=0/16384 max=7.30462
+MTP_FINITE norm-40 bad=0/16384 max=31.5967
+MTP_FINITE mtp_attn_post_norm-40 bad=0/16384 max=27.1534
+MTP_FINITE ffn_moe_logits-40 bad=0/2048 max=8.91832
+MTP_FINITE ffn_moe_probs-40 bad=0/2048 max=0.0598592
+MTP_FINITE ffn_moe_probs-40 (reshaped) bad=0/2048 max=0.0598592
+MTP_FINITE ffn_moe_weights-40 bad=0/64 max=0.0598592
+MTP_FINITE ffn_moe_weights-40 (reshaped) bad=0/64 max=0.0598592
+MTP_FINITE ffn_moe_weights_sum-40 bad=0/8 max=0.206565
+MTP_FINITE ffn_moe_weights_sum_clamped-40 bad=0/8 max=0.206565
+MTP_FINITE ffn_moe_weights_norm-40 bad=0/64 max=0.395348
+MTP_FINITE ffn_moe_weights_norm-40 (reshaped) bad=0/64 max=0.395348
+MTP_FINITE mtp_attn_post_norm-40 (reshaped) bad=0/16384 max=27.1534
+[moe-ssd] layer l=40 tok=8 used=8 unique=45 miss=13 hit=32 pack=1 nth=8 pread_wall=5.7ms pread_sum=35.8ms pread_max=3.7ms bytes=18.5MiB par=6.25
+[moe-ssd] prefill #0 tok=0 used=0 layers=1 unique/l=45 miss=13 hit=32 pack=1/1 nth=8 pread_wall=6ms pread_sum=36ms bytes=18MiB par=6.25 io=3222MiB/s readall=18MiB calls=13 realio=3222MiB/s span=1 pmgmt=3.5ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=13 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE ffn_moe_gate-40 bad=13159/32768 max=1.02564e+09
+MTP_FINITE mtp_tok_embd-40 bad=0/16384 max=0.248047
+MTP_FINITE norm-40 bad=0/16384 max=30.7073
+MTP_FINITE mtp_enorm-40 bad=0/16384 max=17.6327
+MTP_FINITE norm-40 bad=0/16384 max=23.0142
+MTP_FINITE mtp_hnorm-40 bad=0/16384 max=18.6541
+MTP_FINITE mtp_concat-40 bad=0/32768 max=18.6541
+MTP_FINITE mtp_eh_proj-40 bad=0/16384 max=4.71159
+MTP_FINITE norm-40 bad=0/16384 max=21.0583
+MTP_FINITE mtp_attn_norm-40 bad=0/16384 max=21.3
+MTP_FINITE mtp_Qcur_full-40 bad=0/65536 max=21.7604
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=20.3896
+MTP_FINITE norm-40 bad=0/32768 max=10.7954
+MTP_FINITE mtp_Qcur_normed-40 bad=0/32768 max=13.4294
+MTP_FINITE node_13 bad=0/32768 max=13.4281
+MTP_FINITE node_14 bad=0/4096 max=9.46911
+MTP_FINITE mtp_Vcur-40 bad=0/4096 max=9.46911
+MTP_FINITE node_16 bad=0/4096 max=7.71679
+MTP_FINITE  (reshaped) bad=0/4096 max=7.71679
+MTP_FINITE norm-40 bad=0/4096 max=5.42218
+MTP_FINITE mtp_Kcur_normed-40 bad=0/4096 max=15.2922
+MTP_FINITE node_20 bad=0/4096 max=15.2921
+MTP_FINITE node_20 (view) bad=0/4096 max=15.2921
+MTP_FINITE mtp_Vcur-40 (view) bad=0/4096 max=9.46911
+MTP_FINITE node_13 (view) bad=0/32768 max=13.4281
+MTP_FINITE node_13 (view) (permuted) bad=0/32768 max=13.4281
+MTP_FINITE __fattn__-40 bad=0/32768 max=10.273
+MTP_FINITE mtp_attn_pregate-40 bad=0/32768 max=10.273
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=20.3896
+MTP_FINITE mtp_gate-40 bad=0/32768 max=21.5662
+MTP_FINITE node_35 bad=0/32768 max=0.990702
+MTP_FINITE node_36 bad=0/32768 max=4.73115
+MTP_FINITE mtp_attn_out-40 bad=0/16384 max=5.40492
+MTP_FINITE mtp_attn_residual-40 bad=0/16384 max=8.27903
+MTP_FINITE norm-40 bad=0/16384 max=32.1237
+MTP_FINITE mtp_attn_post_norm-40 bad=0/16384 max=27.6063
+MTP_FINITE ffn_moe_logits-40 bad=0/2048 max=8.57834
+MTP_FINITE ffn_moe_probs-40 bad=0/2048 max=0.0741256
+MTP_FINITE ffn_moe_probs-40 (reshaped) bad=0/2048 max=0.0741256
+MTP_FINITE ffn_moe_weights-40 bad=0/64 max=0.0741256
+MTP_FINITE ffn_moe_weights-40 (reshaped) bad=0/64 max=0.0741256
+MTP_FINITE ffn_moe_weights_sum-40 bad=0/8 max=0.221485
+MTP_FINITE ffn_moe_weights_sum_clamped-40 bad=0/8 max=0.221485
+MTP_FINITE ffn_moe_weights_norm-40 bad=0/64 max=0.362656
+MTP_FINITE ffn_moe_weights_norm-40 (reshaped) bad=0/64 max=0.362656
+MTP_FINITE mtp_attn_post_norm-40 (reshaped) bad=0/16384 max=27.6063
+[moe-ssd] layer l=40 tok=8 used=8 unique=39 miss=10 hit=29 pack=1 nth=8 pread_wall=4.6ms pread_sum=24.8ms pread_max=3.1ms bytes=14.2MiB par=5.39
+[moe-ssd] prefill #0 tok=0 used=0 layers=1 unique/l=39 miss=10 hit=29 pack=1/1 nth=8 pread_wall=5ms pread_sum=25ms bytes=14MiB par=5.39 io=3086MiB/s readall=14MiB calls=10 realio=3086MiB/s span=1 pmgmt=5.8ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=10 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE ffn_moe_gate-40 bad=13296/32768 max=1.01153e+09
+MTP_FINITE mtp_tok_embd-40 bad=0/16384 max=0.248047
+MTP_FINITE norm-40 bad=0/16384 max=30.7073
+MTP_FINITE mtp_enorm-40 bad=0/16384 max=17.6327
+MTP_FINITE norm-40 bad=0/16384 max=23.8761
+MTP_FINITE mtp_hnorm-40 bad=0/16384 max=19.3527
+MTP_FINITE mtp_concat-40 bad=0/32768 max=19.3527
+MTP_FINITE mtp_eh_proj-40 bad=0/16384 max=4.55118
+MTP_FINITE norm-40 bad=0/16384 max=21.8803
+MTP_FINITE mtp_attn_norm-40 bad=0/16384 max=22.1314
+MTP_FINITE mtp_Qcur_full-40 bad=0/65536 max=23.3911
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=23.3911
+MTP_FINITE norm-40 bad=0/32768 max=10.3586
+MTP_FINITE mtp_Qcur_normed-40 bad=0/32768 max=13.7777
+MTP_FINITE node_13 bad=0/32768 max=13.7759
+MTP_FINITE node_14 bad=0/4096 max=9.5244
+MTP_FINITE mtp_Vcur-40 bad=0/4096 max=9.5244
+MTP_FINITE node_16 bad=0/4096 max=8.12602
+MTP_FINITE  (reshaped) bad=0/4096 max=8.12602
+MTP_FINITE norm-40 bad=0/4096 max=5.87298
+MTP_FINITE mtp_Kcur_normed-40 bad=0/4096 max=15.1665
+MTP_FINITE node_20 bad=0/4096 max=15.1663
+MTP_FINITE node_20 (view) bad=0/4096 max=15.1663
+MTP_FINITE mtp_Vcur-40 (view) bad=0/4096 max=9.5244
+MTP_FINITE node_13 (view) bad=0/32768 max=13.7759
+MTP_FINITE node_13 (view) (permuted) bad=0/32768 max=13.7759
+MTP_FINITE __fattn__-40 bad=0/32768 max=11.6122
+MTP_FINITE mtp_attn_pregate-40 bad=0/32768 max=11.6122
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=23.3911
+MTP_FINITE mtp_gate-40 bad=0/32768 max=21.7126
+MTP_FINITE node_35 bad=0/32768 max=0.970835
+MTP_FINITE node_36 bad=0/32768 max=5.06135
+MTP_FINITE mtp_attn_out-40 bad=0/16384 max=4.15231
+MTP_FINITE mtp_attn_residual-40 bad=0/16384 max=7.22332
+MTP_FINITE norm-40 bad=0/16384 max=29.5982
+MTP_FINITE mtp_attn_post_norm-40 bad=0/16384 max=25.4359
+MTP_FINITE ffn_moe_logits-40 bad=0/2048 max=9.1298
+MTP_FINITE ffn_moe_probs-40 bad=0/2048 max=0.0373837
+MTP_FINITE ffn_moe_probs-40 (reshaped) bad=0/2048 max=0.0373837
+MTP_FINITE ffn_moe_weights-40 bad=0/64 max=0.0373837
+MTP_FINITE ffn_moe_weights-40 (reshaped) bad=0/64 max=0.0373837
+MTP_FINITE ffn_moe_weights_sum-40 bad=0/8 max=0.220151
+MTP_FINITE ffn_moe_weights_sum_clamped-40 bad=0/8 max=0.220151
+MTP_FINITE ffn_moe_weights_norm-40 bad=0/64 max=0.197418
+MTP_FINITE ffn_moe_weights_norm-40 (reshaped) bad=0/64 max=0.197418
+MTP_FINITE mtp_attn_post_norm-40 (reshaped) bad=0/16384 max=25.4359
+[moe-ssd] layer l=40 tok=8 used=8 unique=41 miss=4 hit=37 pack=1 nth=4 pread_wall=2.0ms pread_sum=7.0ms pread_max=1.9ms bytes=5.7MiB par=3.53
+[moe-ssd] prefill #0 tok=0 used=0 layers=1 unique/l=41 miss=4 hit=37 pack=1/1 nth=4 pread_wall=2ms pread_sum=7ms bytes=6MiB par=3.53 io=2860MiB/s readall=6MiB calls=4 realio=2860MiB/s span=1 pmgmt=4.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=4 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE ffn_moe_gate-40 bad=13173/32768 max=1.15792e+09
+MTP_FINITE mtp_tok_embd-40 bad=0/16384 max=0.19633
+MTP_FINITE norm-40 bad=0/16384 max=27.3758
+MTP_FINITE mtp_enorm-40 bad=0/16384 max=15.7197
+MTP_FINITE norm-40 bad=0/16384 max=20.8959
+MTP_FINITE mtp_hnorm-40 bad=0/16384 max=16.9371
+MTP_FINITE mtp_concat-40 bad=0/32768 max=16.9371
+MTP_FINITE mtp_eh_proj-40 bad=0/16384 max=4.2077
+MTP_FINITE norm-40 bad=0/16384 max=19.0962
+MTP_FINITE mtp_attn_norm-40 bad=0/16384 max=19.3153
+MTP_FINITE mtp_Qcur_full-40 bad=0/65536 max=22.3979
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=22.3979
+MTP_FINITE norm-40 bad=0/32768 max=10.7591
+MTP_FINITE mtp_Qcur_normed-40 bad=0/32768 max=14.3104
+MTP_FINITE node_13 bad=0/32768 max=14.3095
+MTP_FINITE node_14 bad=0/4096 max=9.02712
+MTP_FINITE mtp_Vcur-40 bad=0/4096 max=9.02712
+MTP_FINITE node_16 bad=0/4096 max=9.32523
+MTP_FINITE  (reshaped) bad=0/4096 max=9.32523
+MTP_FINITE norm-40 bad=0/4096 max=5.99296
+MTP_FINITE mtp_Kcur_normed-40 bad=0/4096 max=13.8383
+MTP_FINITE node_20 bad=0/4096 max=13.8381
+MTP_FINITE node_20 (view) bad=0/4096 max=13.8381
+MTP_FINITE mtp_Vcur-40 (view) bad=0/4096 max=9.02712
+MTP_FINITE node_13 (view) bad=0/32768 max=14.3095
+MTP_FINITE node_13 (view) (permuted) bad=0/32768 max=14.3095
+MTP_FINITE __fattn__-40 bad=0/32768 max=10.8039
+MTP_FINITE mtp_attn_pregate-40 bad=0/32768 max=10.8039
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=22.3979
+MTP_FINITE mtp_gate-40 bad=0/32768 max=22.2808
+MTP_FINITE node_35 bad=0/32768 max=0.990646
+MTP_FINITE node_36 bad=0/32768 max=5.40192
+MTP_FINITE mtp_attn_out-40 bad=0/16384 max=4.29507
+MTP_FINITE mtp_attn_residual-40 bad=0/16384 max=7.20464
+MTP_FINITE norm-40 bad=0/16384 max=28.8376
+MTP_FINITE mtp_attn_post_norm-40 bad=0/16384 max=24.7823
+MTP_FINITE ffn_moe_logits-40 bad=0/2048 max=8.51034
+MTP_FINITE ffn_moe_probs-40 bad=0/2048 max=0.0483803
+MTP_FINITE ffn_moe_probs-40 (reshaped) bad=0/2048 max=0.0483803
+MTP_FINITE ffn_moe_weights-40 bad=0/64 max=0.0483803
+MTP_FINITE ffn_moe_weights-40 (reshaped) bad=0/64 max=0.0483803
+MTP_FINITE ffn_moe_weights_sum-40 bad=0/8 max=0.257831
+MTP_FINITE ffn_moe_weights_sum_clamped-40 bad=0/8 max=0.257831
+MTP_FINITE ffn_moe_weights_norm-40 bad=0/64 max=0.226884
+MTP_FINITE ffn_moe_weights_norm-40 (reshaped) bad=0/64 max=0.226884
+MTP_FINITE mtp_attn_post_norm-40 (reshaped) bad=0/16384 max=24.7823
+[moe-ssd] layer l=40 tok=8 used=8 unique=37 miss=3 hit=34 pack=1 nth=3 pread_wall=2.1ms pread_sum=5.0ms pread_max=1.9ms bytes=4.3MiB par=2.44
+[moe-ssd] prefill #0 tok=0 used=0 layers=1 unique/l=37 miss=3 hit=34 pack=1/1 nth=3 pread_wall=2ms pread_sum=5ms bytes=4MiB par=2.44 io=2068MiB/s readall=4MiB calls=3 realio=2068MiB/s span=1 pmgmt=2.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=3 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE ffn_moe_gate-40 bad=13174/32768 max=1.02329e+09
+MTP_FINITE mtp_tok_embd-40 bad=0/16384 max=0.227578
+MTP_FINITE norm-40 bad=0/16384 max=27.1338
+MTP_FINITE mtp_enorm-40 bad=0/16384 max=15.5807
+MTP_FINITE norm-40 bad=0/16384 max=20.4925
+MTP_FINITE mtp_hnorm-40 bad=0/16384 max=16.6101
+MTP_FINITE mtp_concat-40 bad=0/32768 max=16.6101
+MTP_FINITE mtp_eh_proj-40 bad=0/16384 max=5.03211
+MTP_FINITE norm-40 bad=0/16384 max=22.5527
+MTP_FINITE mtp_attn_norm-40 bad=0/16384 max=22.8115
+MTP_FINITE mtp_Qcur_full-40 bad=0/65536 max=23.0258
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=23.0258
+MTP_FINITE norm-40 bad=0/32768 max=10.7411
+MTP_FINITE mtp_Qcur_normed-40 bad=0/32768 max=14.2865
+MTP_FINITE node_13 bad=0/32768 max=14.2861
+MTP_FINITE node_14 bad=0/4096 max=8.85331
+MTP_FINITE mtp_Vcur-40 bad=0/4096 max=8.85331
+MTP_FINITE node_16 bad=0/4096 max=8.07893
+MTP_FINITE  (reshaped) bad=0/4096 max=8.07893
+MTP_FINITE norm-40 bad=0/4096 max=5.34236
+MTP_FINITE mtp_Kcur_normed-40 bad=0/4096 max=15.0671
+MTP_FINITE node_20 bad=0/4096 max=15.0669
+MTP_FINITE node_20 (view) bad=0/4096 max=15.0669
+MTP_FINITE mtp_Vcur-40 (view) bad=0/4096 max=8.85331
+MTP_FINITE node_13 (view) bad=0/32768 max=14.2861
+MTP_FINITE node_13 (view) (permuted) bad=0/32768 max=14.2861
+MTP_FINITE __fattn__-40 bad=0/32768 max=12.53
+MTP_FINITE mtp_attn_pregate-40 bad=0/32768 max=12.53
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=23.0258
+MTP_FINITE mtp_gate-40 bad=0/32768 max=22.7911
+MTP_FINITE node_35 bad=0/32768 max=0.994016
+MTP_FINITE node_36 bad=0/32768 max=4.73235
+MTP_FINITE mtp_attn_out-40 bad=0/16384 max=4.19416
+MTP_FINITE mtp_attn_residual-40 bad=0/16384 max=8.38944
+MTP_FINITE norm-40 bad=0/16384 max=32.4379
+MTP_FINITE mtp_attn_post_norm-40 bad=0/16384 max=27.8763
+MTP_FINITE ffn_moe_logits-40 bad=0/2048 max=8.67648
+MTP_FINITE ffn_moe_probs-40 bad=0/2048 max=0.0568441
+MTP_FINITE ffn_moe_probs-40 (reshaped) bad=0/2048 max=0.0568441
+MTP_FINITE ffn_moe_weights-40 bad=0/64 max=0.0568441
+MTP_FINITE ffn_moe_weights-40 (reshaped) bad=0/64 max=0.0568441
+MTP_FINITE ffn_moe_weights_sum-40 bad=0/8 max=0.2465
+MTP_FINITE ffn_moe_weights_sum_clamped-40 bad=0/8 max=0.2465
+MTP_FINITE ffn_moe_weights_norm-40 bad=0/64 max=0.242358
+MTP_FINITE ffn_moe_weights_norm-40 (reshaped) bad=0/64 max=0.242358
+MTP_FINITE mtp_attn_post_norm-40 (reshaped) bad=0/16384 max=27.8763
+[moe-ssd] layer l=40 tok=8 used=8 unique=35 miss=6 hit=29 pack=1 nth=6 pread_wall=2.6ms pread_sum=12.9ms pread_max=2.3ms bytes=8.5MiB par=4.93
+[moe-ssd] prefill #0 tok=0 used=0 layers=1 unique/l=35 miss=6 hit=29 pack=1/1 nth=6 pread_wall=3ms pread_sum=13ms bytes=9MiB par=4.93 io=3251MiB/s readall=9MiB calls=6 realio=3251MiB/s span=1 pmgmt=2.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=6 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE ffn_moe_gate-40 bad=13061/32768 max=9.85188e+08
+MTP_FINITE mtp_tok_embd-40 bad=0/16384 max=0.227578
+MTP_FINITE norm-40 bad=0/16384 max=31.4842
+MTP_FINITE mtp_enorm-40 bad=0/16384 max=15.1272
+MTP_FINITE norm-40 bad=0/16384 max=21.9681
+MTP_FINITE mtp_hnorm-40 bad=0/16384 max=17.8062
+MTP_FINITE mtp_concat-40 bad=0/32768 max=17.8062
+MTP_FINITE mtp_eh_proj-40 bad=0/16384 max=4.28403
+MTP_FINITE norm-40 bad=0/16384 max=18.8429
+MTP_FINITE mtp_attn_norm-40 bad=0/16384 max=19.0591
+MTP_FINITE mtp_Qcur_full-40 bad=0/65536 max=21.2058
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=21.2058
+MTP_FINITE norm-40 bad=0/32768 max=10.2309
+MTP_FINITE mtp_Qcur_normed-40 bad=0/32768 max=13.1269
+MTP_FINITE node_13 bad=0/32768 max=13.1268
+MTP_FINITE node_14 bad=0/4096 max=9.30327
+MTP_FINITE mtp_Vcur-40 bad=0/4096 max=9.30327
+MTP_FINITE node_16 bad=0/4096 max=8.81149
+MTP_FINITE  (reshaped) bad=0/4096 max=8.81149
+MTP_FINITE norm-40 bad=0/4096 max=5.89937
+MTP_FINITE mtp_Kcur_normed-40 bad=0/4096 max=13.8788
+MTP_FINITE node_20 bad=0/4096 max=13.8785
+MTP_FINITE node_20 (view) bad=0/4096 max=13.8785
+MTP_FINITE mtp_Vcur-40 (view) bad=0/4096 max=9.30327
+MTP_FINITE node_13 (view) bad=0/32768 max=13.1268
+MTP_FINITE node_13 (view) (permuted) bad=0/32768 max=13.1268
+MTP_FINITE __fattn__-40 bad=0/32768 max=12.2363
+MTP_FINITE mtp_attn_pregate-40 bad=0/32768 max=12.2363
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=21.2058
+MTP_FINITE mtp_gate-40 bad=0/32768 max=20.8689
+MTP_FINITE node_35 bad=0/32768 max=0.994988
+MTP_FINITE node_36 bad=0/32768 max=5.1447
+MTP_FINITE mtp_attn_out-40 bad=0/16384 max=5.02577
+MTP_FINITE mtp_attn_residual-40 bad=0/16384 max=7.76971
+MTP_FINITE norm-40 bad=0/16384 max=29.2061
+MTP_FINITE mtp_attn_post_norm-40 bad=0/16384 max=25.099
+MTP_FINITE ffn_moe_logits-40 bad=0/2048 max=9.03251
+MTP_FINITE ffn_moe_probs-40 bad=0/2048 max=0.0501599
+MTP_FINITE ffn_moe_probs-40 (reshaped) bad=0/2048 max=0.0501599
+MTP_FINITE ffn_moe_weights-40 bad=0/64 max=0.0501599
+MTP_FINITE ffn_moe_weights-40 (reshaped) bad=0/64 max=0.0501599
+MTP_FINITE ffn_moe_weights_sum-40 bad=0/8 max=0.226655
+MTP_FINITE ffn_moe_weights_sum_clamped-40 bad=0/8 max=0.226655
+MTP_FINITE ffn_moe_weights_norm-40 bad=0/64 max=0.277206
+MTP_FINITE ffn_moe_weights_norm-40 (reshaped) bad=0/64 max=0.277206
+MTP_FINITE mtp_attn_post_norm-40 (reshaped) bad=0/16384 max=25.099
+[moe-ssd] layer l=40 tok=8 used=8 unique=42 miss=3 hit=39 pack=1 nth=3 pread_wall=1.9ms pread_sum=5.2ms pread_max=1.8ms bytes=4.3MiB par=2.69
+[moe-ssd] prefill #0 tok=0 used=0 layers=1 unique/l=42 miss=3 hit=39 pack=1/1 nth=3 pread_wall=2ms pread_sum=5ms bytes=4MiB par=2.69 io=2229MiB/s readall=4MiB calls=3 realio=2229MiB/s span=1 pmgmt=2.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=3 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE ffn_moe_gate-40 bad=13276/32768 max=1.05025e+09
+0.09.233.804 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =     72, progress = 0.86, t =   3.90 s / 18.47 tokens per second
+0.09.271.602 I slot create_check: id  0 | task 0 | created context checkpoint 1 of 2 (pos_min = 71, pos_max = 71, n_tokens = 72, size = 62.955 MiB)
+[moe-ssd] prefill #11 tok=8 used=8 layers=40 unique/l=37 miss=144 hit=1341 pack=40/40 nth=8 pread_wall=84ms pread_sum=287ms bytes=204MiB par=3.42 io=2428MiB/s readall=219MiB calls=155 realio=2611MiB/s span=1 pmgmt=84.5ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=457 pevforced=0 pfcached=0 usedpf=0 runs=155 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE mtp_tok_embd-40 bad=0/16384 max=0.227578
+MTP_FINITE norm-40 bad=0/16384 max=31.4842
+MTP_FINITE mtp_enorm-40 bad=0/16384 max=15.7197
+MTP_FINITE norm-40 bad=0/16384 max=16.438
+MTP_FINITE mtp_hnorm-40 bad=0/16384 max=13.3238
+MTP_FINITE mtp_concat-40 bad=0/32768 max=15.7197
+MTP_FINITE mtp_eh_proj-40 bad=0/16384 max=3.46202
+MTP_FINITE norm-40 bad=0/16384 max=15.86
+MTP_FINITE mtp_attn_norm-40 bad=0/16384 max=16.8825
+MTP_FINITE mtp_Qcur_full-40 bad=0/65536 max=22.4097
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=21.3523
+MTP_FINITE norm-40 bad=0/32768 max=10.9582
+MTP_FINITE mtp_Qcur_normed-40 bad=0/32768 max=13.2183
+MTP_FINITE node_13 bad=0/32768 max=13.2162
+MTP_FINITE node_14 bad=0/4096 max=10.0348
+MTP_FINITE mtp_Vcur-40 bad=0/4096 max=10.0348
+MTP_FINITE node_16 bad=0/4096 max=8.3915
+MTP_FINITE  (reshaped) bad=0/4096 max=8.3915
+MTP_FINITE norm-40 bad=0/4096 max=6.03683
+MTP_FINITE mtp_Kcur_normed-40 bad=0/4096 max=13.3668
+MTP_FINITE node_20 bad=0/4096 max=13.3664
+MTP_FINITE node_20 (view) bad=0/4096 max=13.3664
+MTP_FINITE mtp_Vcur-40 (view) bad=0/4096 max=10.0348
+MTP_FINITE node_13 (view) bad=0/32768 max=13.2162
+MTP_FINITE node_13 (view) (permuted) bad=0/32768 max=13.2162
+MTP_FINITE __fattn__-40 bad=0/32768 max=9.98252
+MTP_FINITE mtp_attn_pregate-40 bad=0/32768 max=9.98252
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/32768 max=21.3523
+MTP_FINITE mtp_gate-40 bad=0/32768 max=21.3735
+MTP_FINITE node_35 bad=0/32768 max=0.998932
+MTP_FINITE node_36 bad=0/32768 max=5.63011
+MTP_FINITE mtp_attn_out-40 bad=0/16384 max=5.55214
+MTP_FINITE mtp_attn_residual-40 bad=0/16384 max=6.58019
+MTP_FINITE norm-40 bad=0/16384 max=26.7711
+MTP_FINITE mtp_attn_post_norm-40 bad=0/16384 max=23.0064
+MTP_FINITE ffn_moe_logits-40 bad=0/2048 max=9.21475
+MTP_FINITE ffn_moe_probs-40 bad=0/2048 max=0.125379
+MTP_FINITE ffn_moe_probs-40 (reshaped) bad=0/2048 max=0.125379
+MTP_FINITE ffn_moe_weights-40 bad=0/64 max=0.125379
+MTP_FINITE ffn_moe_weights-40 (reshaped) bad=0/64 max=0.125379
+MTP_FINITE ffn_moe_weights_sum-40 bad=0/8 max=0.205767
+MTP_FINITE ffn_moe_weights_sum_clamped-40 bad=0/8 max=0.205767
+MTP_FINITE ffn_moe_weights_norm-40 bad=0/64 max=0.609326
+MTP_FINITE ffn_moe_weights_norm-40 (reshaped) bad=0/64 max=0.609326
+MTP_FINITE mtp_attn_post_norm-40 (reshaped) bad=0/16384 max=23.0064
+[moe-ssd] layer l=40 tok=8 used=8 unique=52 miss=9 hit=43 pack=1 nth=8 pread_wall=15.0ms pread_sum=104.2ms pread_max=13.2ms bytes=12.8MiB par=6.95
+[moe-ssd] prefill #0 tok=0 used=0 layers=1 unique/l=52 miss=9 hit=43 pack=1/1 nth=8 pread_wall=15ms pread_sum=104ms bytes=13MiB par=6.95 io=854MiB/s readall=13MiB calls=9 realio=854MiB/s span=1 pmgmt=2.0ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=7 pevforced=0 pfcached=0 usedpf=0 runs=9 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE ffn_moe_gate-40 bad=13285/32768 max=1.04927e+09
+0.09.582.271 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =     80, progress = 0.95, t =   4.25 s / 18.84 tokens per second
+[moe-ssd] prefill #12 tok=8 used=8 layers=40 unique/l=38 miss=240 hit=1267 pack=40/40 nth=8 pread_wall=127ms pread_sum=584ms bytes=342MiB par=4.60 io=2690MiB/s readall=318MiB calls=223 realio=2504MiB/s span=1 pmgmt=127.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=611 pevforced=0 pfcached=0 usedpf=0 runs=222 avg_run=1.0 max_run=2 zerocopy=99%
+MTP_FINITE mtp_tok_embd-40 bad=0/8192 max=0.211954
+MTP_FINITE norm-40 bad=0/8192 max=30.0126
+MTP_FINITE mtp_enorm-40 bad=0/8192 max=14.4201
+MTP_FINITE norm-40 bad=0/8192 max=22.3746
+MTP_FINITE mtp_hnorm-40 bad=0/8192 max=18.1357
+MTP_FINITE mtp_concat-40 bad=0/16384 max=18.1357
+MTP_FINITE mtp_eh_proj-40 bad=0/8192 max=5.18691
+MTP_FINITE norm-40 bad=0/8192 max=22.7492
+MTP_FINITE mtp_attn_norm-40 bad=0/8192 max=23.0102
+MTP_FINITE mtp_Qcur_full-40 bad=0/32768 max=22.1497
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/16384 max=19.9917
+MTP_FINITE norm-40 bad=0/16384 max=10.4024
+MTP_FINITE mtp_Qcur_normed-40 bad=0/16384 max=13.6891
+MTP_FINITE node_13 bad=0/16384 max=13.6889
+MTP_FINITE node_14 bad=0/2048 max=9.40956
+MTP_FINITE mtp_Vcur-40 bad=0/2048 max=9.40956
+MTP_FINITE node_16 bad=0/2048 max=7.23155
+MTP_FINITE  (reshaped) bad=0/2048 max=7.23155
+MTP_FINITE norm-40 bad=0/2048 max=4.95175
+MTP_FINITE mtp_Kcur_normed-40 bad=0/2048 max=10.9361
+MTP_FINITE node_20 bad=0/2048 max=10.936
+MTP_FINITE node_20 (view) bad=0/2048 max=10.936
+MTP_FINITE mtp_Vcur-40 (view) bad=0/2048 max=9.40956
+MTP_FINITE node_13 (view) bad=0/16384 max=13.6889
+MTP_FINITE node_13 (view) (permuted) bad=0/16384 max=13.6889
+MTP_FINITE __fattn__-40 bad=0/16384 max=13.1724
+MTP_FINITE mtp_attn_pregate-40 bad=0/16384 max=13.1724
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/16384 max=19.9917
+MTP_FINITE mtp_gate-40 bad=0/16384 max=18.6697
+MTP_FINITE node_35 bad=0/16384 max=0.953243
+MTP_FINITE node_36 bad=0/16384 max=4.20526
+MTP_FINITE mtp_attn_out-40 bad=0/8192 max=3.56939
+MTP_FINITE mtp_attn_residual-40 bad=0/8192 max=6.80019
+MTP_FINITE norm-40 bad=0/8192 max=28.0951
+MTP_FINITE mtp_attn_post_norm-40 bad=0/8192 max=24.1442
+MTP_FINITE ffn_moe_logits-40 bad=0/1024 max=9.19326
+MTP_FINITE ffn_moe_probs-40 bad=0/1024 max=0.0808478
+MTP_FINITE ffn_moe_probs-40 (reshaped) bad=0/1024 max=0.0808478
+MTP_FINITE ffn_moe_weights-40 bad=0/32 max=0.0808478
+MTP_FINITE ffn_moe_weights-40 (reshaped) bad=0/32 max=0.0808478
+MTP_FINITE ffn_moe_weights_sum-40 bad=0/4 max=0.194807
+MTP_FINITE ffn_moe_weights_sum_clamped-40 bad=0/4 max=0.194807
+MTP_FINITE ffn_moe_weights_norm-40 bad=0/32 max=0.432711
+MTP_FINITE ffn_moe_weights_norm-40 (reshaped) bad=0/32 max=0.432711
+MTP_FINITE mtp_attn_post_norm-40 (reshaped) bad=0/8192 max=24.1442
+[moe-ssd] layer l=40 tok=4 used=8 unique=24 miss=6 hit=18 pack=1 nth=6 pread_wall=2.2ms pread_sum=8.0ms pread_max=1.8ms bytes=8.5MiB par=3.67
+[moe-ssd] prefill #0 tok=0 used=0 layers=1 unique/l=24 miss=6 hit=18 pack=1/1 nth=6 pread_wall=2ms pread_sum=8ms bytes=9MiB par=3.67 io=3921MiB/s readall=9MiB calls=6 realio=3921MiB/s span=1 pmgmt=15.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=13 pevforced=0 pfcached=0 usedpf=0 runs=6 avg_run=1.0 max_run=1 zerocopy=100%
+MTP_FINITE ffn_moe_gate-40 bad=6610/16384 max=9.78713e+08
+MTP_FINITE mtp_tok_embd-40 bad=0/2048 max=0.22455
+MTP_FINITE norm-40 bad=0/2048 max=26.5776
+MTP_FINITE mtp_enorm-40 bad=0/2048 max=15.2613
+MTP_FINITE norm-40 bad=0/2048 max=14.8616
+MTP_FINITE mtp_hnorm-40 bad=0/2048 max=9.9477
+MTP_FINITE mtp_concat-40 bad=0/4096 max=15.2613
+MTP_FINITE mtp_eh_proj-40 bad=0/2048 max=4.78044
+MTP_FINITE norm-40 bad=0/2048 max=22.8639
+MTP_FINITE mtp_attn_norm-40 bad=0/2048 max=23.1262
+MTP_FINITE mtp_Qcur_full-40 bad=0/8192 max=19.04
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/4096 max=15.0534
+MTP_FINITE norm-40 bad=0/4096 max=9.07891
+MTP_FINITE mtp_Qcur_normed-40 bad=0/4096 max=12.0757
+MTP_FINITE node_13 bad=0/4096 max=12.0727
+MTP_FINITE node_14 bad=0/512 max=8.00569
+MTP_FINITE mtp_Vcur-40 bad=0/512 max=8.00569
+MTP_FINITE node_16 bad=0/512 max=5.32602
+MTP_FINITE  (reshaped) bad=0/512 max=5.32602
+MTP_FINITE norm-40 bad=0/512 max=4.40177
+MTP_FINITE mtp_Kcur_normed-40 bad=0/512 max=12.4144
+MTP_FINITE node_20 bad=0/512 max=12.4142
+MTP_FINITE node_20 (view) bad=0/512 max=12.4142
+MTP_FINITE mtp_Vcur-40 (view) bad=0/512 max=8.00569
+MTP_FINITE node_13 (view) bad=0/4096 max=12.0727
+MTP_FINITE node_13 (view) (permuted) bad=0/4096 max=12.0727
+MTP_FINITE __fattn__-40 bad=0/4096 max=8.58805
+MTP_FINITE mtp_attn_pregate-40 bad=0/4096 max=8.58805
+MTP_FINITE mtp_Qcur_full-40 (view) bad=0/4096 max=15.0534
+MTP_FINITE mtp_gate-40 bad=0/4096 max=19.04
+MTP_FINITE node_35 bad=0/4096 max=0.913315
+MTP_FINITE node_36 bad=0/4096 max=1.99931
+MTP_FINITE mtp_attn_out-40 bad=0/2048 max=1.37291
+MTP_FINITE mtp_attn_residual-40 bad=0/2048 max=6.15335
+MTP_FINITE norm-40 bad=0/2048 max=27.6024
+MTP_FINITE mtp_attn_post_norm-40 bad=0/2048 max=23.7208
+MTP_FINITE ffn_moe_logits-40 bad=0/256 max=7.38557
+MTP_FINITE ffn_moe_probs-40 bad=0/256 max=0.0300361
+MTP_FINITE ffn_moe_probs-40 (reshaped) bad=0/256 max=0.0300361
+MTP_FINITE ffn_moe_weights-40 bad=0/8 max=0.0300361
+MTP_FINITE ffn_moe_weights-40 (reshaped) bad=0/8 max=0.0300361
+MTP_FINITE ffn_moe_weights_sum-40 bad=0/1 max=0.139222
+MTP_FINITE ffn_moe_weights_sum_clamped-40 bad=0/1 max=0.139222
+MTP_FINITE ffn_moe_weights_norm-40 bad=0/8 max=0.215743
+MTP_FINITE ffn_moe_weights_norm-40 (reshaped) bad=0/8 max=0.215743
+MTP_FINITE mtp_attn_post_norm-40 (reshaped) bad=0/2048 max=23.7208
+[moe-ssd] decode #0 tok=0 used=0 layers=1 unique/l=8 miss=0 hit=8 pack=1/1 nth=0 pread_wall=0ms pread_sum=0ms bytes=0MiB par=0.00 io=0MiB/s readall=0MiB calls=0 realio=0MiB/s span=1 pmgmt=2.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=13 pevforced=0 pfcached=0 usedpf=0 runs=0 avg_run=0.0 max_run=0 zerocopy=0%
+MTP_FINITE ffn_moe_gate-40 bad=1662/4096 max=8.44503e+08
+0.09.790.335 E init: invalid token[0] = -1111192353
+0.09.790.344 E decode: failed to initialize batch
+0.09.790.344 E llama_decode: failed to decode, ret = -1
+0.09.790.346 W draft: llama_decode[0] returned -1
+0.09.790.392 E init: invalid token[1] = -1111192353
+0.09.790.396 E decode: failed to initialize batch
+0.09.790.396 E llama_decode: failed to decode, ret = -1
+0.09.790.400 E srv  update_slots: Invalid input batch. i = 0, n_batch = 2048, ret = -1
+0.09.790.404 E srv    send_error: task id = 0, error: Invalid input batch.
+0.09.790.411 I slot      release: id  0 | task 0 | stop processing: n_tokens = 86, truncated = 0
+0.09.790.420 I slot prompt_clear: id  0 | task -1 | clearing prompt with 86 tokens
+0.10.752.225 W srv          stop: cancel task, id_task = 0
+0.10.752.277 I srv  update_slots: all slots are idle
+0.10.752.296 I srv  update_slots: all slots are idle
+[moe-ssd] park expert memory: 0 metal buffer(s)
+[moe-ssd] miss position (score order, avg over 1 steps): 0:0.00 1:0.00 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 
+[moe-ssd] total[final]: miss=141 bytes=200.5 MiB pread=465ms
+[moe-ssd] merge-scan: experts=141 runs=141 avg_run=1.00 max_run=1 zerocopy=100.0% scatter_experts=0 syscalls=100.0% of current (avg read = 1.00 experts)
+[moe-ssd] prefill #13 tok=4 used=8 layers=40 unique/l=17 miss=80 hit=588 pack=40/40 nth=7 pread_wall=59ms pread_sum=140ms bytes=114MiB par=2.38 io=1929MiB/s readall=104MiB calls=73 realio=1764MiB/s span=1 pmgmt=59.4ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=659 pevforced=0 pfcached=0 usedpf=0 runs=73 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[final]: miss=5696 bytes=8061.3 MiB pread=16606ms
+[moe-ssd] merge-scan: experts=5696 runs=5668 avg_run=1.00 max_run=2 zerocopy=100.0% scatter_experts=2 syscalls=99.5% of current (avg read = 1.00 experts)

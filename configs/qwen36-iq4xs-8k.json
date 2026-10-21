@@ -1,0 +1,57 @@
+{
+  "model": "Qwen3.6-35B-A3B MTP (Unsloth UD-IQ4_XS)",
+  "source": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-MTP-GGUF",
+  "revision": "5bc3e238d916f48a861bac2f8a1990a0e9b7e98d",
+  "source_sha256": "df27a780435b7b45c2597536112ea3cb091f8544c3d0c3318d9f4258b31f7adf",
+  "source_bytes": 18209036576,
+  "model_dir": "models/Qwen3.6-35B-A3B-MTP-UD-IQ4_XS",
+  "library_dir": "qwen36-audit-20261021/mtp-les-lib-v3",
+  "library_sha256": {
+    "libllama.so.0": "16b8e796223314b7c32d06bdddd7510deb7c3853b65ce70f6f3cafddc9b2ba97",
+    "libggml-cuda.so.0": "ea6394c23526ad021d9f449063a1bdc820c7f697d2495169430d7412ffe0dac6"
+  },
+  "cli_sha256": "49e307ca0635f67cff3714357565147ab50db02d041c22357991c52c2b468ce5",
+  "parameters": {
+    "ctx": 8192,
+    "window": 128,
+    "bank": 64,
+    "rows": 8,
+    "ubatch": 8,
+    "draft": 2,
+    "io_threads": 8,
+    "threads": 6,
+    "mapped_experts": true,
+    "offload_min_batch": 32,
+    "ctx_checkpoints": 2,
+    "cache_ram_mib": 64,
+    "no_prewarm": true,
+    "sampling": "qwen-instruct",
+    "seed": 42,
+    "reasoning": "off",
+    "min_available_mib": 768,
+    "timeout": 2400,
+    "spec_type": "draft-mtp",
+    "reasoning_budget": 0,
+    "chat_template_kwargs": "{\"preserve_thinking\":false,\"enable_thinking\":false}"
+  },
+  "validation": {
+    "status": "passed_deployment_and_complete_svg_generation",
+    "visual_quality": "structural_defects_preserved_in_original_svg",
+    "report": "reports/2026-10-21-qwen36-nx5/pelican-result.json",
+    "full_context_tested": false
+  },
+  "reference_protocol": {
+    "repository": "https://github.com/bbinwang/pelican-bicycle",
+    "revision": "b14acbb2ebe9d9be5f0dec3d35d8f4ae6fcaa432",
+    "prompt": "Generate an SVG of a pelican riding a bicycle.",
+    "adaptations": [
+      "8K context instead of 200000",
+      "SSD expert loading with a bounded cache",
+      "CLI instead of HTTP server",
+      "batch2048/ubatch8 instead of384/384",
+      "fixed seed42; reference does not specify a seed",
+      "flash attention explicitly on instead of auto",
+      "isolated runtime fixes for MTP SSD windows and quantization grouping"
+    ]
+  }
+}

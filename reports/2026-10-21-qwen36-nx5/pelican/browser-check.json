@@ -1,0 +1,271 @@
+{
+  "page_errors": [],
+  "blocked_requests": [],
+  "controls": {
+    "labels": []
+  },
+  "first": {
+    "title": "",
+    "svg_count": 1,
+    "animations": [],
+    "smil": [],
+    "groups": [
+      {
+        "id": "bicycle",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 224.5,
+          "y": 361,
+          "width": 551,
+          "height": 294.5
+        },
+        "matrix": {
+          "a": 1.9,
+          "b": 0,
+          "c": 0,
+          "d": 1.9,
+          "e": 119.99999999999994,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 224.5,
+          "y": 484.5,
+          "width": 171,
+          "height": 171
+        },
+        "matrix": {
+          "a": 1.9,
+          "b": 0,
+          "c": 0,
+          "d": 1.9,
+          "e": 119.99999999999994,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 604.5,
+          "y": 484.5,
+          "width": 171,
+          "height": 171
+        },
+        "matrix": {
+          "a": 1.9,
+          "b": 0,
+          "c": 0,
+          "d": 1.9,
+          "e": 119.99999999999994,
+          "f": 0
+        }
+      },
+      {
+        "id": "pelican",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 288.9151916503906,
+          "y": 76,
+          "width": 364.9848327636719,
+          "height": 374.44061279296875
+        },
+        "matrix": {
+          "a": 1.9,
+          "b": 0,
+          "c": 0,
+          "d": 1.9,
+          "e": 119.99999999999994,
+          "f": 0
+        }
+      }
+    ]
+  },
+  "next": {
+    "title": "",
+    "svg_count": 1,
+    "animations": [],
+    "smil": [],
+    "groups": [
+      {
+        "id": "bicycle",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 224.5,
+          "y": 361,
+          "width": 551,
+          "height": 294.5
+        },
+        "matrix": {
+          "a": 1.9,
+          "b": 0,
+          "c": 0,
+          "d": 1.9,
+          "e": 119.99999999999994,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 224.5,
+          "y": 484.5,
+          "width": 171,
+          "height": 171
+        },
+        "matrix": {
+          "a": 1.9,
+          "b": 0,
+          "c": 0,
+          "d": 1.9,
+          "e": 119.99999999999994,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 604.5,
+          "y": 484.5,
+          "width": 171,
+          "height": 171
+        },
+        "matrix": {
+          "a": 1.9,
+          "b": 0,
+          "c": 0,
+          "d": 1.9,
+          "e": 119.99999999999994,
+          "f": 0
+        }
+      },
+      {
+        "id": "pelican",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 288.9151916503906,
+          "y": 76,
+          "width": 364.9848327636719,
+          "height": 374.44061279296875
+        },
+        "matrix": {
+          "a": 1.9,
+          "b": 0,
+          "c": 0,
+          "d": 1.9,
+          "e": 119.99999999999994,
+          "f": 0
+        }
+      }
+    ]
+  },
+  "later": {
+    "title": "",
+    "svg_count": 1,
+    "animations": [],
+    "smil": [],
+    "groups": [
+      {
+        "id": "bicycle",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 224.5,
+          "y": 361,
+          "width": 551,
+          "height": 294.5
+        },
+        "matrix": {
+          "a": 1.9,
+          "b": 0,
+          "c": 0,
+          "d": 1.9,
+          "e": 119.99999999999994,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 224.5,
+          "y": 484.5,
+          "width": 171,
+          "height": 171
+        },
+        "matrix": {
+          "a": 1.9,
+          "b": 0,
+          "c": 0,
+          "d": 1.9,
+          "e": 119.99999999999994,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 604.5,
+          "y": 484.5,
+          "width": 171,
+          "height": 171
+        },
+        "matrix": {
+          "a": 1.9,
+          "b": 0,
+          "c": 0,
+          "d": 1.9,
+          "e": 119.99999999999994,
+          "f": 0
+        }
+      },
+      {
+        "id": "pelican",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 288.9151916503906,
+          "y": 76,
+          "width": 364.9848327636719,
+          "height": 374.44061279296875
+        },
+        "matrix": {
+          "a": 1.9,
+          "b": 0,
+          "c": 0,
+          "d": 1.9,
+          "e": 119.99999999999994,
+          "f": 0
+        }
+      }
+    ]
+  }
+}

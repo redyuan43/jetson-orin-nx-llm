@@ -1,0 +1,7 @@
+{
+  "prompt": "Generate an SVG of a pelican riding a bicycle.",
+  "enable_thinking": false,
+  "preserve_thinking": false,
+  "official_vs_gguf_identical": true,
+  "rendered_sha256": "e91c798cf64cc00a89b75e7501e5b5d42e2955407b17c90d95ce5ad45c1b6767"
+}

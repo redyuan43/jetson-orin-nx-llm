@@ -1,0 +1,58 @@
+--- a/src/models/qwen35moe.cpp
++++ b/src/models/qwen35moe.cpp
+@@ -87,13 +87,14 @@
+         LLM_TENSOR_FFN_GATE_UP_EXPS, LLM_TENSOR_FFN_GATE_EXPS,
+         LLM_TENSOR_FFN_UP_EXPS,      LLM_TENSOR_FFN_DOWN_EXPS,
+     };
+-    // family -> (bytes_per_expert -> 层号升序)
+-    std::map<size_t, std::vector<int>> groups[4];
++    // Equal byte strides do not imply equal encodings (Q3_K and IQ3_S).
++    // family -> ((quantization type, bytes_per_expert) -> layers)
++    std::map<std::pair<ggml_type, size_t>, std::vector<int>> groups[4];
+     for (int il = 0; il < (int) n_layer; ++il) {
+         for (int fi = 0; fi < 4; ++fi) {
+             const auto * e = moe_experts_entry(tn(fam_ids[fi], "weight", il).str().c_str());
+             if (e) {
+-                groups[fi][e->bytes_per_expert].push_back(il);
++                groups[fi][{ e->type, e->bytes_per_expert }].push_back(il);
+             }
+         }
+     }
+@@ -333,7 +334,7 @@
+                     throw std::runtime_error(format(
+                         "MoE base '%s' has no usable experts entry", ggml_get_name(base)));
+                 }
+-                if (e->bytes_per_expert != kv.first) {
++                if (e->type != kv.first.first || e->bytes_per_expert != kv.first.second) {
+                     throw std::runtime_error(format(
+                         "MoE group for '%s' has inconsistent expert bytes", ggml_get_name(base)));
+                 }
+@@ -934,18 +935,24 @@
+     cb(cur, "mtp_attn_post_norm", il);
+ 
+     // MoE FFN — routed experts plus gated shared expert (mirrors qwen35moe).
++    // The slot callback writes into per-layer windows for small batches.
++    // MTP must select the same views as the main graph in that phase.
++    ggml_tensor * p_up   = moe_decode_phase && layer.ffn_up_exps_dec      ? layer.ffn_up_exps_dec      : layer.ffn_up_exps;
++    ggml_tensor * p_gate = moe_decode_phase && layer.ffn_gate_exps_dec    ? layer.ffn_gate_exps_dec    : layer.ffn_gate_exps;
++    ggml_tensor * p_down = moe_decode_phase && layer.ffn_down_exps_dec    ? layer.ffn_down_exps_dec    : layer.ffn_down_exps;
++    ggml_tensor * p_gu   = moe_decode_phase && layer.ffn_gate_up_exps_dec ? layer.ffn_gate_up_exps_dec : layer.ffn_gate_up_exps;
+     ggml_tensor * moe_out =
+         build_moe_ffn(cur,
+             layer.ffn_gate_inp,
+-            layer.ffn_up_exps,
+-            layer.ffn_gate_exps,
+-            layer.ffn_down_exps,
++            p_up,
++            p_gate,
++            p_down,
+             nullptr,
+             n_expert, n_expert_used,
+             LLM_FFN_SILU, true,
+             hparams.expert_weights_scale,
+             LLAMA_EXPERT_GATING_FUNC_TYPE_SOFTMAX, il,
+-            nullptr, layer.ffn_gate_up_exps,
++            nullptr, p_gu,
+             layer.ffn_up_exps_s,
+             layer.ffn_gate_exps_s,
+             layer.ffn_down_exps_s);

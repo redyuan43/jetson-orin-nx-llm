@@ -1,0 +1,364 @@
+{
+  "_id": "6a01d228550577cadfac8843",
+  "id": "unsloth/Qwen3.6-35B-A3B-MTP-GGUF",
+  "private": false,
+  "pipeline_tag": "image-text-to-text",
+  "library_name": "transformers",
+  "tags": [
+    "transformers",
+    "gguf",
+    "unsloth",
+    "qwen",
+    "qwen3_5_moe",
+    "image-text-to-text",
+    "base_model:Qwen/Qwen3.6-35B-A3B",
+    "base_model:quantized:Qwen/Qwen3.6-35B-A3B",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us",
+    "imatrix",
+    "conversational"
+  ],
+  "downloads": 1103419,
+  "likes": 1013,
+  "modelId": "unsloth/Qwen3.6-35B-A3B-MTP-GGUF",
+  "author": "unsloth",
+  "sha": "5bc3e238d916f48a861bac2f8a1990a0e9b7e98d",
+  "lastModified": "2026-05-20T08:48:17.000Z",
+  "gated": false,
+  "disabled": false,
+  "widgetData": [
+    {
+      "text": "Hi, what can you help me with?"
+    },
+    {
+      "text": "What is 84 * 3 / 2?"
+    },
+    {
+      "text": "Tell me an interesting fact about the universe!"
+    },
+    {
+      "text": "Explain quantum computing in simple terms."
+    }
+  ],
+  "model-index": null,
+  "config": {},
+  "cardData": {
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_link": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/main/LICENSE",
+    "pipeline_tag": "image-text-to-text",
+    "base_model": [
+      "Qwen/Qwen3.6-35B-A3B"
+    ],
+    "tags": [
+      "unsloth",
+      "qwen",
+      "qwen3_5_moe"
+    ]
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModel"
+  },
+  "gguf": {
+    "total": 35505251456,
+    "architecture": "qwen35moe",
+    "context_length": 262144,
+    "quantize_imatrix_file": "Qwen3.6-35B-A3B-GGUF/imatrix_unsloth.gguf",
+    "chat_template": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count, is_system_content=false) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain images.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Picture ' ~ image_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|image_pad|><|vision_end|>' }}\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain videos.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Video ' ~ video_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|video_pad|><|vision_end|>' }}\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- set num_sys = 0 %}\n{%- set merged_system = '' %}\n{%- if messages[0].role == 'system' or messages[0].role == 'developer' %}\n    {%- set first = render_content(messages[0].content, false, true)|trim %}\n    {%- if messages|length > 1 and (messages[1].role == 'system' or messages[1].role == 'developer') %}\n        {%- set second = render_content(messages[1].content, false, true)|trim %}\n        {%- set merged_system = first + '\\n' + second %}\n        {%- set num_sys = 2 %}\n    {%- else %}\n        {%- set merged_system = first %}\n        {%- set num_sys = 1 %}\n    {%- endif %}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if merged_system %}\n        {{- '\\n\\n' + merged_system }}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if merged_system %}\n        {{- '<|im_start|>system\\n' + merged_system + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if loop.index0 >= num_sys and message.role != \"system\" and message.role != \"developer\" %}\n    {%- set content = render_content(message.content, true)|trim %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if (preserve_thinking is defined and preserve_thinking is true) or (loop.index0 > ns.last_query_index) %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is mapping %}\n                    {%- for args_name in tool_call.arguments %}\n                        {%- set args_value = tool_call.arguments[args_name] %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- else %}\n        {{- '<think>\\n' }}\n    {%- endif %}\n{%- endif %}\n{#- Unsloth fixes - developer role, tool calling #}",
+    "bos_token": "<|endoftext|>",
+    "eos_token": "<|im_end|>",
+    "totalFileSize": 22182574368
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "blobId": "dae17c2554daacb1bc4a2c0fe91ecc926ea745a9",
+      "size": 3307
+    },
+    {
+      "rfilename": "BF16/Qwen3.6-35B-A3B-BF16-00001-of-00002.gguf",
+      "blobId": "37e8dd57524d3b07afc2c1a47b0ff0367e5fdedd",
+      "size": 49913715456,
+      "lfs": {
+        "sha256": "a172dfea1fe8bb29132ea2f250c74cdc7d619d518d3f072d3816e31a69ce44a2",
+        "size": 49913715456,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "BF16/Qwen3.6-35B-A3B-BF16-00002-of-00002.gguf",
+      "blobId": "f127ee964ae7428396c58de8020cd6d182792e6b",
+      "size": 21152227104,
+      "lfs": {
+        "sha256": "b90b4d07e1be4967aec932e2501e7476ec5f44de772c7eb082d6e9c3ac105161",
+        "size": 21152227104,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-MXFP4_MOE.gguf",
+      "blobId": "cbd1b379ac10af3c080672ff63458204406570eb",
+      "size": 22182574368,
+      "lfs": {
+        "sha256": "e1a4925d2ea132576daa9cb980b1102b970d919d896936b7b6e681ef5bc3d3f6",
+        "size": 22182574368,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-Q8_0.gguf",
+      "blobId": "d9d37eb84879675db018329e5ea3aabbc2e7492c",
+      "size": 37801097504,
+      "lfs": {
+        "sha256": "c1283d8b80c3e38b2735ddbc9766d3b3126f44d6c484be419d4e101d09a76131",
+        "size": 37801097504,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-IQ1_M.gguf",
+      "blobId": "52f4bac63dcfb614c150da403ade9c88fa0abf7f",
+      "size": 11366414624,
+      "lfs": {
+        "sha256": "223db8b347ebe3d75f43a0fd998eb86148c9744635066c6782662208ddc14867",
+        "size": 11366414624,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-IQ2_M.gguf",
+      "blobId": "cd02f83303498ea8aa52ce9411a599cb0f57fdf8",
+      "size": 11882969376,
+      "lfs": {
+        "sha256": "b989da14b63b29bd469cb1fab5bd16b422ab921787569b4b2bb4fd61e26129b8",
+        "size": 11882969376,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-IQ2_XXS.gguf",
+      "blobId": "9c4a4695be5eb9a3cf284c2bdf2092e90d5ad34a",
+      "size": 11819399456,
+      "lfs": {
+        "sha256": "627e2b05f83088448e27861ec392d56efc2b178783cae5adfa4ad2d988441203",
+        "size": 11819399456,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+      "blobId": "721c441d0145f549baab49a0072484eb110643cf",
+      "size": 15346432288,
+      "lfs": {
+        "sha256": "ab639a7f330f96c47d3e6c2dd2d6445182e7b763e17e6048dc850a71bbc9f27f",
+        "size": 15346432288,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-IQ3_XXS.gguf",
+      "blobId": "55b14b2b1c714b875a3bfa419388dc7e747c04e5",
+      "size": 14069266720,
+      "lfs": {
+        "sha256": "36f9ec0e4c775f6efd3a61c1ea76f0875128469c3d012e3d9e2495a90e7a7150",
+        "size": 14069266720,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-IQ4_NL.gguf",
+      "blobId": "84b76af7a5e6a56bdd1d273b3630000d9e1e1c02",
+      "size": 18536192288,
+      "lfs": {
+        "sha256": "d0ad78047bd0a583bfcb484e9defc63112c5f1f856e310dcf88dc48f2ebeae5b",
+        "size": 18536192288,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf",
+      "blobId": "a9cf0714ab89fea414ec5a61a51ed1738501aa2c",
+      "size": 18209036576,
+      "lfs": {
+        "sha256": "df27a780435b7b45c2597536112ea3cb091f8544c3d0c3318d9f4258b31f7adf",
+        "size": 18209036576,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf",
+      "blobId": "3b0bf1b2cbdd1390c363cbb1b8588b0da729d7a0",
+      "size": 12574128416,
+      "lfs": {
+        "sha256": "ed7cda7e38985b4fcff76475865135039641d2bfbac3c169df15ca770f37fb0c",
+        "size": 12574128416,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-Q3_K_M.gguf",
+      "blobId": "a5ce5ffd2d036d97c06bcb0f9294c9e895ceafdb",
+      "size": 17104402720,
+      "lfs": {
+        "sha256": "8966dd0cd8c543c4228490a2a8b0e0814fc4f1e6a8e199ceed4de6754ae7b8e1",
+        "size": 17104402720,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf",
+      "blobId": "f3f02139142e633467c023d4124ec4100fda8454",
+      "size": 17227569440,
+      "lfs": {
+        "sha256": "3fba9ab57290b34726837521335bf9268397174f3dd662880e2d0c5264d17b81",
+        "size": 17227569440,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-Q4_K_M.gguf",
+      "blobId": "b15d02d422205af4a836134ee8ff16e7d8226113",
+      "size": 22663387424,
+      "lfs": {
+        "sha256": "0b21525e972670ed59e1812e170b27c26355381f0656ecc4e25617ece7dac58b",
+        "size": 22663387424,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-Q4_K_S.gguf",
+      "blobId": "4ec7b57515cb6b458c05b36d9072ae6a9bc32c5c",
+      "size": 21388319008,
+      "lfs": {
+        "sha256": "2bee952b218e4a481430c59d8d3bdc7bae20bed0eb501326340c5fca7ae95d42",
+        "size": 21388319008,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf",
+      "blobId": "74b7924fe57b5a5f87aaaa2c9d1fbd7cb88b154d",
+      "size": 22853663008,
+      "lfs": {
+        "sha256": "55983c5a75a1ab969824077b3bb3de4146e82a9234072b48ad4e8f92ad3fe9f1",
+        "size": 22853663008,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-Q5_K_M.gguf",
+      "blobId": "d08f5faac7538dc1b6b335be512ef3f435ad6c0e",
+      "size": 27087812896,
+      "lfs": {
+        "sha256": "8ca8224c5519b50f286b9739f9ab1c2bc0759e02cfb6cbf48a09f0759eb2d319",
+        "size": 27087812896,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-Q5_K_S.gguf",
+      "blobId": "2746d4af0abe1eefd2bfc69a901f1b2bd22408f9",
+      "size": 25538017568,
+      "lfs": {
+        "sha256": "b773526fab7e47cd2da8f51c20f986f7912f0aee56811265839650c4bfd1a098",
+        "size": 25538017568,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-Q5_K_XL.gguf",
+      "blobId": "08e8b5449684ff024ef12b5f91420687343ab10f",
+      "size": 27159116064,
+      "lfs": {
+        "sha256": "9de9a9420f61a0bb59bb2ca1ea170a6a57f6821fa1deec915bcaef523730a919",
+        "size": 27159116064,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-Q6_K.gguf",
+      "blobId": "56936d7a28a628458a03441c2f71bd1bb21e2fff",
+      "size": 30011242784,
+      "lfs": {
+        "sha256": "49935b04ad883c2f3d4da61f65b609d447dad67d0b08453b90abb09a1bb35464",
+        "size": 30011242784,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-Q6_K_XL.gguf",
+      "blobId": "79ad6fb288c20aebda94163cdc99bb591cb832a1",
+      "size": 32611711264,
+      "lfs": {
+        "sha256": "35fce994cd36104a7dc1bd8a4bdf13778145664c00fdef6773aebc9246e5019c",
+        "size": 32611711264,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf",
+      "blobId": "cc9f98ccbffdb90c4a047b702a651911335a34df",
+      "size": 39099447584,
+      "lfs": {
+        "sha256": "6c6b816537abad90b250a0972b345466028d861ddfe316d5f0de31ca6440f781",
+        "size": 39099447584,
+        "pointerSize": 136
+      }
+    },
+    {
+      "rfilename": "README.md",
+      "blobId": "c3d614fd7d1f36db881776842f61b4c6c23c395f",
+      "size": 67529
+    },
+    {
+      "rfilename": "imatrix_unsloth.gguf_file",
+      "blobId": "b12904407bc346469d2445d12f7a9b326534bca8",
+      "size": 192223904,
+      "lfs": {
+        "sha256": "a96ef6a7ef174fc43cca013f4452756877e5993f6a17eec1907900e9a0608586",
+        "size": 192223904,
+        "pointerSize": 134
+      }
+    },
+    {
+      "rfilename": "mmproj-BF16.gguf",
+      "blobId": "235f91c0165a8d2649ffdd460f03117809d62b02",
+      "size": 902822528,
+      "lfs": {
+        "sha256": "da63cb47a76763c712393f8a017070188a304fa39f8aeea6edc629ed7b975cfa",
+        "size": 902822528,
+        "pointerSize": 134
+      }
+    },
+    {
+      "rfilename": "mmproj-F16.gguf",
+      "blobId": "77928e26110b862538144f70fee3ee56c286d5b7",
+      "size": 899283584,
+      "lfs": {
+        "sha256": "71f3cbc1f7cc0f30d09d41cfa924c0060827ebc33bf15ace7e86661e856f0160",
+        "size": 899283584,
+        "pointerSize": 134
+      }
+    },
+    {
+      "rfilename": "mmproj-F32.gguf",
+      "blobId": "92b1c95fd79e09f1ccf5f0609ca9ebbd728b72a4",
+      "size": 1786305152,
+      "lfs": {
+        "sha256": "2c52a4ccbc8f0fdb716fb526bfee9506ed0092b2e6dc5d593759f7d200146663",
+        "size": 1786305152,
+        "pointerSize": 135
+      }
+    }
+  ],
+  "spaces": [
+    "fastgpu/vram-and-gpu-cost-calculator",
+    "23v/qwen",
+    "abidlabs/qwen36-a10g-experiment-log",
+    "wuhp/Qwen3.6-35B-A3B-MTP-GGUFtest",
+    "WeReCooking/Qwen3.6-35B-A3B-MTP-GGUF"
+  ],
+  "createdAt": "2026-05-11T12:57:12.000Z",
+  "usedStorage": 531378779104
+}

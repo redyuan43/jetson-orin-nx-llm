@@ -1,0 +1,64 @@
+{
+  "greedy_answer_identical": true,
+  "runs": [
+    {
+      "tag": "qwen36-qa-w128-mtp0-greedy",
+      "answer": "1. 17×23等于391。\n2. 否，这仅是存储与加载策略的优化，并未删除专家或改变模型架构中的专家选择数量。",
+      "sha256": "791f2ebde0f7ea573af7a8aa0f1fe53252acc1ee70cb6a388142cf0bb02c299c",
+      "wall_s": 15.535329796999577,
+      "metrics": [
+        "0.04.386.979 W llama_context: n_ctx_seq (8192) < n_ctx_train (262144) -- the full capacity of the model will not be utilized",
+        "0.13.238.127 I slot print_timing: id  0 | task 0 | prompt eval time =    4147.86 ms /    84 tokens (   49.38 ms per token,    20.25 tokens per second)",
+        "0.13.238.134 I slot print_timing: id  0 | task 0 |        eval time =    3679.11 ms /    41 tokens (   89.73 ms per token,    11.14 tokens per second)",
+        "0.13.238.136 I slot print_timing: id  0 | task 0 |       total time =    7826.97 ms /   125 tokens",
+        "[moe-ssd] total[final]: miss=6847 bytes=9679.5 MiB pread=18466ms"
+      ],
+      "min_available_mib": 4173.69140625,
+      "oom_delta": 0
+    },
+    {
+      "tag": "qwen36-qa-w128-mtp2-greedy",
+      "answer": "1. 17×23等于391。\n2. 否，这仅是存储与加载策略的优化，并未删除专家或改变模型架构中的专家选择数量。",
+      "sha256": "791f2ebde0f7ea573af7a8aa0f1fe53252acc1ee70cb6a388142cf0bb02c299c",
+      "wall_s": 20.547366242011776,
+      "metrics": [
+        "0.05.078.930 W llama_context: n_ctx_seq (8192) < n_ctx_train (262144) -- the full capacity of the model will not be utilized",
+        "0.05.773.329 W llama_context: n_ctx_seq (8192) < n_ctx_train (262144) -- the full capacity of the model will not be utilized",
+        "0.06.419.274 I common_speculative_impl_draft_mtp: adding speculative implementation 'draft-mtp'",
+        "0.06.420.344 I srv    load_model: speculative decoding context initialized",
+        "0.17.989.951 I slot print_timing: id  0 | task 0 | prompt eval time =    4402.80 ms /    84 tokens (   52.41 ms per token,    19.08 tokens per second)",
+        "0.17.989.957 I slot print_timing: id  0 | task 0 |        eval time =    7074.98 ms /    41 tokens (  172.56 ms per token,     5.80 tokens per second)",
+        "0.17.989.958 I slot print_timing: id  0 | task 0 |       total time =   11477.78 ms /   125 tokens",
+        "0.17.990.540 I slot print_timing: id  0 | task 0 | draft acceptance = 0.00000 (    0 accepted /    80 generated)",
+        "[moe-ssd] total[final]: miss=296 bytes=420.9 MiB pread=653ms",
+        "[moe-ssd] total[final]: miss=8857 bytes=12560.4 MiB pread=23063ms"
+      ],
+      "min_available_mib": 3589.171875,
+      "oom_delta": 0
+    }
+  ],
+  "fixed_mtp": {
+    "tag": "qwen36-qa-w128-mtp2-fixed",
+    "answer_identical_to_no_mtp": true,
+    "draft_accepted": 22,
+    "draft_generated": 38,
+    "draft_acceptance": 0.5789473684210527,
+    "no_nonfinite_draft_probabilities": true,
+    "wall_s": 36.06569873901026,
+    "metrics": [
+      "0.08.576.572 I llama_context: n_ctx_seq     = 8192",
+      "0.08.576.582 W llama_context: n_ctx_seq (8192) < n_ctx_train (262144) -- the full capacity of the model will not be utilized",
+      "0.20.088.566 I llama_context: n_ctx_seq     = 8192",
+      "0.20.088.573 W llama_context: n_ctx_seq (8192) < n_ctx_train (262144) -- the full capacity of the model will not be utilized",
+      "0.20.703.870 I common_speculative_impl_draft_mtp: adding speculative implementation 'draft-mtp'",
+      "0.20.704.473 I srv    load_model: speculative decoding context initialized",
+      "0.33.875.449 I slot print_timing: id  0 | task 0 | prompt eval time =    8441.07 ms /    84 tokens (  100.49 ms per token,     9.95 tokens per second)",
+      "0.33.875.452 I slot print_timing: id  0 | task 0 |        eval time =    4642.06 ms /    41 tokens (  113.22 ms per token,     8.83 tokens per second)",
+      "0.33.875.453 I slot print_timing: id  0 | task 0 |       total time =   13083.13 ms /   125 tokens",
+      "0.33.875.462 I slot print_timing: id  0 | task 0 | draft acceptance = 0.57895 (   22 accepted /    38 generated)",
+      "[moe-ssd] total[final]: miss=152 bytes=216.1 MiB pread=397ms",
+      "[moe-ssd] total[final]: miss=7136 bytes=10083.3 MiB pread=35526ms"
+    ],
+    "min_available_mib": 3686.609375
+  }
+}

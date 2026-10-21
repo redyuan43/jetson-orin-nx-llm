@@ -1,6 +1,16 @@
 # Jetson Orin NX 16GB 本地大模型部署实录
 
-在 **Jetson Orin NX 16GB Super** 上用 llama.cpp 跑两个模型的完整过程：**坑、实测数据、以及为什么某些"优化"是负收益**。
+在 **Jetson Orin NX 16GB Super** 上用 llama.cpp 跑多个模型的完整过程：**坑、实测数据、以及为什么某些"优化"是负收益**。
+
+**鹈鹕测试口径：** 后续对照采用固定英文 SVG 原题、关闭思考，按模型对应参考配置执行，
+并列明硬件适配差异。此前中文 HTML 动画题与带思考结果属于自定义实验。
+完整规则见 [鹈鹕 SVG 对照测试规范](docs/10-pelican-test-protocol.md)。
+
+**Qwen3.6-35B-A3B MTP（UD-IQ4_XS）已在nx5跑通SSD专家加载：** 约14.53 GiB专家在SSD，
+8K / window128 / MTP draft2。关闭思考的英文SVG原题实测 **17.85 token/s，完整输出2分19秒**，
+MTP接受率85.0%。修复了MTP缓存视图和Q3_K/IQ3_S等长编码被错误分组的问题。
+[原始SVG](reports/2026-10-21-qwen36-nx5/pelican/pelican.svg) 仍有前轮与车架断开、缺少腿脚的问题，
+未修图；硬件适配差异和复现入口见 [Qwen SSD部署记录](docs/11-qwen36-nx5-ssd-20261021.md)。
 
 **nano5（Orin Nano 8GB）也已跑通同一份 MiniCPM 权重：** 专家缓冲缩小到约 2.50–2.90 GiB，
 完整 12.89 GiB 专家文件仍在 SSD，全部专家均可参与路由。512-token 短测中，

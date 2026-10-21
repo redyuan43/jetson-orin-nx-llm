@@ -1,0 +1,24 @@
+--- a/src/llama-context.cpp
++++ b/src/llama-context.cpp
+@@ -98,6 +98,21 @@
+     cparams.ctx_other = nullptr;
+ 
+     cparams.ctx_type          = params.ctx_type;
++    if (params.ctx_type == LLAMA_CONTEXT_TYPE_MTP) {
++        cparams.cb_eval = [](ggml_tensor * tensor, bool ask, void *) -> bool {
++            if (ask) return tensor->type == GGML_TYPE_F32;
++            std::vector<float> data(ggml_nelements(tensor));
++            ggml_backend_tensor_get(tensor, data.data(), 0, data.size() * sizeof(float));
++            size_t bad = 0;
++            float maximum = 0;
++            for (float value : data) {
++                if (!std::isfinite(value)) ++bad;
++                else maximum = std::max(maximum, std::fabs(value));
++            }
++            fprintf(stderr, "MTP_FINITE %s bad=%zu/%zu max=%g\n", ggml_get_name(tensor), bad, data.size(), maximum);
++            return bad == 0;
++        };
++    }
+ 
+     if (model.arch == LLM_ARCH_DFLASH) {
+         if (model.tok_embd == nullptr || model.output == nullptr) {

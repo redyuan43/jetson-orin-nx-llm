@@ -1,0 +1,8 @@
+{
+  "legacy_minicpm_defaults_preserved": true,
+  "qwen_coding_sampling_checked": true,
+  "qwen_instruct_sampling_checked": true,
+  "model_specific_paths_checked": true,
+  "minicpm_prewarm_omitted_for_qwen": true,
+  "method": "Popen intercepted before execution on nx5; inference is validated separately"
+}

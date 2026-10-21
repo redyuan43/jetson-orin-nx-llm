@@ -1,0 +1,123 @@
+{
+  "url": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/resolve/5bc3e238d916f48a861bac2f8a1990a0e9b7e98d/Qwen3.6-35B-A3B-UD-IQ4_XS.gguf",
+  "size": 18209036576,
+  "sha256": "df27a780435b7b45c2597536112ea3cb091f8544c3d0c3318d9f4258b31f7adf",
+  "actual_sha256": "dc6a90cea9bb7b58f57bcca115223d880881f36b571d738f2fe2ac8f06818afc",
+  "verified": false,
+  "reused_tensor_count": 731,
+  "downloaded_tensors": [
+    {
+      "name": "blk.39.ffn_gate_exps.weight",
+      "offset": 17495482656,
+      "bytes": 142606336
+    },
+    {
+      "name": "blk.39.ffn_up_exps.weight",
+      "offset": 17641308448,
+      "bytes": 142606336
+    },
+    {
+      "name": "blk.40.attn_k.weight",
+      "offset": 17785037088,
+      "bytes": 1114112
+    },
+    {
+      "name": "blk.40.attn_k_norm.weight",
+      "offset": 17786151200,
+      "bytes": 1024
+    },
+    {
+      "name": "blk.40.attn_norm.weight",
+      "offset": 17786152224,
+      "bytes": 8192
+    },
+    {
+      "name": "blk.40.attn_output.weight",
+      "offset": 17786160416,
+      "bytes": 8912896
+    },
+    {
+      "name": "blk.40.attn_q.weight",
+      "offset": 17795073312,
+      "bytes": 17825792
+    },
+    {
+      "name": "blk.40.attn_q_norm.weight",
+      "offset": 17812899104,
+      "bytes": 1024
+    },
+    {
+      "name": "blk.40.attn_v.weight",
+      "offset": 17812900128,
+      "bytes": 1114112
+    },
+    {
+      "name": "blk.40.ffn_down_exps.weight",
+      "offset": 17814014240,
+      "bytes": 150994944
+    },
+    {
+      "name": "blk.40.ffn_down_shexp.weight",
+      "offset": 17965009184,
+      "bytes": 1114112
+    },
+    {
+      "name": "blk.40.ffn_gate_exps.weight",
+      "offset": 17966123296,
+      "bytes": 115343360
+    },
+    {
+      "name": "blk.40.ffn_gate_inp.weight",
+      "offset": 18081466656,
+      "bytes": 1048576
+    },
+    {
+      "name": "blk.40.ffn_gate_inp_shexp.weight",
+      "offset": 18082515232,
+      "bytes": 4096
+    },
+    {
+      "name": "blk.40.ffn_gate_shexp.weight",
+      "offset": 18082519328,
+      "bytes": 1114112
+    },
+    {
+      "name": "blk.40.ffn_up_exps.weight",
+      "offset": 18083633440,
+      "bytes": 115343360
+    },
+    {
+      "name": "blk.40.ffn_up_shexp.weight",
+      "offset": 18198976800,
+      "bytes": 1114112
+    },
+    {
+      "name": "blk.40.nextn.eh_proj.weight",
+      "offset": 18200090912,
+      "bytes": 8912896
+    },
+    {
+      "name": "blk.40.nextn.enorm.weight",
+      "offset": 18209003808,
+      "bytes": 8192
+    },
+    {
+      "name": "blk.40.nextn.hnorm.weight",
+      "offset": 18209012000,
+      "bytes": 8192
+    },
+    {
+      "name": "blk.40.nextn.shared_head_norm.weight",
+      "offset": 18209020192,
+      "bytes": 8192
+    },
+    {
+      "name": "blk.40.post_attention_norm.weight",
+      "offset": 18209028384,
+      "bytes": 8192
+    }
+  ],
+  "downloaded_bytes": 709212160,
+  "method": "Reused candidate base tensor bytes; full artifact accepted only by official SHA256",
+  "finished_at": 1792573245.9619122
+}

@@ -38,6 +38,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('tag', help='Unique output basename')
     parser.add_argument('--root', type=Path, default=Path.home() / 'github/qwen38-kvmem')
+    parser.add_argument('--model-dir', type=Path,
+                        help='Alternate model directory containing stripped.gguf and experts/')
+    prewarm = parser.add_mutually_exclusive_group()
+    prewarm.add_argument('--prewarm-file', type=Path, help='Model-specific expert prewarm table')
+    prewarm.add_argument('--no-prewarm', action='store_true', help='Do not use the MiniCPM prewarm table')
     parser.add_argument('--prompt', type=Path, default=Path(__file__).resolve().parents[2] / 'samples/pelican-prompt.txt')
     parser.add_argument('--output', type=Path, default=Path('logs/minicpm-audit'))
     parser.add_argument('--ctx', type=int, default=8192)
@@ -49,6 +54,8 @@ def main():
     parser.add_argument('--tokens', type=int, default=2048)
     parser.add_argument('--draft', type=int, choices=range(8), default=0,
                         help='0 disables DSpark; otherwise draft length, at most ubatch - 1')
+    parser.add_argument('--spec-type', choices=('draft-dspark', 'draft-mtp'), default='draft-dspark')
+    parser.add_argument('--no-spec-draft-backend-sampling', action='store_true')
     parser.add_argument('--prefetch', type=int, choices=range(17), default=0,
                         help='Lookahead depth; adds this many expert slots per layer')
     parser.add_argument('--matmul-split', type=int, choices=range(8), default=0,
@@ -66,10 +73,12 @@ def main():
                         help='Bound ordinary prompt checkpoints; independent of speculative rollback')
     parser.add_argument('--cache-ram-mib', type=int,
                         help='Prompt-cache RAM budget, 0 disables it; omitted uses engine default')
-    parser.add_argument('--sampling', choices=['benchmark', 'instruct'], default='benchmark',
-                        help='Greedy benchmark or documented MiniCPM-V 4.7 instruct sampling')
+    parser.add_argument('--sampling', choices=['benchmark', 'instruct', 'qwen-coding', 'qwen-instruct'], default='benchmark',
+                        help='Greedy, MiniCPM instruct, or official Qwen3.6 coding/instruct sampling')
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--reasoning', choices=['auto', 'on', 'off'], default='auto')
+    parser.add_argument('--reasoning-budget', type=int)
+    parser.add_argument('--chat-template-kwargs', help='JSON object of explicit chat-template options')
     parser.add_argument('--chat-template-file', type=Path)
     parser.add_argument('--mmproj', type=Path, help='Vision projector for a measured image request')
     parser.add_argument('--image', type=Path, help='One local input image; requires --mmproj')
@@ -97,6 +106,16 @@ def main():
         parser.error('io-threads must be 1..32')
     if args.offload_min_batch < 1:
         parser.error('offload-min-batch must be positive')
+    if args.model_dir and not (args.no_prewarm or args.prewarm_file):
+        parser.error('--model-dir requires --no-prewarm or a model-specific --prewarm-file')
+    if args.model_dir and args.draft and args.spec_type != 'draft-mtp':
+        parser.error('DSpark is only configured for the original MiniCPM model')
+    if args.chat_template_kwargs is not None:
+        try:
+            if not isinstance(json.loads(args.chat_template_kwargs), dict):
+                raise ValueError('not an object')
+        except (json.JSONDecodeError, ValueError):
+            parser.error('--chat-template-kwargs must be a JSON object')
     if any(v is not None and v < 0 for v in (args.ctx_checkpoints, args.cache_ram_mib)):
         parser.error('checkpoint count and cache RAM budget must be non-negative')
     if args.mapped_experts and (args.library_dir is None or not (args.library_dir / 'libggml-cuda.so.0').exists()):
@@ -111,13 +130,15 @@ def main():
             parser.error('output already exists; use a new tag')
     args.prompt = args.prompt.resolve(strict=True)
     base = args.root / 'minicpm-les/llama.cpp-omni'
-    model = args.root / 'models/MiniCPM-V-4.7'
+    model = args.model_dir.resolve(strict=True) if args.model_dir else args.root / 'models/MiniCPM-V-4.7'
     env = {k: v for k, v in os.environ.items()
            if not k.startswith(('LLAMA_MOE_', 'LLAMA_DRAFT_', 'LLAMA_ARG_', 'GGML_CUDA_', 'GGML_OP_'))}
     env.update(LD_LIBRARY_PATH=str(base / 'build-jetson/bin'),
-               LLAMA_MOE_PREWARM=str(args.root / 'minicpm/prewarm_top128.txt'),
                LLAMA_MOE_BANK_CAP=str(max(args.window, (args.bank + 39) // 40)), LLAMA_MOE_DECODE_WINDOW=str(args.window),
                LLAMA_MOE_IO_THREADS=str(args.io_threads), LLAMA_MOE_WINDOW_MAX_ROWS=str(args.rows), LLAMA_MOE_F_NOCACHE='0')
+    if not args.no_prewarm:
+        env['LLAMA_MOE_PREWARM'] = str(args.prewarm_file.resolve(strict=True) if args.prewarm_file
+                                       else args.root / 'minicpm/prewarm_top128.txt')
     if args.prefetch:
         env.update(LLAMA_MOE_LOOKAHEAD_PREFETCH='1',
                    LLAMA_MOE_LOOKAHEAD_PREFETCH_DEPTH=str(args.prefetch))
@@ -141,6 +162,11 @@ def main():
     if args.sampling == 'instruct':
         cmd += ['--temp', '0.7', '--top-p', '0.95', '--top-k', '100', '--min-p', '0',
                 '--presence-penalty', '0', '--repeat-penalty', '1.03', '--repeat-last-n', '-1']
+    elif args.sampling in ('qwen-coding', 'qwen-instruct'):
+        coding = args.sampling == 'qwen-coding'
+        cmd += ['--temp', '0.6' if coding else '0.7', '--top-p', '0.95' if coding else '0.8',
+                '--top-k', '20', '--min-p', '0', '--presence-penalty', '0' if coding else '1.5',
+                '--repeat-penalty', '1.0', '--repeat-last-n', '64']
     else:
         cmd += ['--temp', '0']
     if args.threads:
@@ -151,12 +177,19 @@ def main():
         cmd += ['--cache-ram', str(args.cache_ram_mib)]
     if args.reasoning != 'auto':
         cmd += ['--reasoning', args.reasoning]
+    if args.reasoning_budget is not None:
+        cmd += ['--reasoning-budget', str(args.reasoning_budget)]
+    if args.chat_template_kwargs is not None:
+        cmd += ['--chat-template-kwargs', args.chat_template_kwargs]
     if args.chat_template_file:
         args.chat_template_file = args.chat_template_file.resolve(strict=True)
         cmd += ['--chat-template-file', str(args.chat_template_file)]
     if args.draft:
-        cmd += ['--spec-type', 'draft-dspark', '--spec-draft-model', str(model / 'dspark-Q4_K_M.gguf'),
-                '--spec-draft-n-max', str(args.draft)]
+        cmd += ['--spec-type', args.spec_type, '--spec-draft-n-max', str(args.draft)]
+        if args.no_spec_draft_backend_sampling:
+            cmd += ['--no-spec-draft-backend-sampling']
+        if args.spec_type == 'draft-dspark':
+            cmd += ['--spec-draft-model', str(model / 'dspark-Q4_K_M.gguf')]
     if args.image:
         cmd += ['--mmproj', str(args.mmproj.resolve(strict=True)), '--image', str(args.image.resolve(strict=True))]
         if args.image_max_tokens is not None:
