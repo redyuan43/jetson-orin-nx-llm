@@ -3,9 +3,9 @@
     "id": "qwen36-128k",
     "name": "qwen36-128k",
     "base_model_id": null,
-    "params": {"max_tokens": 7680},
+    "params": {"max_tokens": 7680, "temperature": 0.7, "top_p": 0.8, "presence_penalty": 1.5},
     "meta": {
-      "description": "Qwen3.6 35B-A3B UD-IQ4_XS · 128K · SSD专家/MTP2 · 思考关闭。仅文本；与MiniCPM互斥，一次选一个模型。",
+      "description": "Qwen3.6 35B-A3B UD-IQ4_XS · 128K · SSD专家/MTP2 · 思考关闭。鹈鹕参考采样：temperature 0.7 / top-p 0.8 / presence penalty 1.5；后端 top-k 20 / min-p 0 / repeat penalty 1。仅文本；与MiniCPM互斥，一次选一个模型。",
       "capabilities": {"vision": false, "file_context": false, "web_search": false, "image_generation": false, "code_interpreter": false, "terminal": false, "builtin_tools": false}
     },
     "is_active": true
