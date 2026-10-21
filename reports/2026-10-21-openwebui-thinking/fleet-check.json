@@ -1,0 +1,21 @@
+{
+  "8300": {
+    "status": "current",
+    "release": {
+      "release": "nx5-ssd-llm-28abfe7250a9",
+      "commit": "8275aa14a43a76cefd0611fc735bfa8fd5994a72b9d1994146f54d00379f25dd",
+      "source_commit": "28abfe7250a94ed3f3feeba872c3bc6d131869e0"
+    },
+    "thinking_documented": true
+  },
+  "8301": {
+    "status": "current",
+    "release": {
+      "release": "nx5-ssd-llm-28abfe7250a9",
+      "commit": "8275aa14a43a76cefd0611fc735bfa8fd5994a72b9d1994146f54d00379f25dd",
+      "source_commit": "28abfe7250a94ed3f3feeba872c3bc6d131869e0"
+    },
+    "thinking_documented": true
+  },
+  "passed": true
+}

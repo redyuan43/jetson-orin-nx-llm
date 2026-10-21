@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "model_choices": {
+    "qwen36-128k": {},
+    "minicpm-64k": {}
+  },
+  "effective_thinking": {
+    "qwen36-128k": true,
+    "minicpm-64k": true
+  },
+  "health": {
+    "service_id": "nx5-ssd-llm",
+    "release": "nx5-ssd-llm-28abfe7250a9",
+    "commit": "8275aa14a43a76cefd0611fc735bfa8fd5994a72b9d1994146f54d00379f25dd",
+    "source_commit": "28abfe7250a94ed3f3feeba872c3bc6d131869e0",
+    "state": "ready",
+    "mode": "off",
+    "active": 0,
+    "model_loaded": false,
+    "observed_at": 1792596888.2124693,
+    "resource": "nx5-igpu",
+    "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+  }
+}

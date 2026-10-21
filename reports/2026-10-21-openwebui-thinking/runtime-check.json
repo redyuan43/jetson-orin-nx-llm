@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "runs": [
+    {
+      "job_id": "op_8364df2bb27c97bd0127e3bb5cdf62f1",
+      "profile": "qwen36-128k",
+      "thinking": false,
+      "reasoning": "off",
+      "budget": 0,
+      "reasoning_chars": 0,
+      "context": 131072,
+      "seed": 42,
+      "runner": "/home/nx/github/qwen38-kvmem/nx5-chat-runtime/v4/llama-nx5-chat",
+      "status": "succeeded"
+    },
+    {
+      "job_id": "op_7f4d3b88a539dfcd447d63ba85316902",
+      "profile": "qwen36-128k",
+      "thinking": true,
+      "reasoning": "on",
+      "budget": -1,
+      "reasoning_chars": 754,
+      "context": 131072,
+      "seed": 42,
+      "runner": "/home/nx/github/qwen38-kvmem/nx5-chat-runtime/v4/llama-nx5-chat",
+      "status": "succeeded"
+    },
+    {
+      "job_id": "op_8365330a81985a8b99a2bcca950ccec4",
+      "profile": "minicpm-64k",
+      "thinking": true,
+      "reasoning": "on",
+      "budget": -1,
+      "reasoning_chars": 113,
+      "context": 65536,
+      "seed": 42,
+      "runner": "/home/nx/github/qwen38-kvmem/nx5-chat-runtime/v4/llama-nx5-chat",
+      "status": "succeeded"
+    },
+    {
+      "job_id": "op_6dcba8e0765c2012b906363bd1a46615",
+      "profile": "minicpm-64k",
+      "thinking": false,
+      "reasoning": "off",
+      "budget": 0,
+      "reasoning_chars": 0,
+      "context": 65536,
+      "seed": 42,
+      "runner": "/home/nx/github/qwen38-kvmem/nx5-chat-runtime/v4/llama-nx5-chat",
+      "status": "succeeded"
+    }
+  ]
+}

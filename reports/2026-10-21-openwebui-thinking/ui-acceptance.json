@@ -1,0 +1,181 @@
+{
+  "started_at": "2026-10-21T15:30:46.612Z",
+  "requests": [
+    {
+      "model": "qwen36-128k",
+      "enabled": true,
+      "submitted_at": "2026-10-21T15:30:54.539Z",
+      "url": "http://nx6.taild500c8.ts.net:18348/c/4fe16197-a378-47ee-a128-94a32e4869c0",
+      "reasoning_items": 1,
+      "reasoning_chars": 754,
+      "output_types": [
+        {
+          "type": "reasoning",
+          "attribute_type": "reasoning_content"
+        },
+        {
+          "type": "message"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 24,
+        "completion_tokens": 297,
+        "total_tokens": 321,
+        "decode_tps": 11.686410404541034,
+        "generation_s": 25.414133999999997,
+        "prefill_s": 2.3542080000000003,
+        "process_wall_s": 36.58447500500188,
+        "total_s": 38.596651792526245,
+        "input_tokens": 24,
+        "output_tokens": 297
+      },
+      "answer_present": true,
+      "health_after": {
+        "service_id": "nx5-ssd-llm",
+        "release": "nx5-ssd-llm-28abfe7250a9",
+        "commit": "8275aa14a43a76cefd0611fc735bfa8fd5994a72b9d1994146f54d00379f25dd",
+        "source_commit": "28abfe7250a94ed3f3feeba872c3bc6d131869e0",
+        "state": "ready",
+        "mode": "off",
+        "active": 0,
+        "model_loaded": false,
+        "observed_at": 1792596695.3686137,
+        "resource": "nx5-igpu",
+        "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+      },
+      "persisted_after_followup": true
+    },
+    {
+      "model": "qwen36-128k",
+      "enabled": false,
+      "submitted_at": "2026-10-21T15:31:36.388Z",
+      "url": "http://nx6.taild500c8.ts.net:18348/c/4fe16197-a378-47ee-a128-94a32e4869c0",
+      "reasoning_items": 0,
+      "reasoning_chars": 0,
+      "output_types": [
+        {
+          "type": "message"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 51,
+        "completion_tokens": 4,
+        "total_tokens": 55,
+        "decode_tps": 14.661789178133409,
+        "generation_s": 0.272818,
+        "prefill_s": 3.395279,
+        "process_wall_s": 14.031428392001544,
+        "total_s": 15.984935522079468,
+        "input_tokens": 51,
+        "output_tokens": 4
+      },
+      "answer_present": true,
+      "health_after": {
+        "service_id": "nx5-ssd-llm",
+        "release": "nx5-ssd-llm-28abfe7250a9",
+        "commit": "8275aa14a43a76cefd0611fc735bfa8fd5994a72b9d1994146f54d00379f25dd",
+        "source_commit": "28abfe7250a94ed3f3feeba872c3bc6d131869e0",
+        "state": "ready",
+        "mode": "off",
+        "active": 0,
+        "model_loaded": false,
+        "observed_at": 1792596714.3930604,
+        "resource": "nx5-igpu",
+        "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+      },
+      "persisted_after_followup": true
+    },
+    {
+      "model": "minicpm-64k",
+      "enabled": true,
+      "submitted_at": "2026-10-21T15:31:59.367Z",
+      "url": "http://nx6.taild500c8.ts.net:18348/c/6a71b415-0e65-4d33-8062-48011bef50c9",
+      "reasoning_items": 1,
+      "reasoning_chars": 113,
+      "output_types": [
+        {
+          "type": "reasoning",
+          "attribute_type": "reasoning_content"
+        },
+        {
+          "type": "message"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 24,
+        "completion_tokens": 95,
+        "total_tokens": 119,
+        "decode_tps": 13.114897128817695,
+        "generation_s": 7.243671,
+        "prefill_s": 2.143047,
+        "process_wall_s": 19.043372079002438,
+        "total_s": 20.983247756958008,
+        "input_tokens": 24,
+        "output_tokens": 95
+      },
+      "answer_present": true,
+      "health_after": {
+        "service_id": "nx5-ssd-llm",
+        "release": "nx5-ssd-llm-28abfe7250a9",
+        "commit": "8275aa14a43a76cefd0611fc735bfa8fd5994a72b9d1994146f54d00379f25dd",
+        "source_commit": "28abfe7250a94ed3f3feeba872c3bc6d131869e0",
+        "state": "ready",
+        "mode": "off",
+        "active": 0,
+        "model_loaded": false,
+        "observed_at": 1792596744.3837466,
+        "resource": "nx5-igpu",
+        "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+      },
+      "persisted_after_followup": true
+    },
+    {
+      "model": "minicpm-64k",
+      "enabled": false,
+      "submitted_at": "2026-10-21T15:32:26.169Z",
+      "url": "http://nx6.taild500c8.ts.net:18348/c/6a71b415-0e65-4d33-8062-48011bef50c9",
+      "reasoning_items": 0,
+      "reasoning_chars": 0,
+      "output_types": [
+        {
+          "type": "message"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 55,
+        "completion_tokens": 4,
+        "total_tokens": 59,
+        "decode_tps": 9.169727063073967,
+        "generation_s": 0.436218,
+        "prefill_s": 3.364915,
+        "process_wall_s": 30.55085187999066,
+        "total_s": 32.482118368148804,
+        "input_tokens": 55,
+        "output_tokens": 4
+      },
+      "answer_present": true,
+      "health_after": {
+        "service_id": "nx5-ssd-llm",
+        "release": "nx5-ssd-llm-28abfe7250a9",
+        "commit": "8275aa14a43a76cefd0611fc735bfa8fd5994a72b9d1994146f54d00379f25dd",
+        "source_commit": "28abfe7250a94ed3f3feeba872c3bc6d131869e0",
+        "state": "ready",
+        "mode": "off",
+        "active": 0,
+        "model_loaded": false,
+        "observed_at": 1792596782.347923,
+        "resource": "nx5-igpu",
+        "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+      },
+      "persisted_after_followup": true
+    }
+  ],
+  "page_errors": [],
+  "http_errors": [],
+  "mobile": {
+    "width": 390,
+    "bodyWidth": 390
+  },
+  "passed": true,
+  "default_thinking_enabled": true
+}
