@@ -24,6 +24,7 @@ test_release_follows_process_exit_and_is_idempotent (test_nx5_resident.ResidentT
 test_shutdown_cannot_reload (test_nx5_resident.ResidentTests) ... ok
 test_two_requests_reuse_process_and_retained_usage (test_nx5_resident.ResidentTests) ... ok
 test_unconfirmed_receipt_blocks_new_process (test_nx5_resident.ResidentTests) ... ok
+test_verified_off_observation_is_ready_for_reservation (test_nx5_resident.ResidentTests) ... ok
 test_idempotency_and_conflicting_prompt (test_nx5_service.AdmissionTests) ... ok
 test_invalid_payload_cannot_spawn_model (test_nx5_service.AdmissionTests) ... ok
 test_restart_does_not_replay_unconfirmed_work (test_nx5_service.AdmissionTests) ... ok
@@ -34,6 +35,6 @@ test_missing_or_invalid_metrics_never_fabricate_speed (test_openwebui_stats.Stat
 test_stream_requests_usage_and_status_preserves_answer (test_openwebui_stats.StatsTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 33 tests in 6.562s
+Ran 34 tests in 6.585s
 
 OK

@@ -74,7 +74,7 @@ class CentralLease:
 
     def observe(self, mode, active, operation=None):
         return self.api('POST', self.group + '/observation',
-            {'mode': mode, 'state': 'ready' if mode == 'llm' else 'unknown',
+            {'mode': mode, 'state': 'ready',
              'active': active, 'operation_id': operation}, True)
 
     def acquire(self, request, revision, save):

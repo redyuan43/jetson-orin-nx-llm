@@ -7,7 +7,7 @@ import threading
 import unittest
 from unittest.mock import Mock, patch
 from test_nx5_service import module
-from resident import ResidentModel
+from resident import ResidentModel, CentralLease
 
 
 class ResidentTests(unittest.TestCase):
@@ -18,6 +18,14 @@ class ResidentTests(unittest.TestCase):
 
     def tearDown(self):
         self.tmp.cleanup()
+
+    def test_verified_off_observation_is_ready_for_reservation(self):
+        central = object.__new__(CentralLease)
+        central.group = '/group'
+        central.api = Mock()
+        central.observe('off', 0)
+        self.assertEqual(central.api.call_args.args[2],
+                         {'mode':'off','state':'ready','active':0,'operation_id':None})
 
     def test_two_requests_reuse_process_and_retained_usage(self):
         child = Mock(pid=456, stdin=io.StringIO())
