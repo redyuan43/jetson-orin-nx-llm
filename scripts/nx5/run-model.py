@@ -125,7 +125,8 @@ def main():
     assert not activity['leases'] and not activity['pending'] and not activity['transition'], activity
     request = {'model': config['model'], 'source_sha256': config.get('source_sha256'),
                'prompt_sha256': hashlib.sha256(args.prompt.read_bytes()).hexdigest(),
-               'tag': args.tag, 'tokens': args.tokens, 'parameters': parameters}
+               'tag': args.tag, 'invocation_scope': str(args.output.resolve()),
+               'tokens': args.tokens, 'parameters': parameters}
     op = 'op_' + digest(request)[:32]
     proof = {'operation_id': op, 'request': request, 'created_at': time.time(),
              'initial_activity': activity, 'initial_units': inactive(), 'status': 'waiting',
