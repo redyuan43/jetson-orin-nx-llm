@@ -133,6 +133,29 @@ class ChatTests(unittest.TestCase):
         self.assertEqual(rest.count('"timings":'), 1)
         self.assertIn('"total_s": 12', rest)
 
+    def test_prefill_heartbeat_is_an_empty_sdk_chunk_not_generated_content(self):
+        finish = threading.Event()
+        def execute(job, payload):
+            finish.wait(3)
+            self.finish(job, '40')
+        self.mock_run.side_effect = execute
+        with patch.object(module, 'STREAM_HEARTBEAT_SECONDS', 0.05):
+            r = self.request('POST', '/v1/chat/completions', self.body(stream=True))
+            chunks = []
+            try:
+                while len(chunks) < 2:
+                    line = r.readline().decode()
+                    if line.startswith('data: '):
+                        chunks.append(json.loads(line[6:]))
+                self.assertEqual(chunks[1]['choices'][0], {'index': 0, 'delta': {}, 'finish_reason': None})
+                self.assertNotIn('usage', chunks[1])
+                self.assertNotIn('timings', chunks[1])
+                self.assertEqual(self.service.health()['state'], 'busy')
+            finally:
+                finish.set()
+            self.assertTrue(r.read().decode().endswith('data: [DONE]\n\n'))
+        self.mock_run.assert_called_once()
+
     def test_timing_is_not_sent_with_content_or_finish_and_replay_is_stable(self):
         job={'id':'op_abc','created_at':100,'profile':'qwen36-128k'}
         self.assertNotIn('timings', completion(job, delta={'content':'hello'}))

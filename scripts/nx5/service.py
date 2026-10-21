@@ -21,6 +21,7 @@ PROFILES = {
     'minicpm-64k': 'configs/nx5-minicpm-service.json',
 }
 TERMINAL = {'succeeded', 'failed'}
+STREAM_HEARTBEAT_SECONDS = 5
 
 
 def digest(value):
@@ -335,9 +336,10 @@ def make_server(config, service=None):
                         if snapshot['status'] in ('failed', 'unknown'):
                             event(chat_error(snapshot['error'], kind='server_error'))
                             break
-                        if time.monotonic() - last_heartbeat >= 5:
-                            self.wfile.write(b': loading or generating\n\n')
-                            self.wfile.flush()
+                        if time.monotonic() - last_heartbeat >= STREAM_HEARTBEAT_SECONDS:
+                            # SDK chunk timers ignore SSE comments. An empty delta
+                            # preserves liveness without inventing content or usage.
+                            event(completion(job, delta={}))
                             last_heartbeat = time.monotonic()
                         time.sleep(0.1)
                     self.wfile.write(b'data: [DONE]\n\n')

@@ -25,7 +25,7 @@
 - Models：连接检测后自动发现 `qwen36-128k` 和 `minicpm-64k`。
 - OpenWebUI 后端/容器必须能访问这个 Tailscale 地址。只让浏览器加入 Tailnet 不够。
 - 使用普通文本聊天和 streaming；关闭图片输入，以及自动标题、标签、后续问题等后台生成任务，避免和聊天争用单个 GPU 槽位。
-- 冷启动与长输入会增加等待时间；保持流式连接，客户端总超时建议至少 45 分钟。等待时每5秒有SSE注释心跳，首个内容到达前不会伪造答案。
+- 冷启动与长输入会增加等待时间；保持流式连接，客户端总超时建议至少 45 分钟。等待时每5秒发送空的SSE `delta:{}` 心跳，让SDK的流式超时检测识别连接仍在运行；不填充答案、思考或usage。
 
 `GET /v1/models` 返回两个可选模型，不触发加载。
 `POST /v1/chat/completions` 支持同步 JSON 和 `stream:true` 的 SSE；支持多轮
@@ -68,7 +68,8 @@ OpenWebUI普通聊天默认开启，可在输入框旁的“模型控件”→�
 客户端验证参数及权限、执行工具，然后把原assistant消息（保留tool_calls和reasoning_content）
 及`role:tool,tool_call_id:<原id>,content:<结果字符串>`追加到历史，发起下一轮。
 多工具结果须全部回传；未知或重复结果ID、缺失结果返回400。网关只生成调用，不在nx5执行工具。
-Octop可使用Chat Completions协议和`enable_thinking`适配器；普通聊天默认开启思考。
+[bus002 Octop](http://bus002.taild500c8.ts.net:8088)已配置`nx5-local`连接，可在聊天模型选择器中选择两个模型。
+连接使用Chat Completions协议和`enable_thinking`适配器；普通聊天默认开启思考。
 每次模型往返分别加载、卸载并释放租约，工具执行期间不占用模型；完整智能体任务可能含多次冷启动。
 
 新旧接口共用同一个准入槽位。Chat 忙时返回 OpenAI 格式 HTTP429 `device_job_busy`，
