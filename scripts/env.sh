@@ -1,0 +1,12 @@
+# nx5 · Qwen3.8-27B UD-IQ2_XXS + KVMem llama.cpp
+export PROJ="$HOME/github/qwen38-kvmem"
+export KVMEM_SRC="$PROJ/src/kvmem"
+export BIN="$KVMEM_SRC/build-jetson/bin"
+export MODEL_DIR="$PROJ/models/unsloth-Qwen3.8-27B"
+export MODEL="$MODEL_DIR/Qwen3.8-27B-UD-IQ2_XXS.gguf"
+export MTP_MODEL="$MODEL_DIR/MTP/mtp-Qwen3.8-27B-Q4_0.gguf"
+export MMPROJ="$MODEL_DIR/mmproj-BF16.gguf"
+export PORT="${PORT:-8400}"
+export HOST="${HOST:-127.0.0.1}"
+export LD_LIBRARY_PATH="$BIN:${LD_LIBRARY_PATH:-}"
+export PATH="/usr/local/cuda/bin:$PATH"

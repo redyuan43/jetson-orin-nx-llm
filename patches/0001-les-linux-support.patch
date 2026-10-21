@@ -1,0 +1,308 @@
+diff --git a/common/common.cpp b/common/common.cpp
+index 88ed781..86b77f8 100644
+--- a/common/common.cpp
++++ b/common/common.cpp
+@@ -1174,6 +1174,10 @@ struct common_init_result::impl {
+ 
+     llama_model_ptr   model;
+     llama_context_ptr context;
++    // KVMEM_DSPARK_DRAFT_CTX: DFlash/DSpark drafts have no token embedding or
++    // lm head of their own and link back to the target via cparams.ctx_other.
++    llama_model_ptr   model_dft;
++    llama_context_ptr context_dft;
+ 
+     std::vector<llama_adapter_lora_ptr> lora;
+ 
+@@ -1284,6 +1288,57 @@ common_init_result::common_init_result(common_params & params, bool model_only)
+     }
+ 
+     pimpl->context.reset(lctx);
++
++    // KVMEM_DSPARK_DRAFT_CTX: create the speculative draft context here so that
++    // llama-cli (which never goes through tools/server/server-context.cpp) can use
++    // DFlash/DSpark. Mirrors the server path: the draft carries no token embedding
++    // or lm head of its own and reads both from the target via cparams.ctx_other.
++    // KVMEM: opt-in only -- examples like speculative-simple create the draft
++    // context themselves and would otherwise load the draft model twice.
++    static const bool draft_ctx_in_init = [] {
++        const char * e = std::getenv("LLAMA_DRAFT_CTX_IN_INIT");
++        return e && *e && *e != '0';
++    }();
++    if (params.speculative.has_dft() && draft_ctx_in_init) {
++        auto & params_spec = params.speculative.draft;
++        LOG_INF("%s: loading draft model '%s'\n", __func__, params_spec.mparams.path.c_str());
++
++        auto params_dft = params;
++        params_dft.devices      = params_spec.devices;
++        params_dft.model        = params_spec.mparams;
++        params_dft.n_gpu_layers = params_spec.n_gpu_layers;
++        params_dft.cache_type_k = params_spec.cache_type_k;
++        params_dft.cache_type_v = params_spec.cache_type_v;
++        // drafts are dense; inheriting the target expert bank would fail to load
++        params_dft.moe_experts.clear();
++        params_dft.moe_slot_bank = 0;
++        params_dft.moe_k_prefill = 0;
++        params_dft.moe_k_decode  = 0;
++        params_dft.moe_k_decode_cycle.clear();
++        params_dft.moe_k_decode_schedule.clear();
++
++        auto mparams_dft = common_model_params_to_llama(params_dft);
++        llama_model * model_dft = llama_model_load_from_file(params_dft.model.path.c_str(), mparams_dft);
++        if (model_dft == NULL) {
++            LOG_ERR("%s: failed to load draft model '%s'\n", __func__, params_dft.model.path.c_str());
++            return;
++        }
++        pimpl->model_dft.reset(model_dft);
++
++        auto cparams_dft = common_context_params_to_llama(params_dft);
++        cparams_dft.n_rs_seq  = 0;
++        cparams_dft.ctx_other = lctx;
++        llama_context * ctx_dft = llama_init_from_model(model_dft, cparams_dft);
++        if (ctx_dft == NULL) {
++            LOG_ERR("%s: failed to create draft context\n", __func__);
++            return;
++        }
++        pimpl->context_dft.reset(ctx_dft);
++
++        params_spec.ctx_tgt = lctx;
++        params_spec.ctx_dft = ctx_dft;
++        LOG_INF("%s: DSpark draft context ready (ctx_other linked)\n", __func__);
++    }
+ }
+ 
+ llama_model * common_init_result::model() {
+diff --git a/examples/speculative-simple/speculative-simple.cpp b/examples/speculative-simple/speculative-simple.cpp
+index 5325bcc..16c60d0 100644
+--- a/examples/speculative-simple/speculative-simple.cpp
++++ b/examples/speculative-simple/speculative-simple.cpp
+@@ -66,6 +66,16 @@ int main(int argc, char ** argv) {
+ 
+         params_dft.tensor_buft_overrides = params.speculative.draft.tensor_buft_overrides;
+ 
++        // KVMEM_SPEC_SIMPLE_FIX: a DFlash/DSpark draft is dense and ships no
++        // expert weights, so the target expert bank must not be inherited
++        // (otherwise: MoE experts currently supports only qwen35moe).
++        params_dft.moe_experts.clear();
++        params_dft.moe_slot_bank = 0;
++        params_dft.moe_k_prefill = 0;
++        params_dft.moe_k_decode  = 0;
++        params_dft.moe_k_decode_cycle.clear();
++        params_dft.moe_k_decode_schedule.clear();
++
+         auto mparams_dft = common_model_params_to_llama(params_dft);
+ 
+         model_dft.reset(llama_model_load_from_file(params_dft.model.path.c_str(), mparams_dft));
+@@ -75,6 +85,10 @@ int main(int argc, char ** argv) {
+         }
+ 
+         auto cparams = common_context_params_to_llama(params_dft);
++        // KVMEM_SPEC_SIMPLE_FIX: DFlash/DSpark drafts have no token embedding or
++        // lm head of their own; ctx_other links back to the target model.
++        cparams.n_rs_seq  = 0;
++        cparams.ctx_other = ctx_tgt;
+         ctx_dft.reset(llama_init_from_model(model_dft.get(), cparams));
+ 
+         params.speculative.draft.ctx_tgt = ctx_tgt;
+diff --git a/src/llama-model.cpp b/src/llama-model.cpp
+index f896b83..4da4a7f 100644
+--- a/src/llama-model.cpp
++++ b/src/llama-model.cpp
+@@ -1239,8 +1239,17 @@ void llama_model_base::load_hparams(llama_model_loader & ml) {
+         // Shared-bank RAM is bank x one layer. Cap it at the old bank=32-per-layer budget.
+         const int32_t n_moe_layers = pimpl->moe_experts->layer_count();
+         constexpr int32_t kMoeSlotBankRamBaseline = 32;
+-        if (n_moe_layers > 0 && params.moe_slot_bank > kMoeSlotBankRamBaseline * n_moe_layers) {
+-            throw std::runtime_error("MoE shared slot bank exceeds the bank=32-per-layer RAM budget");
++        // KVMEM_BANK_LIMIT_RELAXED: 可用环境变量把上限提到 64/层，
++        // 在内存富裕的机器上换取更高的 decode 命中率（每 slot 约 1.29 MB）。
++        static const int32_t bank_cap_per_layer = [] {
++            const char * s = std::getenv("LLAMA_MOE_BANK_CAP");
++            const int32_t v = s ? std::atoi(s) : 0;
++            return v > 0 ? v : kMoeSlotBankRamBaseline;
++        }();
++        if (n_moe_layers > 0 && params.moe_slot_bank > bank_cap_per_layer * n_moe_layers) {
++            throw std::runtime_error(format(
++                "MoE shared slot bank exceeds the bank=%d-per-layer RAM budget "
++                "(set LLAMA_MOE_BANK_CAP to raise)", (int) bank_cap_per_layer));
+         }
+         const size_t bytes_all = pimpl->moe_experts->bytes_per_slot_all_layers();
+         const size_t bytes_one = n_moe_layers > 0 ? bytes_all / (size_t) n_moe_layers : 0;
+@@ -1734,17 +1743,41 @@ ggml_tensor * llama_model_base::create_tensor_own_alloc(llama_model_loader & ml,
+ 
+ ggml_tensor * llama_model_base::create_expert_tensor_from_manifest(llama_model_loader & ml, const LLM_TN_IMPL & tn, const std::initializer_list<int64_t> & ne, ggml_type type) {
+     // gguf 里没有这个专家张量（已剥离），只能用 experts manifest 的形状/类型合成。
+-    // 必须放在 alloc_only_buft 上：专家内容是 preadv 运行时写入的，不能被 mmap
+-    // 的文件映射包住（见 create_tensor_own_alloc 的说明）。
++    // Metal 后端提供 alloc_only_buft，专家内容由 preadv 运行时写入，不能被 mmap 映射包住。
+     ggml_backend_dev_t dev = tn.bid == -1
+         ? nullptr
+         : ggml_backend_buft_get_device(pimpl->dev_layer.at(tn.bid).buft_list->front().second);
+ 
+     const auto it = dev ? pimpl->alloc_only_buft.find(dev) : pimpl->alloc_only_buft.end();
++
++    // KVMEM_CUDA_ALLOC_FALLBACK: CUDA/CPU 等后端没有 alloc_only_buft。
++    // 在 --no-mmap 下，默认 buft 的张量不会被包进文件映射区，
++    // 因此可以安全地退回正常分配路径。
+     if (it == pimpl->alloc_only_buft.end()) {
++        // KVMEM_HOST_BUFT_FALLBACK:
++        // 非 Metal 后端没有 alloc_only_buft。LES 的 preadv 把专家内容直接写进
++        // 张量内存，要求该内存既 CPU 可写、又 GPU 可读。
++        // 设备若有 host buffer type（CUDA 的 pinned 内存即如此），就用它。
++        // KVMEM_CPU_BUFT_OPTION: Jetson 是统一内存，普通系统内存已经能被 GPU 直接寻址。
++        // CUDA pinned(_Host) 反而多一层管理开销（cudaMallocHost + cache line 失效）。
++        // 用 LLAMA_MOE_PLAIN_HOST=1 切到普通 CPU buffer 做 A/B。
++        static const bool plain_host = [] {
++            const char * s = std::getenv("LLAMA_MOE_PLAIN_HOST");
++            return s && *s && *s != '0';
++        }();
++        if (plain_host) {
++            return ml.create_tensor_alloc(hparams, ggml_backend_cpu_buffer_type(),
++                                          tn.str(), ne, type);
++        }
++        if (dev) {
++            ggml_backend_buffer_type_t host_buft = ggml_backend_dev_host_buffer_type(dev);
++            if (host_buft && ggml_backend_buft_is_host_addressable(host_buft)) {
++                return ml.create_tensor_alloc(hparams, host_buft, tn.str(), ne, type);
++            }
++        }
+         throw std::runtime_error(format(
+-            "%s: backend has no alloc-only buft, cannot synthesize stripped expert tensor '%s'",
+-            __func__, tn.str().c_str()));
++            "%s: backend has no host-addressable buffer type, cannot synthesize stripped "
++            "expert tensor '%s'", __func__, tn.str().c_str()));
+     }
+ 
+     return ml.create_tensor_alloc(hparams, it->second, tn.str(), ne, type);
+diff --git a/src/llama-moe-slot.cpp b/src/llama-moe-slot.cpp
+index 28c7666..d2866b9 100644
+--- a/src/llama-moe-slot.cpp
++++ b/src/llama-moe-slot.cpp
+@@ -32,6 +32,14 @@
+ #include <fcntl.h>
+ #include <sys/uio.h>
+ #include <unistd.h>
++// macOS 用 fcntl(fd, F_NOCACHE, n) 绕开 page cache；Linux 上没有该常量，
++// 用 posix_fadvise(POSIX_FADV_DONTNEED) 达到等效效果。
++#ifdef __APPLE__
++#define KVMEM_LINUX_FADV 0
++#else
++#include <fcntl.h>
++#define KVMEM_LINUX_FADV 1
++#endif
+ #endif
+ 
+ namespace {
+@@ -1348,9 +1356,15 @@ struct llama_moe_slot_runtime::impl {
+ #ifndef _WIN32
+         std::lock_guard<std::mutex> lock(fd_mutex);
+         for (const auto & kv : fds) {
++#if KVMEM_LINUX_FADV
++            if (on) {
++                posix_fadvise(kv.second, 0, 0, POSIX_FADV_DONTNEED);
++            }
++#else
+             if (fcntl(kv.second, F_NOCACHE, on ? 1 : 0) != 0) {
+                 moe_log("F_NOCACHE 切换失败: %s", std::strerror(errno));
+             }
++#endif
+         }
+ #endif
+         // 只在每个方向各打一次，避免长会话刷屏。
+@@ -1372,9 +1386,15 @@ struct llama_moe_slot_runtime::impl {
+         const int fd = _open(path.c_str(), _O_RDONLY | _O_BINARY);
+ #else
+         const int fd = open(path.c_str(), O_RDONLY | O_CLOEXEC);
++#if KVMEM_LINUX_FADV
++        if (experts_nocache_desired()) {
++            posix_fadvise(fd, 0, 0, POSIX_FADV_DONTNEED);
++        }
++#else
+         if (experts_nocache_desired() && fcntl(fd, F_NOCACHE, 1) != 0) {
+             moe_log("F_NOCACHE 设置失败: %s", std::strerror(errno));
+         }
++#endif
+ #endif
+         if (fd < 0) {
+             throw std::runtime_error(format("failed to open MoE experts file '%s': %s", path.c_str(), std::strerror(errno)));
+@@ -1437,6 +1457,20 @@ struct llama_moe_slot_runtime::impl {
+     // Reads the packed gate|up|down span (one contiguous run in the experts) with a single preadv,
+     // writing each family straight into its own slot. One syscall, one write per byte: no staging
+     // buffer and no second copy into the device buffer.
++    // KVMEM_LINUX_FADV_PER_READ: 命名空间级的 nocache 模式开关。
++    // 0 = 不丢弃（默认，依赖内核的正常缓存行为）
++    // 1 = 每次读完立刻把该段从 page cache 丢掉（等价 macOS F_NOCACHE）
++    static int ncache_mode() {
++        static const int m = [] {
++            const char * e = std::getenv("LLAMA_MOE_F_NOCACHE");
++            if (!e || !*e || std::strcmp(e, "0") == 0) {
++                return 0;
++            }
++            return std::strcmp(e, "auto") == 0 ? -1 : 1;
++        }();
++        return m;
++    }
++
+     int64_t read_expert_directv(const layer_state & state, int32_t expert, int32_t slot,
+                                 bool window_mode = false) {
+         // 诊断：LLAMA_MOE_SKIP_READ=1 时走完所有记账但不真读盘。
+@@ -1524,6 +1558,21 @@ struct llama_moe_slot_runtime::impl {
+         stats.pread_ns.fetch_add(dt, std::memory_order_relaxed);
+         stats.n_bytes.fetch_add(nbytes, std::memory_order_relaxed);
+         stats.n_miss.fetch_add(1, std::memory_order_relaxed);
++
++        // KVMEM_LINUX_FADV_PER_READ: macOS 的 F_NOCACHE 是 fd 级的常驻标志，
++        // 读多少都不会留在 page cache。Linux 没有等价标志，posix_fadvise 只在
++        // 调用那一刻生效 —— 只在 fd_for() 打开时调用一次是不够的：之后读进来的
++        // 页仍会堆积。
++        //
++        // 专家文件合计 12.89 GiB，在 16 GiB 统一内存的机器上，读过一遍就把
++        // page cache 吃满，进程自己的 pinned slot 缓冲（decode 窗口 6.6 GiB）
++        // 加上被缓存的专家页一起超过物理内存，触发内核 OOM（实测 9 次 oom_kill）。
++        // 每次读完立刻 DONTNEED 掉这一段，等价于 macOS 的 F_NOCACHE 语义。
++#if KVMEM_LINUX_FADV
++        if (ncache_mode() != 0) {
++            posix_fadvise(fd, (off_t) offset, (off_t) nbytes, POSIX_FADV_DONTNEED);
++        }
++#endif
+         return dt;
+     }
+ 
+diff --git a/tools/server/CMakeLists.txt b/tools/server/CMakeLists.txt
+index 7b4d40d..a8b6051 100644
+--- a/tools/server/CMakeLists.txt
++++ b/tools/server/CMakeLists.txt
+@@ -74,3 +74,34 @@ target_compile_features(${TARGET_VOXCPM2} PRIVATE cxx_std_17)
+ target_include_directories(${TARGET_VOXCPM2} PRIVATE ${CMAKE_SOURCE_DIR})
+ target_include_directories(${TARGET_VOXCPM2} PRIVATE ${CMAKE_SOURCE_DIR}/vendor/cpp-httplib)
+ target_include_directories(${TARGET_VOXCPM2} PRIVATE ${CMAKE_SOURCE_DIR}/vendor)
++
++
++# llama-les-server: the standard llama.cpp server (tools/server/server.cpp).
++# Upstream removed this target in this branch; restoring it is required for
++# DSpark/DFlash speculative decoding, whose ctx_other link lives in
++# server-context.cpp. llama-cli never creates a draft context at all.
++set(TARGET_LES llama-les-server)
++
++add_executable(${TARGET_LES}
++    main.cpp
++    server.cpp
++    server-http.cpp
++    server-models.cpp
++    server-omni.cpp
++)
++install(TARGETS ${TARGET_LES} RUNTIME)
++
++target_link_libraries(${TARGET_LES} PRIVATE server-context llama-common omni mtmd cpp-httplib ${CMAKE_THREAD_LIBS_INIT})
++if (LLAMA_OPENSSL AND OpenSSL_FOUND)
++    target_link_libraries(${TARGET_LES} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
++    target_compile_definitions(${TARGET_LES} PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
++endif()
++target_compile_features(${TARGET_LES} PRIVATE cxx_std_17)
++target_include_directories(${TARGET_LES} PRIVATE ${CMAKE_SOURCE_DIR})
++target_include_directories(${TARGET_LES} PRIVATE ${CMAKE_SOURCE_DIR}/vendor/cpp-httplib)
++target_include_directories(${TARGET_LES} PRIVATE ${CMAKE_SOURCE_DIR}/vendor)
++target_include_directories(${TARGET_LES} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../omni)
++target_include_directories(${TARGET_LES} PRIVATE ${CMAKE_BINARY_DIR}/tools/ui)
++target_link_libraries(${TARGET_LES} PRIVATE llama-ui)
++target_include_directories(${TARGET_LES} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../omni/voxcpm2)
++target_link_libraries(${TARGET_LES} PRIVATE voxcpm2_runtime)

@@ -1,0 +1,7 @@
+# model weights and build outputs are not tracked
+models/
+build*/
+*.gguf
+*.bin
+!scripts/prewarm_top128.txt
+logs/

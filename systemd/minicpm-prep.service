@@ -1,0 +1,11 @@
+[Unit]
+Description=MiniCPM/llama.cpp inference system prep (swap off, jtop off, clocks locked)
+After=multi-user.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/home/nx/github/qwen38-kvmem/minicpm/prep-system.sh
+
+[Install]
+WantedBy=multi-user.target
