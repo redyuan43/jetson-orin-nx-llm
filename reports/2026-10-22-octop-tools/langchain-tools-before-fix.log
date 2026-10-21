@@ -1,0 +1,35 @@
+Traceback (most recent call last):
+  File "<string>", line 39, in <module>
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "<string>", line 31, in main
+  File "/app/.venv/lib/python3.12/site-packages/langchain_core/runnables/base.py", line 6204, in astream
+    async for item in self.bound.astream(
+  File "/app/.venv/lib/python3.12/site-packages/langchain_core/language_models/chat_models.py", line 927, in astream
+    async for chunk in self._astream(
+  File "/app/.venv/lib/python3.12/site-packages/octop_harness/llm/factory.py", line 633, in _astream
+    async for chunk in super()._astream(*args, **kwargs):
+  File "/app/.venv/lib/python3.12/site-packages/langchain_openai/chat_models/base.py", line 3404, in _astream
+    async for chunk in super()._astream(*args, **kwargs):
+  File "/app/.venv/lib/python3.12/site-packages/langchain_openai/chat_models/base.py", line 1902, in _astream
+    _handle_openai_api_error(e)
+  File "/app/.venv/lib/python3.12/site-packages/langchain_openai/chat_models/base.py", line 1875, in _astream
+    async for chunk in _astream_with_chunk_timeout(
+  File "/app/.venv/lib/python3.12/site-packages/langchain_openai/chat_models/_client_utils.py", line 650, in _astream_with_chunk_timeout
+    chunk = await asyncio.wait_for(it.__anext__(), timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/tasks.py", line 520, in wait_for
+    return await fut
+           ^^^^^^^^^
+  File "/app/.venv/lib/python3.12/site-packages/openai/_streaming.py", line 158, in __aiter__
+    async for item in self._iterator:
+  File "/app/.venv/lib/python3.12/site-packages/openai/_streaming.py", line 205, in __stream__
+    raise APIError(
+openai.APIError: inference_failed

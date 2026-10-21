@@ -1,0 +1,11 @@
+{
+  "user_requested_default_change": true,
+  "before": {
+    "provider_name": "siyuan-nx6",
+    "model": "siyuan/tiers-auto"
+  },
+  "after": {
+    "provider_name": "nx5-local",
+    "model": "minicpm-64k"
+  }
+}

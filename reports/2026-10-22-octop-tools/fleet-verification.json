@@ -1,0 +1,38 @@
+{
+  "service": {
+    "release": "nx5-ssd-llm-987a332ea519",
+    "source_commit": "987a332ea519b486ef231d81c1e9473a0c7419db",
+    "commit": "b4f54482331c9427e7164532667c243915644026692d7742f8d5e0f5754659ff"
+  },
+  "fleet": {
+    "8300": {
+      "contract_status": "current",
+      "stale": false,
+      "release": {
+        "release": "nx5-ssd-llm-987a332ea519",
+        "commit": "b4f54482331c9427e7164532667c243915644026692d7742f8d5e0f5754659ff",
+        "source_commit": "987a332ea519b486ef231d81c1e9473a0c7419db"
+      },
+      "contract_hash": "1706bda271e446c0693852781509efd9ba2bf5f9ef1b8efd399335449f511c8f",
+      "observed_at": 1792600757.8620646,
+      "manual_tools": true,
+      "manual_octop": true,
+      "contract_matches": true
+    },
+    "8301": {
+      "contract_status": "current",
+      "stale": false,
+      "release": {
+        "release": "nx5-ssd-llm-987a332ea519",
+        "commit": "b4f54482331c9427e7164532667c243915644026692d7742f8d5e0f5754659ff",
+        "source_commit": "987a332ea519b486ef231d81c1e9473a0c7419db"
+      },
+      "contract_hash": "1706bda271e446c0693852781509efd9ba2bf5f9ef1b8efd399335449f511c8f",
+      "observed_at": 1792600757.8620646,
+      "manual_tools": true,
+      "manual_octop": true,
+      "contract_matches": true
+    }
+  },
+  "unauthenticated_models_status": 401
+}

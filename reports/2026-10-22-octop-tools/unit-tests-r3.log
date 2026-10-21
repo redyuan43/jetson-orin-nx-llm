@@ -1,0 +1,33 @@
+test_answer_parser_preserves_html (test_nano5_service.NanoServiceTests) ... ok
+test_busy_comfy_is_not_stopped (test_nano5_service.NanoServiceTests) ... ok
+test_changed_barrier_never_stops_service (test_nano5_service.NanoServiceTests) ... ok
+test_conflicting_modes_are_rejected (test_nano5_service.NanoServiceTests) ... ok
+test_missing_queue_is_unknown (test_nano5_service.NanoServiceTests) ... ok
+test_release_uses_lease_digest_not_prompt_digest (test_nano5_service.NanoServiceTests) ... ok
+test_request_id_is_idempotent_and_conflicts_reject (test_nano5_service.NanoServiceTests) ... ok
+test_restart_preserves_unknown_work_without_replay (test_nano5_service.NanoServiceTests) ... ok
+test_chat_and_legacy_share_admission_disconnect_keeps_busy (test_nx5_chat.ChatTests) ... ok
+test_generation_failure_is_not_success (test_nx5_chat.ChatTests) ... ok
+test_malformed_tools_and_unmatched_results_never_start (test_nx5_chat.ChatTests) ... ok
+test_models_auth_and_invalid_requests_never_start (test_nx5_chat.ChatTests) ... ok
+test_prefill_heartbeat_is_an_empty_sdk_chunk_not_generated_content (test_nx5_chat.ChatTests) ... ok
+test_reasoning_is_streamed_and_replayed_separately_from_answer (test_nx5_chat.ChatTests) ... ok
+test_roles_sampling_and_completion_usage (test_nx5_chat.ChatTests) ... ok
+test_stream_delivers_before_completion_and_handles_utf8_split (test_nx5_chat.ChatTests) ... ok
+test_thinking_choice_is_part_of_identity_and_off_keeps_old_identity (test_nx5_chat.ChatTests) ... ok
+test_timing_is_not_sent_with_content_or_finish_and_replay_is_stable (test_nx5_chat.ChatTests) ... ok
+test_tool_stream_matches_final_and_replay_and_keeps_usage_single (test_nx5_chat.ChatTests) ... ok
+test_tools_round_trip_accepts_result_and_preserves_reasoning (test_nx5_chat.ChatTests) ... ok
+test_idempotency_and_conflicting_model (test_nx5_service.AdmissionTests) ... ok
+test_invalid_payload_cannot_spawn_model (test_nx5_service.AdmissionTests) ... ok
+test_restart_does_not_replay_unconfirmed_work (test_nx5_service.AdmissionTests) ... ok
+test_two_models_racing_admit_only_one (test_nx5_service.AdmissionTests) ... ok
+test_unreleased_lease_blocks_next_job (test_nx5_service.AdmissionTests) ... job: op_4b078e73981e739e87403cee6f4ae077 RuntimeError
+ok
+test_missing_or_invalid_metrics_never_fabricate_speed (test_openwebui_stats.StatsTests) ... ok
+test_stream_requests_usage_and_status_preserves_answer (test_openwebui_stats.StatsTests) ... ok
+
+----------------------------------------------------------------------
+Ran 27 tests in 6.056s
+
+OK

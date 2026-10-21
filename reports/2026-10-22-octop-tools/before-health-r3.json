@@ -1,0 +1,13 @@
+{
+  "service_id": "nx5-ssd-llm",
+  "release": "nx5-ssd-llm-f817fc48afcc",
+  "commit": "8dc5951945e04f10d04c2447e878ae6c52bd925f711724decf4ffecad3effc3e",
+  "source_commit": "f817fc48afcccaa9a207e6762739a232b908c464",
+  "state": "ready",
+  "mode": "off",
+  "active": 0,
+  "model_loaded": false,
+  "observed_at": 1792600057.6009853,
+  "resource": "nx5-igpu",
+  "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+}

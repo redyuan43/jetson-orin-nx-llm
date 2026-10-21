@@ -1,0 +1,22 @@
+[
+  {
+    "width": 1440,
+    "model_entry_present": true,
+    "tools_description_present": true,
+    "dimensions": {
+      "viewport": 1440,
+      "body": 1440
+    },
+    "errors": []
+  },
+  {
+    "width": 390,
+    "model_entry_present": true,
+    "tools_description_present": true,
+    "dimensions": {
+      "viewport": 390,
+      "body": 390
+    },
+    "errors": []
+  }
+]

@@ -1,0 +1,46 @@
+[
+  {
+    "id": "op_c5d8271afa385e1cb88b28b21f9f45f8",
+    "status": "succeeded",
+    "created_at": 1792600084.7469938,
+    "started_at": 1792600086.7521818,
+    "finished_at": 1792600379.7729943,
+    "profile": "minicpm-64k",
+    "metrics": {
+      "profile": "minicpm-64k",
+      "context_capacity": 65536,
+      "input_tokens": 7979,
+      "output_tokens": 62,
+      "prefill_s": 277.115662,
+      "generation_s": 5.934611,
+      "decode_tps": 10.447188535187902,
+      "process_wall_s": 293.113243950007,
+      "min_available_mib": 989.2734375,
+      "finish_reason": "tool_calls",
+      "model_loaded_after": false,
+      "lease_status": "released"
+    }
+  },
+  {
+    "id": "op_24bef7c255590aad84b86ba3e91845ab",
+    "status": "succeeded",
+    "created_at": 1792600379.9269254,
+    "started_at": 1792600381.9319134,
+    "finished_at": 1792600686.0056307,
+    "profile": "minicpm-64k",
+    "metrics": {
+      "profile": "minicpm-64k",
+      "context_capacity": 65536,
+      "input_tokens": 8088,
+      "output_tokens": 119,
+      "prefill_s": 281.851668,
+      "generation_s": 12.465629000000002,
+      "decode_tps": 9.546249130308626,
+      "process_wall_s": 304.12945829900855,
+      "min_available_mib": 918.546875,
+      "finish_reason": "stop",
+      "model_loaded_after": false,
+      "lease_status": "released"
+    }
+  }
+]

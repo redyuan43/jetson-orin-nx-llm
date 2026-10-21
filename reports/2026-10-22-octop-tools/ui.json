@@ -1,0 +1,22 @@
+[
+  {
+    "width": 1440,
+    "qwen_visible": true,
+    "minicpm_visible": true,
+    "errors": [],
+    "dimensions": {
+      "viewport": 1440,
+      "body": 1440
+    }
+  },
+  {
+    "width": 390,
+    "qwen_visible": true,
+    "minicpm_visible": true,
+    "errors": [],
+    "dimensions": {
+      "viewport": 390,
+      "body": 390
+    }
+  }
+]

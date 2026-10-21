@@ -1,0 +1,90 @@
+{
+  "model": "minicpm-64k",
+  "thread_id": "thr_01M5FMN3VMMQ99EQ2F1AJ5CTZY",
+  "session_key": "E5XJH1:dashboard:1:dm",
+  "wall_s": 601.822,
+  "events": {
+    "turn.started": 1,
+    "state_snapshot": 11,
+    "state_update": 23,
+    "reasoning": 143,
+    "tool_call_chunk": 2,
+    "usage": 2,
+    "tool_result": 2,
+    "token": 19,
+    "done": 1
+  },
+  "tool_results": [
+    {
+      "type": "tool_result",
+      "node": "tools",
+      "messages": [
+        {
+          "content": "2026-10-22 00:32:59 CST (UTC+0800) Thursday (周四)",
+          "additional_kwargs": {},
+          "response_metadata": {},
+          "type": "tool",
+          "name": "current_time",
+          "id": "8f62dced-475f-4caa-a65f-9f9d27434bfe",
+          "tool_call_id": "bw0UYxyFwKWlWSRFJpPymOPUWWmyzCTM",
+          "artifact": null,
+          "status": "success"
+        }
+      ],
+      "thread_id": "thr_01M5FMN3VMMQ99EQ2F1AJ5CTZY"
+    }
+  ],
+  "text": "2026-10-22 CST (UTC+0800)",
+  "thinking_chars": 239,
+  "errors": [],
+  "done": true,
+  "usage_events": [
+    {
+      "type": "usage",
+      "usage": {
+        "input_tokens": 7979,
+        "uncached_input_tokens": 7979,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "output_tokens": 62,
+        "reasoning_tokens": 0,
+        "total_tokens": 8041
+      },
+      "node": "model",
+      "call_id": "lc_run--01a15f4a-90e1-7671-90fa-ec44016c598f",
+      "model": "minicpm-64k",
+      "thread_id": "thr_01M5FMN3VMMQ99EQ2F1AJ5CTZY"
+    },
+    {
+      "type": "usage",
+      "usage": {
+        "input_tokens": 8088,
+        "uncached_input_tokens": 8088,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "output_tokens": 119,
+        "reasoning_tokens": 0,
+        "total_tokens": 8207
+      },
+      "node": "model",
+      "call_id": "lc_run--01a15f4f-1200-7390-9ce8-39ebc4d603f9",
+      "model": "minicpm-64k",
+      "thread_id": "thr_01M5FMN3VMMQ99EQ2F1AJ5CTZY"
+    }
+  ],
+  "proof_source": "Parsed complete WebSocket capture using Octop token/reasoning event names; original live collector counted only text/thinking.",
+  "final_health": {
+    "service_id": "nx5-ssd-llm",
+    "release": "nx5-ssd-llm-987a332ea519",
+    "commit": "b4f54482331c9427e7164532667c243915644026692d7742f8d5e0f5754659ff",
+    "source_commit": "987a332ea519b486ef231d81c1e9473a0c7419db",
+    "state": "ready",
+    "mode": "off",
+    "active": 0,
+    "model_loaded": false,
+    "observed_at": 1792600742.3200676,
+    "resource": "nx5-igpu",
+    "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+  },
+  "passed": true
+}

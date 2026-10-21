@@ -1,0 +1,55 @@
+{
+  "name": "nx5-local",
+  "kind": "openai",
+  "base_url": "http://nx5.taild500c8.ts.net:18347/v1",
+  "stream_usage": true,
+  "note": "NX5 本地模型，SSD 专家按需加载，两模型互斥。支持文本、函数工具调用及结果回传，工具由 Octop 执行；不接受图片。普通聊天思考默认开启。每轮模型调用会重新加载，长任务请等待流式回复。",
+  "models": [
+    {
+      "id": "qwen36-128k",
+      "name": "NX5 · Qwen3.6 35B-A3B · 128K",
+      "enabled": true,
+      "input": [
+        "text"
+      ],
+      "context_window": 131072,
+      "max_input_tokens": 123392,
+      "max_output_tokens": 7680,
+      "api_mode": "chat_completions",
+      "api_fallback": "none",
+      "supportsToolCall": true,
+      "supportsImages": false,
+      "reasoning": true,
+      "reasoning_config": {
+        "supported": true,
+        "toggle": true,
+        "default_mode": "enabled",
+        "adapter": "dashscope",
+        "efforts": []
+      }
+    },
+    {
+      "id": "minicpm-64k",
+      "name": "NX5 · MiniCPM-V4.7 35B-A3B · 64K",
+      "enabled": true,
+      "input": [
+        "text"
+      ],
+      "context_window": 65536,
+      "max_input_tokens": 57856,
+      "max_output_tokens": 7680,
+      "api_mode": "chat_completions",
+      "api_fallback": "none",
+      "supportsToolCall": true,
+      "supportsImages": false,
+      "reasoning": true,
+      "reasoning_config": {
+        "supported": true,
+        "toggle": true,
+        "default_mode": "enabled",
+        "adapter": "dashscope",
+        "efforts": []
+      }
+    }
+  ]
+}
