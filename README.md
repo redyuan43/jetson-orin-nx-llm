@@ -6,13 +6,14 @@
 并列明硬件适配差异。此前中文 HTML 动画题与带思考结果属于自定义实验。
 完整规则见 [鹈鹕 SVG 对照测试规范](docs/10-pelican-test-protocol.md)。
 
-**nx5双模型互斥API已上线：** `qwen36-128k` 与 `minicpm-64k` 通过同一异步接口按任务加载，
+**nx5双模型互斥API已上线：** `qwen36-128k` 与 `minicpm-64k` 通过统一准入接口按任务加载，
 每次一个模型，结束后卸载并释放中央GPU租约。Qwen→MiniCPM→Qwen三次真实HTTP调用通过，
 并发第二请求被拒绝，重复请求不重跑。入口 `http://nx5.taild500c8.ts.net:18347`，需要Tailscale与专用Bearer令牌。
 [舰队能力页](http://nx6.taild500c8.ts.net:8300/capabilities) ·
 [调用手册](http://nx6.taild500c8.ts.net:8300/agent/nx5-ssd-llm.md) ·
 [部署与验收](docs/13-nx5-dual-model-service-20261021.md)。
-当前API仅文本异步任务，非OpenAI兼容；模型不跨请求常驻。旧nx5 Ornith/ComfyUI自动启动已退出。
+新增 OpenAI Chat Completions 与 SSE，可接 OpenWebUI；原有文本异步任务仍可调用。
+模型不跨请求常驻；旧nx5 Ornith/ComfyUI自动启动已退出。
 
 **Qwen3.6-35B-A3B MTP（UD-IQ4_XS）已在nx5跑通SSD专家加载：** 约14.53 GiB专家在SSD，
 8K / window128 / MTP draft2。关闭思考的英文SVG原题实测 **17.85 token/s，完整输出2分19秒**，
@@ -86,7 +87,7 @@ OpenWebUI 后端/容器须能访问 Tailnet。模型列表自动发现 `qwen36-1
 两个模型及原有 `/v1/jobs` 共用一个 GPU 准入槽位。Chat 忙时429，不会并行加载或杀掉正在运行的任务。
 关闭 OpenWebUI 自动标题/标签等后台模型任务，避免和聊天争用资源。
 目前不支持图片、tools 或跨请求 KV 缓存；思考关闭。详细配置、恢复规则和 SDK 示例见
-[调用手册](docs/nx5-service/API.md)；舰队页面为 `http://nx6.taild500c8.ts.net:8300/capabilities`。
+[调用手册](docs/nx5-service/API.md)和[发布验收](docs/14-nx5-openai-service-20261021.md)；舰队页面为 `http://nx6.taild500c8.ts.net:8300/capabilities`。
 
 ## 硬件与环境
 

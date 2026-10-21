@@ -1,0 +1,1207 @@
+{
+  "started_at": 1792579184.3158927,
+  "jobs": [
+    {
+      "request": {
+        "model": "qwen36-128k",
+        "messages": [
+          {
+            "role": "system",
+            "content": "用中文回答，保留用户给出的暗号原样。"
+          },
+          {
+            "role": "user",
+            "content": "我的暗号是 BLUE-PELICAN-73。请记住它。"
+          },
+          {
+            "role": "assistant",
+            "content": "我记住了你的暗号。"
+          },
+          {
+            "role": "user",
+            "content": "我的暗号是什么？再回答17乘23等于多少，并用三句话说明SSD专家缓存是否删除了模型专家。"
+          }
+        ],
+        "temperature": 0,
+        "seed": 42,
+        "max_tokens": 192,
+        "stream": true,
+        "stream_options": {
+          "include_usage": true
+        }
+      },
+      "key": "openai-live-1792579184-0",
+      "started_at": 1792579184.3220062,
+      "http_status": 200,
+      "job_id": "op_4a34a0a40d49fd2b200c9370f9e92a13",
+      "cross_api_mutex": true,
+      "first_content_s": 17.14339518547058,
+      "done": true,
+      "chunks": [
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "role": "assistant",
+                "content": ""
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "你的"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "暗"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "号"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "是"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": " BLUE"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "-"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "PE"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "LIC"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "AN"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "-"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "7"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "3"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "。"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "\n"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "1"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "7"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "乘以"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "2"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "3"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "等于"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "3"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "9"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "1"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "。"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "\n"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "SS"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "D"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "专家"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "缓存"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "并未"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "删除"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "模型"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "专家"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "，"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "它"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "仅"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "用于"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "加速"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "数据"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "检索"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "以提升"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "推理"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "效率"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "，"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "而"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "模型"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "专家"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "本身"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "依然"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "完整"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "保留"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "在"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "系统中"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "以"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "维持"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "模型的"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "正常"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "功能"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "。"
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {},
+              "finish_reason": "stop"
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-4a34a0a40d49fd2b200c9370f9e92a13",
+          "object": "chat.completion.chunk",
+          "created": 1792579184,
+          "model": "qwen36-128k",
+          "choices": [],
+          "usage": {
+            "prompt_tokens": 90,
+            "completion_tokens": 60,
+            "total_tokens": 150
+          }
+        }
+      ],
+      "stream_text": "你的暗号是 BLUE-PELICAN-73。\n17乘以23等于391。\nSSD专家缓存并未删除模型专家，它仅用于加速数据检索以提升推理效率，而模型专家本身依然完整保留在系统中以维持模型的正常功能。",
+      "job": {
+        "id": "op_4a34a0a40d49fd2b200c9370f9e92a13",
+        "request_id": "openai-live-1792579184-0",
+        "profile": "qwen36-128k",
+        "status": "succeeded",
+        "created_at": 1792579184.3234649,
+        "started_at": 1792579186.3284874,
+        "result": {
+          "text": "你的暗号是 BLUE-PELICAN-73。\n17乘以23等于391。\nSSD专家缓存并未删除模型专家，它仅用于加速数据检索以提升推理效率，而模型专家本身依然完整保留在系统中以维持模型的正常功能。",
+          "profile": "qwen36-128k",
+          "context_capacity": 131072,
+          "input_tokens": 90,
+          "output_tokens": 60,
+          "prefill_s": 5.150107,
+          "generation_s": 5.2898689999999995,
+          "decode_tps": 11.342435890189341,
+          "process_wall_s": 24.04736449700431,
+          "min_available_mib": 2120.484375,
+          "finish_reason": "stop",
+          "model_loaded_after": false,
+          "lease_status": "released"
+        },
+        "finished_at": 1792579210.2071333
+      },
+      "wall_s": 25.977137804031372,
+      "idempotent_json_replay": true
+    },
+    {
+      "request": {
+        "model": "minicpm-64k",
+        "messages": [
+          {
+            "role": "system",
+            "content": "用中文回答，保留用户给出的暗号原样。"
+          },
+          {
+            "role": "user",
+            "content": "我的暗号是 BLUE-PELICAN-73。请记住它。"
+          },
+          {
+            "role": "assistant",
+            "content": "我记住了你的暗号。"
+          },
+          {
+            "role": "user",
+            "content": "我的暗号是什么？再回答17乘23等于多少，并用三句话说明SSD专家缓存是否删除了模型专家。"
+          }
+        ],
+        "temperature": 0,
+        "seed": 42,
+        "max_tokens": 192,
+        "stream": false
+      },
+      "key": "openai-live-1792579184-1",
+      "started_at": 1792579210.3021493,
+      "http_status": 200,
+      "job_id": "op_e4dcb08d4d70483f15cedbb60d25137f",
+      "response": {
+        "id": "chatcmpl-e4dcb08d4d70483f15cedbb60d25137f",
+        "object": "chat.completion",
+        "created": 1792579210,
+        "model": "minicpm-64k",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "你的暗号是 BLUE-PELICAN-73。\n\n17乘23等于391。\n\nSSD专家缓存不会删除模型专家。它只是将模型专家的信息缓存到SSD中，以便快速访问。当需要加载模型专家时，会从SSD缓存中读取，而不是从原始存储中读取。"
+            },
+            "finish_reason": "stop",
+            "logprobs": null
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 94,
+          "completion_tokens": 72,
+          "total_tokens": 166
+        }
+      },
+      "job": {
+        "id": "op_e4dcb08d4d70483f15cedbb60d25137f",
+        "request_id": "openai-live-1792579184-1",
+        "profile": "minicpm-64k",
+        "status": "succeeded",
+        "created_at": 1792579210.3045223,
+        "started_at": 1792579215.3091233,
+        "result": {
+          "text": "你的暗号是 BLUE-PELICAN-73。\n\n17乘23等于391。\n\nSSD专家缓存不会删除模型专家。它只是将模型专家的信息缓存到SSD中，以便快速访问。当需要加载模型专家时，会从SSD缓存中读取，而不是从原始存储中读取。",
+          "profile": "minicpm-64k",
+          "context_capacity": 65536,
+          "input_tokens": 94,
+          "output_tokens": 72,
+          "prefill_s": 13.647759,
+          "generation_s": 7.082834,
+          "decode_tps": 10.16542248484152,
+          "process_wall_s": 30.563592274993425,
+          "min_available_mib": 1122.55078125,
+          "finish_reason": "stop",
+          "model_loaded_after": false,
+          "lease_status": "released"
+        },
+        "finished_at": 1792579245.7907481
+      },
+      "wall_s": 35.62591600418091
+    },
+    {
+      "request": {
+        "model": "qwen36-128k",
+        "messages": [
+          {
+            "role": "system",
+            "content": "用中文回答，保留用户给出的暗号原样。"
+          },
+          {
+            "role": "user",
+            "content": "我的暗号是 BLUE-PELICAN-73。请记住它。"
+          },
+          {
+            "role": "assistant",
+            "content": "我记住了你的暗号。"
+          },
+          {
+            "role": "user",
+            "content": "我的暗号是什么？再回答17乘23等于多少，并用三句话说明SSD专家缓存是否删除了模型专家。"
+          }
+        ],
+        "temperature": 0,
+        "seed": 42,
+        "max_tokens": 192,
+        "stream": true,
+        "stream_options": {
+          "include_usage": true
+        }
+      },
+      "key": "openai-live-1792579184-2",
+      "started_at": 1792579245.9298046,
+      "http_status": 200,
+      "job_id": "op_04d179e4e02efd841a6a3f8fabafa8d3",
+      "cross_api_mutex": true,
+      "first_content_s": 14.745453596115112,
+      "disconnected_after_content": true,
+      "chunks": [
+        {
+          "id": "chatcmpl-04d179e4e02efd841a6a3f8fabafa8d3",
+          "object": "chat.completion.chunk",
+          "created": 1792579245,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "role": "assistant",
+                "content": ""
+              },
+              "finish_reason": null
+            }
+          ]
+        },
+        {
+          "id": "chatcmpl-04d179e4e02efd841a6a3f8fabafa8d3",
+          "object": "chat.completion.chunk",
+          "created": 1792579245,
+          "model": "qwen36-128k",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "content": "你的"
+              },
+              "finish_reason": null
+            }
+          ]
+        }
+      ],
+      "job": {
+        "id": "op_04d179e4e02efd841a6a3f8fabafa8d3",
+        "request_id": "openai-live-1792579184-2",
+        "profile": "qwen36-128k",
+        "status": "succeeded",
+        "created_at": 1792579245.9322925,
+        "started_at": 1792579247.9363754,
+        "result": {
+          "text": "你的暗号是 BLUE-PELICAN-73。\n17乘以23等于391。\nSSD专家缓存并未删除模型专家，它仅用于加速数据检索以提升推理效率，而模型专家本身依然完整保留在系统中以维持模型的正常功能。",
+          "profile": "qwen36-128k",
+          "context_capacity": 131072,
+          "input_tokens": 90,
+          "output_tokens": 60,
+          "prefill_s": 5.129349,
+          "generation_s": 5.27184,
+          "decode_tps": 11.381225530365109,
+          "process_wall_s": 20.54368173799594,
+          "min_available_mib": 2105.11328125,
+          "finish_reason": "stop",
+          "model_loaded_after": false,
+          "lease_status": "released"
+        },
+        "finished_at": 1792579268.4139125
+      },
+      "wall_s": 22.55542230606079
+    }
+  ],
+  "max_llama_processes": 1,
+  "models": {
+    "object": "list",
+    "data": [
+      {
+        "id": "qwen36-128k",
+        "object": "model",
+        "created": 0,
+        "owned_by": "nx5",
+        "context_window": 131072
+      },
+      {
+        "id": "minicpm-64k",
+        "object": "model",
+        "created": 0,
+        "owned_by": "nx5",
+        "context_window": 65536
+      }
+    ]
+  },
+  "unauthorized_rejected": true,
+  "images_rejected": true,
+  "health_after": {
+    "service_id": "nx5-ssd-llm",
+    "release": "nx5-ssd-llm-b0c8e33e11b7",
+    "commit": "72ea471411b2dabf19dbe7775af4cd03749aa74f8bd0dc62a72ae0fb11ebf26d",
+    "source_commit": "b0c8e33e11b75c6c4c6b5582e54e1ef436f84e6e",
+    "state": "ready",
+    "mode": "off",
+    "active": 0,
+    "model_loaded": false,
+    "observed_at": 1792579268.4880373,
+    "resource": "nx5-igpu",
+    "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+  },
+  "passed": true,
+  "finished_at": 1792579268.488558
+}

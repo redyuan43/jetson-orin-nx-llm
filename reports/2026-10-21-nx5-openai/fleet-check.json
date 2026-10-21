@@ -1,0 +1,158 @@
+{
+  "8300": {
+    "gateway": {
+      "id": "nx5-ssd-llm",
+      "name": "nx5 · Qwen 128K / MiniCPM 64K",
+      "entry": "http://nx5.taild500c8.ts.net:18347",
+      "scope": "Tailscale + nx5 专用 Bearer Token；两个SSD专家模型互斥、按任务加载",
+      "observed_at": 1792579410.1470244,
+      "capabilities": [
+        {
+          "capability_id": "qwen36",
+          "alias": "Qwen3.6-35B-A3B · 128K",
+          "description": "UD-IQ4_XS，SSD专家window128，MTP draft2；文本、代码与SVG；关闭思考。128K容量及8218-token输入已验证，未测满128K。 支持OpenWebUI / OpenAI文本多轮聊天和SSE流式。"
+        },
+        {
+          "capability_id": "minicpm",
+          "alias": "MiniCPM-V4.7 · 64K",
+          "description": "SSD专家window176，DSpark draft7；文本、代码与SVG；关闭思考。64K容量及8218-token输入已验证，未测满64K。 支持OpenWebUI / OpenAI文本多轮聊天和SSE流式。"
+        }
+      ],
+      "contract_observed_at": 1792579410.2028193,
+      "contract_hash": "a75085ba254eb109a92908590d3b17b4e08e445ff3183fcb9a4cce7d87058d21",
+      "resource_mappings": {
+        "nx5-ssd-llm": [
+          "nx5-igpu"
+        ]
+      },
+      "guide_markdown": "# nx5 Qwen / MiniCPM 调用手册\n\n入口：`http://nx5.taild500c8.ts.net:18347`（Tailscale，100.118.44.27）。\n认证：`Authorization: Bearer <NX5_SSD_LLM_TOKEN>`，这是本服务专用令牌，\n由nx5管理员从`~/.config/nx5-ssd-llm/client.key`安全提供给获准客户端。\n不把令牌粘贴到提示词、图谱或任务日志；不能复用其他舰队服务的凭据。\n\n## 模型选择\n\n| profile | 模型 | 上下文总容量 | 本机固定参数 |\n|---|---|---:|---|\n| `qwen36-128k` | Qwen3.6-35B-A3B MTP UD-IQ4_XS | 131072 token | SSD window128、MTP draft2 |\n| `minicpm-64k` | MiniCPM-V4.7 35B-A3B | 65536 token | SSD window176、DSpark draft7 |\n\n两个档位都关闭思考，保留全部专家，SSD只改变存储与缓存方式。\n上下文是输入与输出共用容量；两者均已测试容量与8218-token实际输入，尚未测满各自上下文。\n此前Qwen标准SVG实测17.31 token/s；长文预处理另需时间，不能把生成速度当输入处理速度。\n\n## OpenWebUI / OpenAI Chat Completions\n\n在 OpenWebUI 的管理员设置 → Connections → OpenAI API 添加连接：\n\n- Base URL：`http://nx5.taild500c8.ts.net:18347/v1`\n- API Key：本服务的专用 Bearer 令牌（不是 OpenAI 的云端 Key）。\n- Models：连接检测后自动发现 `qwen36-128k` 和 `minicpm-64k`。\n- OpenWebUI 后端/容器必须能访问这个 Tailscale 地址。只让浏览器加入 Tailnet 不够。\n- 使用普通文本聊天和 streaming；关闭工具调用、图片输入，以及自动标题、标签、后续问题等后台生成任务，避免和聊天争用单个 GPU 槽位。\n- 冷启动与长输入会增加等待时间；保持流式连接，客户端总超时建议至少 45 分钟。等待时每5秒有SSE注释心跳，首个内容到达前不会伪造答案。\n\n`GET /v1/models` 返回两个可选模型，不触发加载。\n`POST /v1/chat/completions` 支持同步 JSON 和 `stream:true` 的 SSE；支持多轮\n`system/user/assistant` 文本消息，最后一条须为 user，system 只允许在第一条。\n消息由模型自己的聊天模板渲染，每个请求携带完整历史；服务不保存可供后续自动续接的对话会话或 KV cache。\n\n```python\nimport os\nfrom openai import OpenAI\nclient = OpenAI(base_url=\"http://nx5.taild500c8.ts.net:18347/v1\",\n                api_key=os.environ[\"NX5_SSD_LLM_TOKEN\"], timeout=2700, max_retries=0)\nstream = client.chat.completions.create(\n    model=\"qwen36-128k\",  # 切到 minicpm-64k 即在下次请求加载另一个模型\n    messages=[{\"role\": \"user\", \"content\": \"用中文简述MoE模型。\"}],\n    max_tokens=512, stream=True, stream_options={\"include_usage\": True})\nfor chunk in stream:\n    if chunk.choices:\n        print(chunk.choices[0].delta.content or \"\", end=\"\", flush=True)\n```\n\n可覆盖 `temperature` (0–2)、`top_p` (0–1)、`seed` (uint32)、\n`presence_penalty/frequency_penalty` (-2–2)、`stop` (最多4个字符串)、\n`max_tokens` 或 `max_completion_tokens` (1–7680，默认2048)。未指定时保留模型固定采样参数；\n重复惩罚扫描窗口仍沿用模型固定设置。两种 token 上限同时提供时必须相同。\n不支持多个候选 n>1、工具、图片、结构化 response_format、logprobs、Responses API 或 Embeddings；\n这些参数会明确报错，不会默默忽略。`user` 仅接受为客户端标识，不影响推理。\n思考固定关闭。\n\n新旧接口共用同一个准入槽位。Chat 忙时返回 OpenAI 格式 HTTP429 `device_job_busy`，\n异步 jobs 忙时仍为409；没有后台排队。空闲时可以选择任意一个模型。\n响应头 `X-Job-ID` 对应 `/v1/jobs/{id}`，可在断线后查询原任务。\n请求可带 `Idempotency-Key`（1–100个字母/数字/下划线/点/连字符）：\n相同键和相同规范化推理内容返回原任务结果；改变推理内容返回409。\n不带键的每次调用都是新任务；stream与include_usage仅改变传输形式，不改变幂等身份。\n客户端断开或点击停止不会终止后台推理，也不会提前释放租约；不要自动换键重试。\n\n同步响应包含 `choices[0].message.content`、真实 `usage` 和 `finish_reason`。\nSSE逐步返回 `choices[0].delta.content`；进程结束且租约释放后才发送最终finish，\n可选usage块及 `[DONE]`。若推理失败，SSE返回error对象后结束，不伪报成功。\n上下文超限在加载后按实际token数检测；同步400或SSE error `context_length_exceeded`。\n\n## 原有异步调用顺序\n\n1. 无需令牌即可GET `/healthz`、`/v1/service-catalog`、`/v1/client-contract`读取状态、版本和契约。\n2. 客户端先保存唯一`request_id`及完整请求，再认证POST `/v1/jobs`。\n3. HTTP202只表示受理；保存返回的`id`和`status_url`，认证GET原`status_url`轮询。\n4. `succeeded`后读取`result.text`；`result.finish_reason=length`表示输出预算已用完，内容可能截断。\n5. `failed`表示已确认失败。`unknown`表示需要管理员核对原进程和租约，禁止换ID自动重投。\n\nQwen示例：\n\n```json\n{\"request_id\":\"qwen-example-001\",\"profile\":\"qwen36-128k\",\"prompt\":\"用中文解释SSD专家缓存。\",\"max_tokens\":512}\n```\n\nMiniCPM示例：\n\n```json\n{\"request_id\":\"minicpm-example-001\",\"profile\":\"minicpm-64k\",\"prompt\":\"用中文解释SSD专家缓存。\",\"max_tokens\":512}\n```\n\n标准鹈鹕题使用原文`Generate an SVG of a pelican riding a bicycle.`，不添加其他提示或开启思考。\nAPI返回模型原文，不会修复生成代码。请求成功与绘图质量分别验收。\n\nPython客户端示例（从环境注入专用令牌，不写死）：\n\n```python\nimport os, time, uuid, requests\nbase = \"http://nx5.taild500c8.ts.net:18347\"\nheaders = {\"Authorization\": \"Bearer \" + os.environ[\"NX5_SSD_LLM_TOKEN\"]}\npayload = {\"request_id\": str(uuid.uuid4()), \"profile\": \"qwen36-128k\",\n           \"prompt\": \"用中文简述MoE模型。\", \"max_tokens\": 512}\n# 生产客户端在发送前将payload持久化；恢复时重用同一request_id和内容。\nr = requests.post(base + \"/v1/jobs\", json=payload, headers=headers, timeout=30)\nr.raise_for_status()\nstatus_url = r.json()[\"status_url\"]\nwhile True:\n    r = requests.get(base + status_url, headers=headers, timeout=30)\n    r.raise_for_status()\n    job = r.json()\n    if job[\"status\"] in {\"succeeded\", \"failed\", \"unknown\"}:\n        break\n    time.sleep(3)\nif job[\"status\"] != \"succeeded\":\n    raise RuntimeError(job[\"status\"])\nprint(job[\"result\"][\"text\"])\n```\n\n## 互斥与恢复\n\n两个模型共用`nx5-igpu`，API每次只受理一个任务。另一个新请求在忙时返回HTTP409，\n不会杀掉前一个任务；等原任务终止后再提交新任务。相同request_id重发同一规范化请求返回原任务，\n不同内容返回409。客户端超时或停止轮询不会取消任务。\n\n每次推理前校验固定运行库、检查既有业务与推理进程、获取中央独占租约；\n推理过程另持有本机锁。成功返回前必须确认子进程退出、结果可读取、租约已释放。\nHTTP服务常驻，模型每次请求加载，完成后退出并释放内存；`model_loaded=false`是正常空闲状态。\nAPI的ready只表示本入口可受理，不承诺中央资源立即可用。\n服务重启不会重放未完成任务，未知任务会阻止后续准入，需管理员核对后恢复。\n\nnx5旧Ornith、ComfyUI及旧文本控制器的自动启动已退出，不能绕过本入口手动同时加载其他模型。\n这不改变其他节点的服务。旧进程不会为了新请求被强杀。\n\n两个接口当前均为纯文本，没有图片输入、tools、自动保存的对话历史或跨请求模型常驻。\n每次请求需携带完整所需文本。500000字符（聊天历史总和）、最多1024条消息、2MiB请求体、\n1–7680输出token；运行阶段超时40分钟。超长输入还受模型token容量与实际处理时间限制。\n\n元数据公开的`commit`是发布文件集合指纹，`source_commit`是源码Git提交；\n目录、手册、契约必须对应相同发布，过期或不匹配时先核对服务状态。\n",
+      "release": {
+        "release": "nx5-ssd-llm-b0c8e33e11b7",
+        "commit": "72ea471411b2dabf19dbe7775af4cd03749aa74f8bd0dc62a72ae0fb11ebf26d",
+        "source_commit": "b0c8e33e11b75c6c4c6b5582e54e1ef436f84e6e"
+      },
+      "input": {
+        "max_parallel": 1,
+        "max_output_tokens": 7680,
+        "max_prompt_characters": 500000,
+        "max_request_bytes": 2097152,
+        "profiles": [
+          "qwen36-128k",
+          "minicpm-64k"
+        ],
+        "modalities": [
+          "text"
+        ],
+        "openai_base_url": "http://nx5.taild500c8.ts.net:18347/v1",
+        "protocols": [
+          "openai-chat-completions",
+          "async-jobs"
+        ],
+        "streaming": true,
+        "multi_turn": "full history in each request",
+        "max_messages": 1024
+      },
+      "availability_scope": "API常驻；两个模型按请求加载、完成后卸载并释放中央nx5-igpu租约；互斥不排队。OpenAI Chat Completions、模型发现和SSE；当前仅文本，无图片/工具。ready只表示入口可受理，仍需租约与运行库校验。",
+      "runtime": {
+        "mode": "off",
+        "state": "ready",
+        "active": 0,
+        "model_loaded": false,
+        "observed_at": 1792579410.1200573,
+        "coordinator_reachable": null
+      },
+      "status": "available",
+      "version": "nx5-ssd-llm-b0c8e33e11b7",
+      "error": null,
+      "contract_status": "current",
+      "stale": false
+    },
+    "contract_status_header": "current",
+    "schema_version": "72ea471411b2dabf19dbe7775af4cd03749aa74f8bd0dc62a72ae0fb11ebf26d",
+    "paths": [
+      "/v1/jobs",
+      "/v1/jobs/{job_id}",
+      "/v1/models",
+      "/v1/chat/completions"
+    ],
+    "guide_sha256": "dd3986de38444324fd7d1e2331828ffe0639f065e54f4450827e0ca7ca5a9cfb"
+  },
+  "8301": {
+    "gateway": {
+      "id": "nx5-ssd-llm",
+      "name": "nx5 · Qwen 128K / MiniCPM 64K",
+      "entry": "http://nx5.taild500c8.ts.net:18347",
+      "scope": "Tailscale + nx5 专用 Bearer Token；两个SSD专家模型互斥、按任务加载",
+      "observed_at": 1792579410.1470244,
+      "capabilities": [
+        {
+          "capability_id": "qwen36",
+          "alias": "Qwen3.6-35B-A3B · 128K",
+          "description": "UD-IQ4_XS，SSD专家window128，MTP draft2；文本、代码与SVG；关闭思考。128K容量及8218-token输入已验证，未测满128K。 支持OpenWebUI / OpenAI文本多轮聊天和SSE流式。"
+        },
+        {
+          "capability_id": "minicpm",
+          "alias": "MiniCPM-V4.7 · 64K",
+          "description": "SSD专家window176，DSpark draft7；文本、代码与SVG；关闭思考。64K容量及8218-token输入已验证，未测满64K。 支持OpenWebUI / OpenAI文本多轮聊天和SSE流式。"
+        }
+      ],
+      "contract_observed_at": 1792579410.2028193,
+      "contract_hash": "a75085ba254eb109a92908590d3b17b4e08e445ff3183fcb9a4cce7d87058d21",
+      "resource_mappings": {
+        "nx5-ssd-llm": [
+          "nx5-igpu"
+        ]
+      },
+      "guide_markdown": "# nx5 Qwen / MiniCPM 调用手册\n\n入口：`http://nx5.taild500c8.ts.net:18347`（Tailscale，100.118.44.27）。\n认证：`Authorization: Bearer <NX5_SSD_LLM_TOKEN>`，这是本服务专用令牌，\n由nx5管理员从`~/.config/nx5-ssd-llm/client.key`安全提供给获准客户端。\n不把令牌粘贴到提示词、图谱或任务日志；不能复用其他舰队服务的凭据。\n\n## 模型选择\n\n| profile | 模型 | 上下文总容量 | 本机固定参数 |\n|---|---|---:|---|\n| `qwen36-128k` | Qwen3.6-35B-A3B MTP UD-IQ4_XS | 131072 token | SSD window128、MTP draft2 |\n| `minicpm-64k` | MiniCPM-V4.7 35B-A3B | 65536 token | SSD window176、DSpark draft7 |\n\n两个档位都关闭思考，保留全部专家，SSD只改变存储与缓存方式。\n上下文是输入与输出共用容量；两者均已测试容量与8218-token实际输入，尚未测满各自上下文。\n此前Qwen标准SVG实测17.31 token/s；长文预处理另需时间，不能把生成速度当输入处理速度。\n\n## OpenWebUI / OpenAI Chat Completions\n\n在 OpenWebUI 的管理员设置 → Connections → OpenAI API 添加连接：\n\n- Base URL：`http://nx5.taild500c8.ts.net:18347/v1`\n- API Key：本服务的专用 Bearer 令牌（不是 OpenAI 的云端 Key）。\n- Models：连接检测后自动发现 `qwen36-128k` 和 `minicpm-64k`。\n- OpenWebUI 后端/容器必须能访问这个 Tailscale 地址。只让浏览器加入 Tailnet 不够。\n- 使用普通文本聊天和 streaming；关闭工具调用、图片输入，以及自动标题、标签、后续问题等后台生成任务，避免和聊天争用单个 GPU 槽位。\n- 冷启动与长输入会增加等待时间；保持流式连接，客户端总超时建议至少 45 分钟。等待时每5秒有SSE注释心跳，首个内容到达前不会伪造答案。\n\n`GET /v1/models` 返回两个可选模型，不触发加载。\n`POST /v1/chat/completions` 支持同步 JSON 和 `stream:true` 的 SSE；支持多轮\n`system/user/assistant` 文本消息，最后一条须为 user，system 只允许在第一条。\n消息由模型自己的聊天模板渲染，每个请求携带完整历史；服务不保存可供后续自动续接的对话会话或 KV cache。\n\n```python\nimport os\nfrom openai import OpenAI\nclient = OpenAI(base_url=\"http://nx5.taild500c8.ts.net:18347/v1\",\n                api_key=os.environ[\"NX5_SSD_LLM_TOKEN\"], timeout=2700, max_retries=0)\nstream = client.chat.completions.create(\n    model=\"qwen36-128k\",  # 切到 minicpm-64k 即在下次请求加载另一个模型\n    messages=[{\"role\": \"user\", \"content\": \"用中文简述MoE模型。\"}],\n    max_tokens=512, stream=True, stream_options={\"include_usage\": True})\nfor chunk in stream:\n    if chunk.choices:\n        print(chunk.choices[0].delta.content or \"\", end=\"\", flush=True)\n```\n\n可覆盖 `temperature` (0–2)、`top_p` (0–1)、`seed` (uint32)、\n`presence_penalty/frequency_penalty` (-2–2)、`stop` (最多4个字符串)、\n`max_tokens` 或 `max_completion_tokens` (1–7680，默认2048)。未指定时保留模型固定采样参数；\n重复惩罚扫描窗口仍沿用模型固定设置。两种 token 上限同时提供时必须相同。\n不支持多个候选 n>1、工具、图片、结构化 response_format、logprobs、Responses API 或 Embeddings；\n这些参数会明确报错，不会默默忽略。`user` 仅接受为客户端标识，不影响推理。\n思考固定关闭。\n\n新旧接口共用同一个准入槽位。Chat 忙时返回 OpenAI 格式 HTTP429 `device_job_busy`，\n异步 jobs 忙时仍为409；没有后台排队。空闲时可以选择任意一个模型。\n响应头 `X-Job-ID` 对应 `/v1/jobs/{id}`，可在断线后查询原任务。\n请求可带 `Idempotency-Key`（1–100个字母/数字/下划线/点/连字符）：\n相同键和相同规范化推理内容返回原任务结果；改变推理内容返回409。\n不带键的每次调用都是新任务；stream与include_usage仅改变传输形式，不改变幂等身份。\n客户端断开或点击停止不会终止后台推理，也不会提前释放租约；不要自动换键重试。\n\n同步响应包含 `choices[0].message.content`、真实 `usage` 和 `finish_reason`。\nSSE逐步返回 `choices[0].delta.content`；进程结束且租约释放后才发送最终finish，\n可选usage块及 `[DONE]`。若推理失败，SSE返回error对象后结束，不伪报成功。\n上下文超限在加载后按实际token数检测；同步400或SSE error `context_length_exceeded`。\n\n## 原有异步调用顺序\n\n1. 无需令牌即可GET `/healthz`、`/v1/service-catalog`、`/v1/client-contract`读取状态、版本和契约。\n2. 客户端先保存唯一`request_id`及完整请求，再认证POST `/v1/jobs`。\n3. HTTP202只表示受理；保存返回的`id`和`status_url`，认证GET原`status_url`轮询。\n4. `succeeded`后读取`result.text`；`result.finish_reason=length`表示输出预算已用完，内容可能截断。\n5. `failed`表示已确认失败。`unknown`表示需要管理员核对原进程和租约，禁止换ID自动重投。\n\nQwen示例：\n\n```json\n{\"request_id\":\"qwen-example-001\",\"profile\":\"qwen36-128k\",\"prompt\":\"用中文解释SSD专家缓存。\",\"max_tokens\":512}\n```\n\nMiniCPM示例：\n\n```json\n{\"request_id\":\"minicpm-example-001\",\"profile\":\"minicpm-64k\",\"prompt\":\"用中文解释SSD专家缓存。\",\"max_tokens\":512}\n```\n\n标准鹈鹕题使用原文`Generate an SVG of a pelican riding a bicycle.`，不添加其他提示或开启思考。\nAPI返回模型原文，不会修复生成代码。请求成功与绘图质量分别验收。\n\nPython客户端示例（从环境注入专用令牌，不写死）：\n\n```python\nimport os, time, uuid, requests\nbase = \"http://nx5.taild500c8.ts.net:18347\"\nheaders = {\"Authorization\": \"Bearer \" + os.environ[\"NX5_SSD_LLM_TOKEN\"]}\npayload = {\"request_id\": str(uuid.uuid4()), \"profile\": \"qwen36-128k\",\n           \"prompt\": \"用中文简述MoE模型。\", \"max_tokens\": 512}\n# 生产客户端在发送前将payload持久化；恢复时重用同一request_id和内容。\nr = requests.post(base + \"/v1/jobs\", json=payload, headers=headers, timeout=30)\nr.raise_for_status()\nstatus_url = r.json()[\"status_url\"]\nwhile True:\n    r = requests.get(base + status_url, headers=headers, timeout=30)\n    r.raise_for_status()\n    job = r.json()\n    if job[\"status\"] in {\"succeeded\", \"failed\", \"unknown\"}:\n        break\n    time.sleep(3)\nif job[\"status\"] != \"succeeded\":\n    raise RuntimeError(job[\"status\"])\nprint(job[\"result\"][\"text\"])\n```\n\n## 互斥与恢复\n\n两个模型共用`nx5-igpu`，API每次只受理一个任务。另一个新请求在忙时返回HTTP409，\n不会杀掉前一个任务；等原任务终止后再提交新任务。相同request_id重发同一规范化请求返回原任务，\n不同内容返回409。客户端超时或停止轮询不会取消任务。\n\n每次推理前校验固定运行库、检查既有业务与推理进程、获取中央独占租约；\n推理过程另持有本机锁。成功返回前必须确认子进程退出、结果可读取、租约已释放。\nHTTP服务常驻，模型每次请求加载，完成后退出并释放内存；`model_loaded=false`是正常空闲状态。\nAPI的ready只表示本入口可受理，不承诺中央资源立即可用。\n服务重启不会重放未完成任务，未知任务会阻止后续准入，需管理员核对后恢复。\n\nnx5旧Ornith、ComfyUI及旧文本控制器的自动启动已退出，不能绕过本入口手动同时加载其他模型。\n这不改变其他节点的服务。旧进程不会为了新请求被强杀。\n\n两个接口当前均为纯文本，没有图片输入、tools、自动保存的对话历史或跨请求模型常驻。\n每次请求需携带完整所需文本。500000字符（聊天历史总和）、最多1024条消息、2MiB请求体、\n1–7680输出token；运行阶段超时40分钟。超长输入还受模型token容量与实际处理时间限制。\n\n元数据公开的`commit`是发布文件集合指纹，`source_commit`是源码Git提交；\n目录、手册、契约必须对应相同发布，过期或不匹配时先核对服务状态。\n",
+      "release": {
+        "release": "nx5-ssd-llm-b0c8e33e11b7",
+        "commit": "72ea471411b2dabf19dbe7775af4cd03749aa74f8bd0dc62a72ae0fb11ebf26d",
+        "source_commit": "b0c8e33e11b75c6c4c6b5582e54e1ef436f84e6e"
+      },
+      "input": {
+        "max_parallel": 1,
+        "max_output_tokens": 7680,
+        "max_prompt_characters": 500000,
+        "max_request_bytes": 2097152,
+        "profiles": [
+          "qwen36-128k",
+          "minicpm-64k"
+        ],
+        "modalities": [
+          "text"
+        ],
+        "openai_base_url": "http://nx5.taild500c8.ts.net:18347/v1",
+        "protocols": [
+          "openai-chat-completions",
+          "async-jobs"
+        ],
+        "streaming": true,
+        "multi_turn": "full history in each request",
+        "max_messages": 1024
+      },
+      "availability_scope": "API常驻；两个模型按请求加载、完成后卸载并释放中央nx5-igpu租约；互斥不排队。OpenAI Chat Completions、模型发现和SSE；当前仅文本，无图片/工具。ready只表示入口可受理，仍需租约与运行库校验。",
+      "runtime": {
+        "mode": "off",
+        "state": "ready",
+        "active": 0,
+        "model_loaded": false,
+        "observed_at": 1792579410.1200573,
+        "coordinator_reachable": null
+      },
+      "status": "available",
+      "version": "nx5-ssd-llm-b0c8e33e11b7",
+      "error": null,
+      "contract_status": "current",
+      "stale": false
+    },
+    "contract_status_header": "current",
+    "schema_version": "72ea471411b2dabf19dbe7775af4cd03749aa74f8bd0dc62a72ae0fb11ebf26d",
+    "paths": [
+      "/v1/jobs",
+      "/v1/jobs/{job_id}",
+      "/v1/models",
+      "/v1/chat/completions"
+    ],
+    "guide_sha256": "dd3986de38444324fd7d1e2331828ffe0639f065e54f4450827e0ca7ca5a9cfb"
+  }
+}

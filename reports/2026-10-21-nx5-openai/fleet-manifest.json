@@ -1,0 +1,27 @@
+{
+  "release": "nx5-openai-fleet-20261021-r1",
+  "source_commit": "586395cbcc0ef8832ebce9f184222b6bace0a100",
+  "units": [
+    "nx-fleet-graph.service"
+  ],
+  "files": [
+    {
+      "source": "runtime-candidate/nx5-openai/candidate/inventory.yaml",
+      "target": "/home/nx/fleet-resource-graph/inventory.yaml",
+      "expected_before": "1d734bd44075b5997d7d027f3edc92d8d1c1205bfcbe7048a74ebc7d7a04f633",
+      "sha256": "076dcd169cbd093216fdd5ac011bcb8e3ed2c8404f70b2466bc9e14b4288982b"
+    },
+    {
+      "source": "runtime-candidate/nx5-openai/candidate/config/capability_contracts.yaml",
+      "target": "/home/nx/fleet-resource-graph/config/capability_contracts.yaml",
+      "expected_before": "5d2d8bfc913618578a544b59cf2fb04325d739924e54a8281901e19c86a9c99b",
+      "sha256": "f8921ff4fb65880de8c70b5b067bd4b057c5341d951099fbe029bd271820d83e"
+    },
+    {
+      "source": "runtime-candidate/nx5-openai/candidate/server/fleet_graph/portal_assets/app.js",
+      "target": "/home/nx/fleet-resource-graph/server/fleet_graph/portal_assets/app.js",
+      "expected_before": "9498cd1adc3e961acd57b453fa0f111d7223add75ef33dfd6fd47fe0099dd62e",
+      "sha256": "032e9cee68cb74f337134f64144682ce6cb7f0a151d20ab8271555d8e5c9e1f1"
+    }
+  ]
+}

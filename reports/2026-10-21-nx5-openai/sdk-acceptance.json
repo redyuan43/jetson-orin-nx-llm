@@ -1,0 +1,157 @@
+{
+  "sdk_version": "3.35.1",
+  "model": "minicpm-64k",
+  "text": "ALPHA ",
+  "chunks": [
+    {
+      "id": "chatcmpl-4806774a987a1e3548c1e5ec3e5d244b",
+      "choices": [
+        {
+          "delta": {
+            "audio": null,
+            "content": "",
+            "function_call": null,
+            "refusal": null,
+            "role": "assistant",
+            "tool_calls": null
+          },
+          "index": 0,
+          "finish_reason": null,
+          "logprobs": null
+        }
+      ],
+      "created": 1792579590,
+      "model": "minicpm-64k",
+      "object": "chat.completion.chunk",
+      "moderation": null,
+      "obfuscation": null,
+      "service_tier": null,
+      "system_fingerprint": null,
+      "usage": null
+    },
+    {
+      "id": "chatcmpl-4806774a987a1e3548c1e5ec3e5d244b",
+      "choices": [
+        {
+          "delta": {
+            "audio": null,
+            "content": "AL",
+            "function_call": null,
+            "refusal": null,
+            "role": null,
+            "tool_calls": null
+          },
+          "index": 0,
+          "finish_reason": null,
+          "logprobs": null
+        }
+      ],
+      "created": 1792579590,
+      "model": "minicpm-64k",
+      "object": "chat.completion.chunk",
+      "moderation": null,
+      "obfuscation": null,
+      "service_tier": null,
+      "system_fingerprint": null,
+      "usage": null
+    },
+    {
+      "id": "chatcmpl-4806774a987a1e3548c1e5ec3e5d244b",
+      "choices": [
+        {
+          "delta": {
+            "audio": null,
+            "content": "PHA",
+            "function_call": null,
+            "refusal": null,
+            "role": null,
+            "tool_calls": null
+          },
+          "index": 0,
+          "finish_reason": null,
+          "logprobs": null
+        }
+      ],
+      "created": 1792579590,
+      "model": "minicpm-64k",
+      "object": "chat.completion.chunk",
+      "moderation": null,
+      "obfuscation": null,
+      "service_tier": null,
+      "system_fingerprint": null,
+      "usage": null
+    },
+    {
+      "id": "chatcmpl-4806774a987a1e3548c1e5ec3e5d244b",
+      "choices": [
+        {
+          "delta": {
+            "audio": null,
+            "content": " ",
+            "function_call": null,
+            "refusal": null,
+            "role": null,
+            "tool_calls": null
+          },
+          "index": 0,
+          "finish_reason": null,
+          "logprobs": null
+        }
+      ],
+      "created": 1792579590,
+      "model": "minicpm-64k",
+      "object": "chat.completion.chunk",
+      "moderation": null,
+      "obfuscation": null,
+      "service_tier": null,
+      "system_fingerprint": null,
+      "usage": null
+    },
+    {
+      "id": "chatcmpl-4806774a987a1e3548c1e5ec3e5d244b",
+      "choices": [
+        {
+          "delta": {
+            "audio": null,
+            "content": null,
+            "function_call": null,
+            "refusal": null,
+            "role": null,
+            "tool_calls": null
+          },
+          "index": 0,
+          "finish_reason": "stop",
+          "logprobs": null
+        }
+      ],
+      "created": 1792579590,
+      "model": "minicpm-64k",
+      "object": "chat.completion.chunk",
+      "moderation": null,
+      "obfuscation": null,
+      "service_tier": null,
+      "system_fingerprint": null,
+      "usage": null
+    },
+    {
+      "id": "chatcmpl-4806774a987a1e3548c1e5ec3e5d244b",
+      "choices": [],
+      "created": 1792579590,
+      "model": "minicpm-64k",
+      "object": "chat.completion.chunk",
+      "moderation": null,
+      "obfuscation": null,
+      "service_tier": null,
+      "system_fingerprint": null,
+      "usage": {
+        "completion_tokens": 3,
+        "prompt_tokens": 30,
+        "total_tokens": 33,
+        "completion_tokens_details": null,
+        "prompt_tokens_details": null
+      }
+    }
+  ],
+  "wall_s": 14.471095085144043,
+  "passed": true
+}

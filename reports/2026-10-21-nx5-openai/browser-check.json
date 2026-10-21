@@ -1,0 +1,24 @@
+{
+  "text": "nx5 · Qwen 128K / MiniCPM 64K\n网关可达\n\nhttp://nx5.taild500c8.ts.net:18347\n\nTailscale + nx5 专用 Bearer Token；两个SSD专家模型互斥、按任务加载\n\n采集：2026/10/21 18:42:36 · 契约：current\n\nAPI常驻；两个模型按请求加载、完成后卸载并释放中央nx5-igpu租约；互斥不排队。OpenAI Chat Completions、模型发现和SSE；当前仅文本，无图片/工具。ready只表示入口可受理，仍需租约与运行库校验。\n\nOpenWebUI · OpenAI兼容文本聊天\n\nBase URL：http://nx5.taild500c8.ts.net:18347/v1\n\nAPI Key：nx5专用令牌 · 模型从列表选择 · 按需加载互斥 · 忙时429\n\nOpenWebUI 配置与调用示例 →\n\n模式：off · 状态：ready · 模型驻留：未驻留（按需加载）\n\n查看模型 API 契约 →\nQwen3.6-35B-A3B · 128K\n\nUD-IQ4_XS，SSD专家window128，MTP draft2；文本、代码与SVG；关闭思考。128K容量及8218-token输入已验证，未测满128K。 支持OpenWebUI / OpenAI文本多轮聊天和SSE流式。\n\nMiniCPM-V4.7 · 64K\n\nSSD专家window176，DSpark draft7；文本、代码与SVG；关闭思考。64K容量及8218-token输入已验证，未测满64K。 支持OpenWebUI / OpenAI文本多轮聊天和SSE流式。\n\n查看调用手册 →",
+  "links": [
+    {
+      "text": "OpenWebUI 配置与调用示例 →",
+      "path": "/agent/nx5-ssd-llm.md"
+    },
+    {
+      "text": "查看模型 API 契约 →",
+      "path": "/agent/nx5-ssd-llm/openapi.json"
+    },
+    {
+      "text": "查看调用手册 →",
+      "path": "/agent/nx5-ssd-llm.md"
+    }
+  ],
+  "dimensions": {
+    "width": 356,
+    "scrollWidth": 356,
+    "bodyWidth": 390,
+    "viewport": 390
+  },
+  "page_errors": []
+}
