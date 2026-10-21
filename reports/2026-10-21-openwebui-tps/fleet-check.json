@@ -1,0 +1,19 @@
+{
+  "8300": {
+    "contract_status": "current",
+    "version": "8b863fc60b5d3a32f5cf4eca2ffda87cdf931a84989850e8c0794de246bbf84a",
+    "source_commit": "b9d260f49c8a554d55985821f6c99a67a1a47fa1",
+    "statistics_documented": true,
+    "webui_link": true,
+    "gateway_observed_at": 1792595736.8253658
+  },
+  "8301": {
+    "contract_status": "current",
+    "version": "8b863fc60b5d3a32f5cf4eca2ffda87cdf931a84989850e8c0794de246bbf84a",
+    "source_commit": "b9d260f49c8a554d55985821f6c99a67a1a47fa1",
+    "statistics_documented": true,
+    "webui_link": true,
+    "gateway_observed_at": 1792595736.8253658
+  },
+  "passed": true
+}

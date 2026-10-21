@@ -1,0 +1,37 @@
+{
+  "deployed": true,
+  "release": "/home/nx/.local/share/nx5-ssd-llm/releases/b9d260f49c8a554d55985821f6c99a67a1a47fa1",
+  "health": {
+    "service_id": "nx5-ssd-llm",
+    "release": "nx5-ssd-llm-b9d260f49c8a",
+    "commit": "8b863fc60b5d3a32f5cf4eca2ffda87cdf931a84989850e8c0794de246bbf84a",
+    "source_commit": "b9d260f49c8a554d55985821f6c99a67a1a47fa1",
+    "state": "ready",
+    "mode": "off",
+    "active": 0,
+    "model_loaded": false,
+    "observed_at": 1792595596.8687708,
+    "resource": "nx5-igpu",
+    "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+  },
+  "legacy_auto_start_disabled": true,
+  "preflight": {
+    "preflight": "passed",
+    "modified": false,
+    "source_commit": "b9d260f49c8a554d55985821f6c99a67a1a47fa1"
+  },
+  "behavior_tests_passed": 21,
+  "previous_health": {
+    "service_id": "nx5-ssd-llm",
+    "release": "nx5-ssd-llm-b0c8e33e11b7",
+    "commit": "72ea471411b2dabf19dbe7775af4cd03749aa74f8bd0dc62a72ae0fb11ebf26d",
+    "source_commit": "b0c8e33e11b75c6c4c6b5582e54e1ef436f84e6e",
+    "state": "ready",
+    "mode": "off",
+    "active": 0,
+    "model_loaded": false,
+    "observed_at": 1792595593.5104854,
+    "resource": "nx5-igpu",
+    "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+  }
+}

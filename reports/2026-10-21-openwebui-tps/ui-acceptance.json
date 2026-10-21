@@ -1,0 +1,104 @@
+{
+  "started_at": "2026-10-21T15:14:31.603Z",
+  "chats": [
+    {
+      "model": "qwen36-128k",
+      "url": "http://nx6.taild500c8.ts.net:18348/c/da262456-bbfc-4472-9196-891531ce053c",
+      "submitted_at": "2026-10-21T15:14:38.560Z",
+      "message": {
+        "id": "f6543640-31ae-41a1-b9b9-fb0dfe66400c",
+        "content": "391",
+        "usage": {
+          "prompt_tokens": 28,
+          "completion_tokens": 4,
+          "total_tokens": 32,
+          "decode_tps": 12.364187131972242,
+          "generation_s": 0.323515,
+          "prefill_s": 2.513431,
+          "process_wall_s": 37.05921960200067,
+          "total_s": 38.885754108428955,
+          "input_tokens": 28,
+          "output_tokens": 4
+        },
+        "statusHistory": [
+          {
+            "action": "nx5_generation_stats",
+            "done": true,
+            "description": "生成速度 12.36 token/s · 生成耗时 0.3 秒 · 总耗时 38.9 秒"
+          }
+        ],
+        "done": true
+      },
+      "browser_wall_s": 39.649,
+      "survives_reload": true,
+      "details_visible": true,
+      "health_after": {
+        "service_id": "nx5-ssd-llm",
+        "release": "nx5-ssd-llm-b9d260f49c8a",
+        "commit": "8b863fc60b5d3a32f5cf4eca2ffda87cdf931a84989850e8c0794de246bbf84a",
+        "source_commit": "b9d260f49c8a554d55985821f6c99a67a1a47fa1",
+        "state": "ready",
+        "mode": "off",
+        "active": 0,
+        "model_loaded": false,
+        "observed_at": 1792595720.7110178,
+        "resource": "nx5-igpu",
+        "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+      }
+    },
+    {
+      "model": "minicpm-64k",
+      "url": "http://nx6.taild500c8.ts.net:18348/c/c0625e3c-d531-48a1-b883-1071182bade7",
+      "submitted_at": "2026-10-21T15:15:24.107Z",
+      "message": {
+        "id": "7f217c2b-3964-46f5-ab24-da14823854bd",
+        "content": "437",
+        "usage": {
+          "prompt_tokens": 28,
+          "completion_tokens": 4,
+          "total_tokens": 32,
+          "decode_tps": 4.550584295023481,
+          "generation_s": 0.879008,
+          "prefill_s": 3.39575,
+          "process_wall_s": 14.531255996000255,
+          "total_s": 16.428762912750244,
+          "input_tokens": 28,
+          "output_tokens": 4
+        },
+        "statusHistory": [
+          {
+            "action": "nx5_generation_stats",
+            "done": true,
+            "description": "生成速度 4.55 token/s · 生成耗时 0.9 秒 · 总耗时 16.4 秒"
+          }
+        ],
+        "done": true
+      },
+      "browser_wall_s": 16.946,
+      "survives_reload": true,
+      "details_visible": true,
+      "health_after": {
+        "service_id": "nx5-ssd-llm",
+        "release": "nx5-ssd-llm-b9d260f49c8a",
+        "commit": "8b863fc60b5d3a32f5cf4eca2ffda87cdf931a84989850e8c0794de246bbf84a",
+        "source_commit": "b9d260f49c8a554d55985821f6c99a67a1a47fa1",
+        "state": "ready",
+        "mode": "off",
+        "active": 0,
+        "model_loaded": false,
+        "observed_at": 1792595743.2745137,
+        "resource": "nx5-igpu",
+        "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+      }
+    }
+  ],
+  "page_errors": [],
+  "http_errors": [],
+  "mobile": {
+    "width": 390,
+    "bodyWidth": 390,
+    "expanded_status": "生成速度 4.55 token/s · 生成耗时 0.9 秒 · 总耗时 16.4 秒",
+    "expanded_body_width": 390
+  },
+  "passed": true
+}

@@ -1,0 +1,88 @@
+{
+  "filter": {
+    "id": "nx5_generation_stats",
+    "active": true,
+    "sha256": "a59dfbfba164a002b08ceace0d6d2166ff4eb70dbf28b2df1a5f21e9ada22f3c"
+  },
+  "profiles": [
+    {
+      "id": "qwen36-128k",
+      "name": "qwen36-128k",
+      "params": {
+        "max_tokens": 7680,
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "presence_penalty": 1.5
+      },
+      "meta": {
+        "profile_image_url": null,
+        "background_image_url": null,
+        "description": "Qwen3.6 35B-A3B UD-IQ4_XS · 128K · SSD专家/MTP2 · 思考关闭。鹈鹕参考采样：temperature 0.7 / top-p 0.8 / presence penalty 1.5；后端 top-k 20 / min-p 0 / repeat penalty 1。仅文本；与MiniCPM互斥，一次选一个模型。",
+        "i18n": null,
+        "capabilities": {
+          "vision": false,
+          "file_context": false,
+          "web_search": false,
+          "image_generation": false,
+          "code_interpreter": false,
+          "terminal": false,
+          "builtin_tools": false
+        },
+        "knowledge": null,
+        "voice": null,
+        "voice_avatar": null,
+        "filterIds": [
+          "nx5_generation_stats"
+        ]
+      }
+    },
+    {
+      "id": "minicpm-64k",
+      "name": "minicpm-64k",
+      "params": {
+        "max_tokens": 7680
+      },
+      "meta": {
+        "profile_image_url": null,
+        "background_image_url": null,
+        "description": "MiniCPM-V4.7 35B-A3B · 64K · SSD专家/DSpark7 · 思考关闭。此接口仅文本；与Qwen互斥，一次选一个模型。",
+        "i18n": null,
+        "capabilities": {
+          "vision": false,
+          "file_context": false,
+          "web_search": false,
+          "image_generation": false,
+          "code_interpreter": false,
+          "terminal": false,
+          "builtin_tools": false
+        },
+        "knowledge": null,
+        "voice": null,
+        "voice_avatar": null,
+        "filterIds": [
+          "nx5_generation_stats"
+        ]
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "qwen36-128k",
+      "name": "qwen36-128k"
+    },
+    {
+      "id": "minicpm-64k",
+      "name": "minicpm-64k"
+    }
+  ],
+  "tasks": {
+    "ENABLE_AUTOCOMPLETE_GENERATION": false,
+    "ENABLE_FOLLOW_UP_GENERATION": false,
+    "ENABLE_TAGS_GENERATION": false,
+    "ENABLE_TITLE_GENERATION": false,
+    "ENABLE_SEARCH_QUERY_GENERATION": true,
+    "ENABLE_RETRIEVAL_QUERY_GENERATION": true,
+    "ENABLE_VOICE_MODE_PROMPT": true
+  },
+  "passed": true
+}
