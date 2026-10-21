@@ -1,0 +1,44 @@
+{
+  "comparison": "same nano5 fast-8k, original user prompt, seed42 and instruct sampling; reasoning off vs on",
+  "argument_differences": {
+    "reasoning": [
+      "off",
+      "on"
+    ],
+    "no_mmproj_offload": [
+      null,
+      false
+    ]
+  },
+  "template_note": "Paths differ, content pinned to SHA256 49c37bcc86c7f7f20ed2ebf79e9f872be41ba2b5f9d0d51e6712cc038ef51d6c",
+  "baseline": {
+    "wall_s": 390.4184482420096,
+    "output_tokens": 2730,
+    "decode_tps": 7.29,
+    "html_visual_passed": false
+  },
+  "thinking": {
+    "wall_s": 555.4819697139901,
+    "output_tokens_including_reasoning": 3653,
+    "decode_tps": 6.76,
+    "min_available_mib": 671.8828125,
+    "rc": 0,
+    "stop_reason": null,
+    "thinking_start_marker": true,
+    "thinking_end_marker": true,
+    "html_visual_passed": false,
+    "findings": [
+      "Wheel rims orbit away from their hubs",
+      "Head translation is overridden by animation and head clips outside scene",
+      "JS parse error prevents registering all button handlers; pause click leaves CSS animations running"
+    ]
+  },
+  "raw_html_sha256": "210f4f6cd4691429d1d4049bfd63c17a16fc23b0669af65151c6bda385e876ee",
+  "browser_errors": [
+    "Missing } in template expression"
+  ],
+  "lease_after": "released",
+  "restored_mode": "comfy",
+  "production_defaults_changed": false,
+  "argument_schema_note": "no_mmproj_offload=false is a newly recorded default and has no effect for this text-only run; no vision projector is loaded."
+}

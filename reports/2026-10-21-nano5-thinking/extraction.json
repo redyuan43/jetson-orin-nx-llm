@@ -1,0 +1,7 @@
+{
+  "method": "exact substring from DOCTYPE through closing html; no code edits",
+  "sha256": "210f4f6cd4691429d1d4049bfd63c17a16fc23b0669af65151c6bda385e876ee",
+  "html_chars": 10626,
+  "thinking_started": true,
+  "thinking_finished": true
+}
