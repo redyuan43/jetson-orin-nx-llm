@@ -162,6 +162,9 @@ def main():
            '-f', str(args.prompt), '--no-display-prompt', '-st']
     if args.chat_runner:
         cmd[0] = str(args.chat_runner.resolve(strict=True))
+        # The prompt is JSON: CLI unescaping would corrupt nested tool arguments,
+        # quoted user text, and escaped newlines before the adapter can parse it.
+        cmd.append('--no-escape')
     if args.sampling == 'instruct':
         cmd += ['--temp', '0.7', '--top-p', '0.95', '--top-k', '100', '--min-p', '0',
                 '--presence-penalty', '0', '--repeat-penalty', '1.03', '--repeat-last-n', '-1']
