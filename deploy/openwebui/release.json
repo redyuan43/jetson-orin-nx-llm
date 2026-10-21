@@ -1,0 +1,8 @@
+{
+  "version": "v0.12.3-slim",
+  "image": "ghcr.io/open-webui/open-webui@sha256:5adfb0355bbe4a5860c0ba9482cc0b40f573de3749a21a64cf4789391a14fffc",
+  "image_id": "sha256:5adfb0355bbe4a5860c0ba9482cc0b40f573de3749a21a64cf4789391a14fffc",
+  "platform": "linux/arm64",
+  "settings_sha256": "04485dc4585b2cd761892afda3cd87c24bb403d0f540faeba0d8f66f1e256344",
+  "upstream": "https://github.com/open-webui/open-webui/releases/tag/v0.12.3"
+}
