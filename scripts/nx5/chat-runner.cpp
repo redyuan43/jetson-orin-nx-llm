@@ -14,31 +14,17 @@ static void interrupt(int) { interrupted.store(true); }
 static bool stopped() { return interrupted.load(); }
 static void emit(const json & value) { std::cout << value.dump() << std::endl; }
 
-int main(int argc, char ** argv) {
-    common_params params;
-    common_init();
-    if (!common_params_parse(argc, argv, params, LLAMA_EXAMPLE_CLI)) return 1;
-    std::signal(SIGINT, interrupt);
-    std::signal(SIGTERM, interrupt);
-    server_context server;
-    std::thread worker;
-    int rc = 1;
-    try {
-        const auto request = json::parse(params.prompt);
-        params.prompt.clear();
+static void run_request(server_context & server, const common_params & params, const json & request) {
+        auto sampling = params.sampling;
+        const int max_tokens = request.value("max_tokens", params.n_predict);
         const bool enable_thinking = request.value("enable_thinking", false);
-        params.enable_reasoning = enable_thinking ? 1 : 0;
-        params.default_template_kwargs["enable_thinking"] = enable_thinking ? "true" : "false";
-        params.sampling.reasoning_budget_tokens = enable_thinking ? -1 : 0;
+        sampling.reasoning_budget_tokens = enable_thinking ? -1 : 0;
         auto messages = common_chat_msgs_parse_oaicompat(request.at("messages"));
-        if (request.contains("temperature")) params.sampling.temp = request.at("temperature");
-        if (request.contains("top_p")) params.sampling.top_p = request.at("top_p");
-        if (request.contains("seed")) params.sampling.seed = request.at("seed");
-        if (request.contains("presence_penalty")) params.sampling.penalty_present = request.at("presence_penalty");
-        if (request.contains("frequency_penalty")) params.sampling.penalty_freq = request.at("frequency_penalty");
-        llama_backend_init();
-        llama_numa_init(params.numa);
-        if (!server.load_model(params)) throw std::runtime_error("model_load_failed");
+        if (request.contains("temperature")) sampling.temp = request.at("temperature");
+        if (request.contains("top_p")) sampling.top_p = request.at("top_p");
+        if (request.contains("seed")) sampling.seed = request.at("seed");
+        if (request.contains("presence_penalty")) sampling.penalty_present = request.at("presence_penalty");
+        if (request.contains("frequency_penalty")) sampling.penalty_freq = request.at("frequency_penalty");
         auto meta = server.get_meta();
         const auto & options = meta.chat_params;
         common_chat_templates_inputs inputs;
@@ -72,11 +58,11 @@ int main(int argc, char ** argv) {
         auto ctx = server.get_llama_context();
         auto vocab = llama_model_get_vocab(llama_get_model(ctx));
         const auto tokens = common_tokenize(vocab, formatted.prompt, true, true);
-        if (tokens.size() + params.n_predict > llama_n_ctx(ctx)) {
+        if (tokens.size() + max_tokens > llama_n_ctx(ctx)) {
             emit({{"type", "error"}, {"code", "context_length_exceeded"}});
-            return 2;
+            return;
         }
-        worker = std::thread([&]() { server.start_loop(); });
+        bool complete = false;
         {
             auto reader = server.get_response_reader();
             server_task task(SERVER_TASK_TYPE_COMPLETION);
@@ -84,7 +70,7 @@ int main(int argc, char ** argv) {
             task.index = 0;
             task.cli = true;
             task.cli_prompt = formatted.prompt;
-            task.params.sampling = params.sampling;
+            task.params.sampling = sampling;
             if (!formatted.grammar.empty()) {
                 task.params.sampling.grammar = {COMMON_GRAMMAR_TYPE_TOOL_CALLS, formatted.grammar};
                 task.params.sampling.grammar_lazy = formatted.grammar_lazy;
@@ -107,7 +93,14 @@ int main(int argc, char ** argv) {
             }
             task.params.speculative = params.speculative;
             task.params.n_keep = params.n_keep;
-            task.params.n_predict = params.n_predict;
+            task.params.n_predict = max_tokens;
+            task.params.cache_prompt = request.value("cache_prompt", true);
+            task.id_slot = 0;
+            for (const auto & span : formatted.message_spans) {
+                if (span.role == "user") {
+                    task.params.n_before_user = common_tokenize(vocab, formatted.prompt.substr(0, span.pos), true, true).size();
+                }
+            }
             task.params.stream = true;
             task.params.timings_per_token = true;
             task.params.antiprompt = request.value("stop", std::vector<std::string>{});
@@ -161,17 +154,53 @@ int main(int argc, char ** argv) {
                           {"tool_calls", calls},
                           {"finish_reason", final->stop == STOP_TYPE_LIMIT ? "length" : calls.empty() ? "stop" : "tool_calls"},
                           {"usage", final->usage_json_oaicompat()}, {"timings", final->timings.to_json()}});
-                    rc = 0;
+                    complete = true;
                     break;
                 }
             }
         }
+        if (!complete) throw std::runtime_error("incomplete_request");
+}
+
+int main(int argc, char ** argv) {
+    bool resident = false;
+    std::vector<char *> args;
+    for (int i = 0; i < argc; ++i) {
+        if (std::string(argv[i]) == "--resident") resident = true;
+        else args.push_back(argv[i]);
+    }
+    common_params params;
+    common_init();
+    params.escape = false;
+    if (!common_params_parse(args.size(), args.data(), params, LLAMA_EXAMPLE_CLI)) return 1;
+    std::signal(SIGINT, interrupt);
+    std::signal(SIGTERM, interrupt);
+    server_context server;
+    std::thread worker;
+    int rc = 1;
+    try {
+        const std::string initial = params.prompt;
+        params.prompt.clear();
+        params.n_parallel = 1;
+        params.sleep_idle_seconds = -1;
+        llama_backend_init();
+        llama_numa_init(params.numa);
+        if (!server.load_model(params)) throw std::runtime_error("model_load_failed");
+        worker = std::thread([&]() { server.start_loop(); });
+        if (resident) {
+            emit({{"type", "ready"}, {"resident", true}});
+            std::string line;
+            while (!stopped() && std::getline(std::cin, line)) {
+                if (!line.empty()) run_request(server, params, json::parse(line));
+            }
+        } else {
+            run_request(server, params, json::parse(initial));
+        }
+        rc = 0;
     } catch (const std::exception & error) {
-        // Detailed engine diagnostics stay in private stderr, not public error bodies.
         std::cerr << error.what() << std::endl;
         emit({{"type", "error"}, {"code", "inference_failed"}});
     }
     if (worker.joinable()) { server.terminate(); worker.join(); }
-    if (rc && interrupted.load()) emit({{"type", "error"}, {"code", "interrupted"}});
     return rc;
 }

@@ -47,7 +47,7 @@ class ChatTests(unittest.TestCase):
         return conn.getresponse()
 
     def body(self, **kwargs):
-        return {'model': 'qwen36-128k', 'messages': [{'role': 'system', 'content': '用中文回答'},
+        return {'model': 'minicpm-64k', 'messages': [{'role': 'system', 'content': '用中文回答'},
                 {'role': 'user', 'content': '暗号青鹈鹕'}, {'role': 'assistant', 'content': '记住了'},
                 {'role': 'user', 'content': [{'type': 'text', 'text': '暗号？'}]}], **kwargs}
 
@@ -157,7 +157,7 @@ class ChatTests(unittest.TestCase):
         self.mock_run.assert_called_once()
 
     def test_timing_is_not_sent_with_content_or_finish_and_replay_is_stable(self):
-        job={'id':'op_abc','created_at':100,'profile':'qwen36-128k'}
+        job={'id':'op_abc','created_at':100,'profile':'minicpm-64k'}
         self.assertNotIn('timings', completion(job, delta={'content':'hello'}))
         self.finish(job)
         self.assertNotIn('timings', completion(job, finish='stop'))

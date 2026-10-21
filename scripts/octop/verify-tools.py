@@ -2,7 +2,7 @@
 """Run inside the Octop container; read an authenticated provider record from stdin.
 
 Only synthetic add-tool fixtures are used. Never log the input provider record.
-Requires both models to be idle; performs two model calls per model.
+Requires the service to be idle; performs two model calls per configured model.
 """
 import sys,json,asyncio,time,urllib.request
 from octop_harness.config import ModelConfig,ProviderConfig
@@ -39,8 +39,8 @@ async def main():
    answer=chunk if answer is None else answer+chunk
   assert answer.content.strip()=='40', 'Final answer mismatch'
   with urllib.request.urlopen('http://nx5.taild500c8.ts.net:18347/healthz',timeout=10) as r:after=json.load(r)
-  assert after['state']=='ready' and after['model_loaded'] is False
-  proof={'model':raw['id'],'tool_name':call['name'],'arguments':call['args'],'tool_result':'40','answer':answer.content,'reasoning_on':True,'reasoning_chars_first_turn':first_reason,'reasoning_chars_answer':len(answer.additional_kwargs.get('reasoning_content','')),'tool_delta_chunks':call_chunks,'first_turn_wall_s':first_time,'total_wall_s':time.monotonic()-started,'usage_first':merged.usage_metadata,'usage_answer':answer.usage_metadata,'released':True}
+  assert after['state']=='ready' and after['model_loaded'] is True
+  proof={'model':raw['id'],'tool_name':call['name'],'arguments':call['args'],'tool_result':'40','answer':answer.content,'reasoning_on':True,'reasoning_chars_first_turn':first_reason,'reasoning_chars_answer':len(answer.additional_kwargs.get('reasoning_content','')),'tool_delta_chunks':call_chunks,'first_turn_wall_s':first_time,'total_wall_s':time.monotonic()-started,'usage_first':merged.usage_metadata,'usage_answer':answer.usage_metadata,'resident_pid':after['resident_pid'],'lease_held':after['lease_status']=='held'}
   results.append(proof);print(json.dumps(proof,ensure_ascii=False),flush=True)
  print(json.dumps({'passed':True,'models':len(results)}),flush=True)
 asyncio.run(main())

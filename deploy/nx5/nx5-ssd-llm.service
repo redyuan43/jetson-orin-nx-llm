@@ -1,5 +1,5 @@
 [Unit]
-Description=nx5 mutually exclusive Qwen and MiniCPM SSD inference
+Description=nx5 persistent MiniCPM SSD inference with prefix cache
 After=network-online.target
 Conflicts=siyuan-fleet-control.service siyuan-text-ingress.service siyuan-text-compat-bridge.service siyuan-image-comfy.service nx5-ornith-35b-a3b-iq2s.service qwen38-kvmem.service
 
@@ -9,7 +9,7 @@ ExecStart=/usr/bin/python3 /home/nx/.local/share/nx5-ssd-llm/current/scripts/nx5
 Restart=on-failure
 RestartSec=5
 KillMode=control-group
-TimeoutStopSec=30
+TimeoutStopSec=60
 UMask=0077
 NoNewPrivileges=true
 

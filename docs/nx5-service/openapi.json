@@ -1,8 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "nx5 Qwen / MiniCPM SSD 互斥推理",
-    "version": "runtime-source-sha256"
+    "title": "NX5 Resident MiniCPM API",
+    "version": "runtime-source-sha256",
+    "description": "MiniCPM stays resident with one exact-prefix cache slot and an exclusive central GPU lease. Full history is required; tools run on the caller."
   },
   "servers": [
     {
@@ -132,7 +133,7 @@
     },
     "/v1/models": {
       "get": {
-        "summary": "发现两个可按需加载的模型，不加载权重",
+        "summary": "发现唯一常驻模型MiniCPM，不触发加载",
         "responses": {
           "200": {
             "description": "OpenAI model list",
@@ -208,7 +209,7 @@
                 "schema": {
                   "type": "string"
                 },
-                "example": "data: {\"id\":\"chatcmpl-example\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"qwen36-128k\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"你好\"},\"finish_reason\":null}]}\n\n"
+                "example": "data: {\"id\":\"chatcmpl-example\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"minicpm-64k\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"你好\"},\"finish_reason\":null}]}\n\n"
               }
             }
           },
@@ -284,6 +285,27 @@
           }
         }
       }
+    },
+    "/v1/model/unload": {
+      "post": {
+        "summary": "Unload idle resident model and release its central lease",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Model exited and lease release confirmed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "409": {
+            "description": "Active job or unconfirmed lease; model is not replaced"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -316,7 +338,6 @@
           "profile": {
             "type": "string",
             "enum": [
-              "qwen36-128k",
               "minicpm-64k"
             ]
           },
@@ -407,12 +428,15 @@
                 ]
               },
               "model_loaded_after": {
-                "type": "boolean"
+                "type": "boolean",
+                "enum": [
+                  true
+                ]
               },
               "lease_status": {
                 "type": "string",
                 "enum": [
-                  "released"
+                  "held"
                 ]
               },
               "prefill_s": {
@@ -525,7 +549,6 @@
           "model": {
             "type": "string",
             "enum": [
-              "qwen36-128k",
               "minicpm-64k"
             ]
           },
@@ -948,6 +971,14 @@
             "type": "number",
             "minimum": 0,
             "description": "Original request admission through completion, including loading and lease lifecycle; excludes client network/rendering."
+          },
+          "cached_input_tokens": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "prompt_tokens_processed": {
+            "type": "integer",
+            "minimum": 0
           }
         }
       },

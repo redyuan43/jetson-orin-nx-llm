@@ -4,7 +4,7 @@ import json
 import re
 import uuid
 
-MODELS = ('qwen36-128k', 'minicpm-64k')
+MODELS = ('minicpm-64k',)
 
 
 class InvalidRequest(ValueError):
@@ -250,9 +250,11 @@ def completion(job, delta=None, finish=None, usage_only=False):
     if usage_only or not streaming:
         value['usage'] = {'prompt_tokens': result['input_tokens'], 'completion_tokens': result['output_tokens'],
                           'total_tokens': result['input_tokens'] + result['output_tokens']}
+        if 'cached_input_tokens' in result:
+            value['usage']['prompt_tokens_details'] = {'cached_tokens': result['cached_input_tokens']}
         # Keep standard usage intact. OpenWebUI consumes this llama.cpp-style
         # extension separately; emit it only once per response, not per delta.
-        timing = {key: result[key] for key in ('decode_tps', 'generation_s', 'prefill_s', 'process_wall_s')
+        timing = {key: result[key] for key in ('decode_tps', 'generation_s', 'prefill_s', 'process_wall_s', 'cached_input_tokens', 'prompt_tokens_processed')
                   if key in result}
         if job.get('finished_at') is not None:
             timing['total_s'] = max(0, job['finished_at'] - job['created_at'])

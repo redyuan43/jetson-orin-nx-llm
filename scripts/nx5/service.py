@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tailnet async admission for two mutually exclusive SSD models on nx5."""
+"""Tailnet admission for persistent MiniCPM with one cached inference slot."""
 import argparse
 import hashlib
 import hmac
@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import re
+import signal
 import subprocess
 import sys
 import threading
@@ -14,10 +15,10 @@ import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from compat_api import InvalidRequest, normalize, error as chat_error, completion, collect_tool_calls
+from resident import ResidentModel
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PROFILES = {
-    'qwen36-128k': 'configs/qwen36-iq4xs-128k.json',
     'minicpm-64k': 'configs/nx5-minicpm-service.json',
 }
 TERMINAL = {'succeeded', 'failed'}
@@ -87,6 +88,8 @@ class Service:
             if hashlib.sha256((self.repo / name).read_bytes()).hexdigest() != expected:
                 raise ValueError('release_file_changed: ' + name)
         self.release = {k: release[k] for k in ('release', 'commit', 'source_commit')}
+        self.resident = ResidentModel(self.repo, config)
+        self.closing = False
 
     def save(self, job):
         atomic(self.state / (job['id'] + '.json'), job)
@@ -97,14 +100,33 @@ class Service:
     def health(self):
         with self.lock:
             pending = [j for j in self.jobs.values() if j['status'] not in TERMINAL]
-            blocked = any(j['status'] == 'unknown' for j in pending)
-            active = next((j['profile'] for j in pending), None)
-            return {'service_id': 'nx5-ssd-llm', **self.release,
-                    'state': 'unknown' if blocked else 'busy' if pending else 'ready',
-                    'mode': active or 'off', 'active': len(pending),
-                    'model_loaded': None if pending else False,
-                    'observed_at': time.time(), 'resource': 'nx5-igpu',
-                    'availability_scope': 'API admission state; central lease and runtime verification are required before inference.'}
+            blocked = self.resident.blocked or any(j['status'] == 'unknown' for j in pending)
+            native = self.resident.health()
+            return {'service_id': 'nx5-ssd-llm', **self.release, **native,
+                    'state': 'unknown' if blocked else 'stopping' if self.closing else 'busy' if pending else 'ready',
+                    'mode': 'minicpm-64k' if native['model_loaded'] or pending else 'off',
+                    'active': len(pending), 'observed_at': time.time(), 'resource': 'nx5-igpu',
+                    'availability_scope': 'MiniCPM loads on first request and stays resident with one prefix-cache slot and a held central lease.'}
+
+    def unload(self):
+        with self.lock:
+            if any(j['status'] not in TERMINAL for j in self.jobs.values()):
+                raise RuntimeError('device_job_busy')
+            self.resident.close()
+            if self.resident.blocked:
+                raise RuntimeError('resident_requires_reconciliation')
+            return self.health()
+
+    def shutdown(self):
+        with self.lock:
+            self.closing = True
+        self.resident.close(permanent=True)
+        with self.lock:
+            for job in self.jobs.values():
+                if job['status'] not in TERMINAL:
+                    job.update(status='unknown' if self.resident.blocked else 'failed',
+                               error='service_stopped', finished_at=time.time())
+                    self.save(job)
 
     def submit(self, payload):
         return self.admit(validate(payload))
@@ -113,6 +135,10 @@ class Service:
         identifier = 'op_' + hashlib.sha256(('nx5-ssd-llm:' + payload['request_id']).encode()).hexdigest()[:32]
         fingerprint = digest(payload)
         with self.lock:
+            if self.closing or self.resident.blocked:
+                raise RuntimeError('resident_requires_reconciliation')
+            if payload['profile'] not in PROFILES:
+                raise InvalidRequest('model_not_found', 'model')
             old = self.jobs.get(identifier)
             if old:
                 if old['digest'] != fingerprint:
@@ -131,102 +157,41 @@ class Service:
         folder = self.state / job['id']
         try:
             folder.mkdir(mode=0o700, exist_ok=False)
+            chat = payload.get('chat') or {'messages': [{'role': 'user', 'content': payload['prompt']}],
+                                           'enable_thinking': False}
             prompt = folder / 'prompt.txt'
-            prompt.write_text(json.dumps(payload['chat'], ensure_ascii=False) if payload.get('kind') == 'chat' else payload['prompt'])
+            prompt.write_text(json.dumps(chat, ensure_ascii=False))
             prompt.chmod(0o600)
-            command = [sys.executable, str(self.repo / 'scripts/nx5/run-model.py'), str(prompt),
-                       '--config', str(self.repo / PROFILES[payload['profile']]),
-                       '--root', self.config['root'], '--output', str(folder),
-                       '--tag', 'result', '--tokens', str(payload['max_tokens'])]
-            if payload.get('kind') == 'chat':
-                command.append('--chat-json')
-            with (folder / 'driver.log').open('w') as log:
-                child = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT)
+            def on_ready(pid):
                 with self.lock:
-                    job['child_pid'] = child.pid
+                    job.update(status='running', started_at=time.time(), child_pid=pid)
                     self.save(job)
-                while child.poll() is None:
-                    receipt = folder / 'result.lease.json'
-                    if receipt.exists():
-                        proof = json.loads(receipt.read_text())
-                        if proof['status'] == 'running':
-                            with self.lock:
-                                if job['status'] == 'waiting':
-                                    job.update(status='running', started_at=time.time())
-                                    self.save(job)
-                    try:
-                        child.wait(timeout=1)
-                    except subprocess.TimeoutExpired:
-                        pass
-            receipt = folder / 'result.lease.json'
-            proof = json.loads(receipt.read_text()) if receipt.exists() else {}
-            if proof and proof.get('lease_after') != 'released':
-                raise RuntimeError('lease_requires_reconciliation')
-            if child.returncode or not proof:
-                raise ValueError('inference_failed')
-            metrics = json.loads((folder / 'result.json').read_text())
-            if metrics['rc'] or metrics['stop_reason']:
-                raise ValueError('inference_failed')
-            if payload.get('kind') == 'chat':
-                events = [json.loads(line) for line in (folder / 'result.out').read_text().splitlines()]
-                final = events[-1]
-                if final['type'] != 'final' or final['content'] != ''.join(e['content'] for e in events if e['type'] == 'delta'):
-                    raise ValueError('incomplete_chat_result')
-                if final.get('reasoning_content', '') != ''.join(e['reasoning_content'] for e in events if e['type'] == 'reasoning_delta'):
-                    raise ValueError('incomplete_reasoning_result')
-                if final.get('tool_calls', []) != collect_tool_calls(events):
-                    raise ValueError('incomplete_tool_calls')
-                with self.lock:
-                    job.update(status='succeeded', finished_at=time.time(), result={
-                        'text': final['content'], 'profile': payload['profile'],
-                        'reasoning_content': final.get('reasoning_content', ''),
-                        'tool_calls': final.get('tool_calls', []),
-                        'context_capacity': metrics['args']['ctx'],
-                        'input_tokens': final['usage']['prompt_tokens'],
-                        'output_tokens': final['usage']['completion_tokens'],
-                        'prefill_s': final['timings']['prompt_ms'] / 1000,
-                        'generation_s': final['timings']['predicted_ms'] / 1000,
-                        'decode_tps': final['timings']['predicted_per_second'],
-                        'process_wall_s': metrics['wall_s'],
-                        'min_available_mib': metrics['min_available_kib'] / 1024,
-                        'finish_reason': final['finish_reason'],
-                        'model_loaded_after': False, 'lease_status': 'released'})
-                return
-            answer = answer_from_cli((folder / 'result.out').read_text())
-            timing = '\n'.join(metrics['metrics'])
-            generation = re.search(r'\|\s+eval time =\s+([\d.]+) ms /\s+(\d+) tokens.*?([\d.]+) tokens per second', timing)
-            prompt_timing = re.search(r'prompt eval time =\s+([\d.]+) ms /\s+(\d+) tokens', timing)
-            if not generation or not prompt_timing:
-                raise ValueError('missing_metrics')
+            final, process = self.resident.generate(chat, payload['max_tokens'], folder/'result.out', on_ready)
+            events = [json.loads(line) for line in (folder/'result.out').read_text().splitlines()]
+            if (final['type'] != 'final' or
+                    final['content'] != ''.join(e['content'] for e in events if e['type'] == 'delta') or
+                    final.get('reasoning_content', '') != ''.join(e['reasoning_content'] for e in events if e['type'] == 'reasoning_delta') or
+                    final.get('tool_calls', []) != collect_tool_calls(events)):
+                raise RuntimeError('incomplete_chat_result')
             with self.lock:
                 job.update(status='succeeded', finished_at=time.time(), result={
-                    'text': answer, 'profile': payload['profile'],
-                    'context_capacity': metrics['args']['ctx'],
-                    'input_tokens': int(prompt_timing[2]), 'output_tokens': int(generation[2]),
-                    'prefill_s': float(prompt_timing[1]) / 1000,
-                    'generation_s': float(generation[1]) / 1000,
-                    'decode_tps': float(generation[3]), 'process_wall_s': metrics['wall_s'],
-                    'min_available_mib': metrics['min_available_kib'] / 1024,
-                    'finish_reason': 'length' if int(generation[2]) >= payload['max_tokens'] else 'stop',
-                    'model_loaded_after': False, 'lease_status': 'released'})
+                    'text': final['content'], 'profile': payload['profile'],
+                    'reasoning_content': final.get('reasoning_content', ''), 'tool_calls': final.get('tool_calls', []),
+                    'context_capacity': 65536, 'input_tokens': final['usage']['prompt_tokens'],
+                    'output_tokens': final['usage']['completion_tokens'],
+                    'cached_input_tokens': final['usage'].get('prompt_tokens_details', {}).get('cached_tokens', 0),
+                    'prompt_tokens_processed': final['timings']['prompt_n'],
+                    'prefill_s': final['timings']['prompt_ms']/1000,
+                    'generation_s': final['timings']['predicted_ms']/1000,
+                    'decode_tps': final['timings']['predicted_per_second'],
+                    'finish_reason': final['finish_reason'], **process})
         except Exception as exc:
-            # Unknown process/lease state blocks all further admission. Never replay.
-            receipt = folder / 'result.lease.json'
-            proof = json.loads(receipt.read_text()) if receipt.exists() else {}
-            running = 'child' in locals() and child.poll() is None
-            uncertain = running or bool(proof and proof.get('lease_after') != 'released')
-            code = 'inference_failed'
-            if not uncertain and payload.get('kind') == 'chat' and (folder / 'result.out').exists():
-                for line in (folder / 'result.out').read_text(errors='replace').splitlines():
-                    try:
-                        event = json.loads(line)
-                        if event.get('code') == 'context_length_exceeded':
-                            code = event['code']
-                    except ValueError:
-                        pass
+            if not isinstance(exc, ValueError) or str(exc) != 'context_length_exceeded':
+                self.resident.close()
+            code = 'context_length_exceeded' if str(exc) == 'context_length_exceeded' else 'inference_failed'
             with self.lock:
-                job.update(status='unknown' if uncertain else 'failed',
-                           error='reconciliation_required' if uncertain else code)
+                job.update(status='unknown' if self.resident.blocked else 'failed',
+                           error='reconciliation_required' if self.resident.blocked else code)
             print('job:', job['id'], type(exc).__name__, flush=True)
         finally:
             with self.lock:
@@ -362,6 +327,11 @@ def make_server(config, service=None):
             is_chat = self.path == '/v1/chat/completions'
             if not self.authorized():
                 return self.send(401, chat_error('unauthorized', kind='authentication_error') if is_chat else {'error': 'unauthorized'})
+            if self.path == '/v1/model/unload':
+                try:
+                    return self.send(200, service.unload())
+                except RuntimeError as exc:
+                    return self.send(409, chat_error(str(exc)))
             if self.path not in ('/v1/jobs', '/v1/chat/completions'):
                 return self.send(404, chat_error('not_found'))
             try:
@@ -388,10 +358,21 @@ def make_server(config, service=None):
             except (ValueError, TypeError, TimeoutError):
                 return self.send(400, chat_error('invalid_request') if is_chat else {'error': 'invalid_request'})
 
-    return ThreadingHTTPServer((config['bind'], config.get('port', 18347)), Handler)
+    server = ThreadingHTTPServer((config['bind'], config.get('port', 18347)), Handler)
+    server.service = service
+    return server
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', type=Path, required=True)
-    make_server(json.loads(parser.parse_args().config.read_text())).serve_forever()
+    server = make_server(json.loads(parser.parse_args().config.read_text()))
+    def stop_service(*_):
+        threading.Thread(target=server.shutdown, daemon=True).start()
+    signal.signal(signal.SIGTERM, stop_service)
+    signal.signal(signal.SIGINT, stop_service)
+    try:
+        server.serve_forever()
+    finally:
+        server.service.shutdown()
+        server.server_close()

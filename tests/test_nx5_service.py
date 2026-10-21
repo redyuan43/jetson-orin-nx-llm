@@ -26,10 +26,10 @@ class AdmissionTests(unittest.TestCase):
         self.location.stop()
         self.temp.cleanup()
 
-    def payload(self, rid='one', profile='qwen36-128k'):
+    def payload(self, rid='one', profile='minicpm-64k'):
         return {'request_id': rid, 'profile': profile, 'prompt': '17*23?', 'max_tokens': 64}
 
-    def test_two_models_racing_admit_only_one(self):
+    def test_two_requests_racing_admit_only_one(self):
         barrier = threading.Barrier(2)
         def submit(p):
             barrier.wait()
@@ -42,12 +42,12 @@ class AdmissionTests(unittest.TestCase):
         self.assertCountEqual(results, ['waiting', 'device_job_busy'])
         self.assertEqual(len(self.service.jobs), 1)
 
-    def test_idempotency_and_conflicting_model(self):
+    def test_idempotency_and_conflicting_prompt(self):
         with patch.object(self.service, 'run'):
             original = self.service.submit(self.payload())
             self.assertEqual(self.service.submit(self.payload())['id'], original['id'])
             with self.assertRaisesRegex(RuntimeError, 'request_id_conflict'):
-                self.service.submit(self.payload(profile='minicpm-64k'))
+                self.service.submit({**self.payload(), 'prompt': 'different'})
 
     def test_restart_does_not_replay_unconfirmed_work(self):
         with patch.object(self.service, 'run'):
@@ -62,17 +62,13 @@ class AdmissionTests(unittest.TestCase):
         with patch.object(self.service, 'run'):
             accepted = self.service.submit(self.payload())
         job = self.service.jobs[accepted['id']]
-        class Child:
-            pid = 123
-            returncode = 1
-            def poll(self): return 1
-        def spawn(*args, **kwargs):
-            (self.service.state / job['id'] / 'result.lease.json').write_text(json.dumps({'status': 'running'}))
-            return Child()
-        with patch.object(module.subprocess, 'Popen', side_effect=spawn):
+        def fail(*args, **kwargs):
+            self.service.resident.blocked = True
+            raise RuntimeError('lease_release_unconfirmed')
+        with patch.object(self.service.resident, 'generate', side_effect=fail):
             self.service.run(job, self.payload())
         self.assertEqual(job['status'], 'unknown')
-        with self.assertRaisesRegex(RuntimeError, 'device_job_busy'):
+        with self.assertRaisesRegex(RuntimeError, 'resident_requires_reconciliation'):
             self.service.submit(self.payload('next'))
 
     def test_invalid_payload_cannot_spawn_model(self):

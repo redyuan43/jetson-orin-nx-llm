@@ -6,14 +6,12 @@
 并列明硬件适配差异。此前中文 HTML 动画题与带思考结果属于自定义实验。
 完整规则见 [鹈鹕 SVG 对照测试规范](docs/10-pelican-test-protocol.md)。
 
-**nx5双模型互斥API已上线：** `qwen36-128k` 与 `minicpm-64k` 通过统一准入接口按任务加载，
-每次一个模型，结束后卸载并释放中央GPU租约。Qwen→MiniCPM→Qwen三次真实HTTP调用通过，
-并发第二请求被拒绝，重复请求不重跑。入口 `http://nx5.taild500c8.ts.net:18347`，需要Tailscale与专用Bearer令牌。
+**nx5 当前只提供常驻 MiniCPM：** `minicpm-64k` 首次请求加载，后续复用模型、SSD专家窗口和单槽前缀缓存。
+空闲继续持有中央GPU独占租约；工具返回时无需重新加载，重复历史按实际token匹配复用。
+完整历史仍由客户端发送，改变系统提示或工具定义会影响缓存命中。
+入口 `http://nx5.taild500c8.ts.net:18347/v1`，需要Tailscale与专用Bearer令牌；普通聊天默认开启思考。
 [舰队能力页](http://nx6.taild500c8.ts.net:8300/capabilities) ·
-[调用手册](http://nx6.taild500c8.ts.net:8300/agent/nx5-ssd-llm.md) ·
-[部署与验收](docs/13-nx5-dual-model-service-20261021.md)。
-新增 OpenAI Chat Completions 与 SSE，可接 OpenWebUI；原有文本异步任务仍可调用。
-模型不跨请求常驻；旧nx5 Ornith/ComfyUI自动启动已退出。
+[调用手册](docs/nx5-service/API.md)。Qwen模型文件与历史实验保留，当前服务不加载Qwen。
 
 **Qwen3.6-35B-A3B MTP（UD-IQ4_XS）已在nx5跑通SSD专家加载：** 约14.53 GiB专家在SSD，
 8K / window128 / MTP draft2。关闭思考的英文SVG原题实测 **17.85 token/s，完整输出2分19秒**，
@@ -81,28 +79,29 @@ DSpark 正确路径的接受率可达 82%，`SKIP_READ` 不是正确推理的硬
 ## nx5 OpenWebUI / OpenAI 兼容接口
 
 **OpenWebUI 已配置：** [打开聊天页面](http://nx6.taild500c8.ts.net:18348)。登录后可在模型下拉菜单选择
-`qwen36-128k` 或 `minicpm-64k`，一次选择一个。登录凭据单独保存在管理员的私有配置目录，不入库。
+`minicpm-64k`。登录凭据单独保存在管理员的私有配置目录，不入库。
 内置工具与后台自动生成已关闭；输出上限7680，其他采样参数沿用各模型固定配置。
-Qwen已显式保存鹈鹕参考默认值：temperature 0.7、top-p 0.8、presence penalty 1.5；top-k 20、min-p 0、repeat penalty 1由后端生效。
+历史Qwen配置曾保存鹈鹕参考默认值：temperature 0.7、top-p 0.8、presence penalty 1.5；top-k 20、min-p 0、repeat penalty 1由后端生效。
 每条新回复完成后显示生成TPS、生成耗时和含模型加载的总耗时；回复下方ⓘ可查看token数及详细统计。
 部署、登录凭据位置和网页验收见[OpenWebUI使用说明](docs/15-openwebui-20261021.md)。
 
 OpenWebUI 管理员连接填写 Base URL `http://nx5.taild500c8.ts.net:18347/v1`，
 API Key 使用 nx5 服务专用令牌（管理员从 `~/.config/nx5-ssd-llm/client.key` 安全提供）。
-OpenWebUI 后端/容器须能访问 Tailnet。模型列表自动发现 `qwen36-128k` 和 `minicpm-64k`。
-支持文本多轮聊天、真实 SSE 流式、采样参数和 token 用量；模型按请求加载，完成后卸载，
-两个模型及原有 `/v1/jobs` 共用一个 GPU 准入槽位。Chat 忙时429，不会并行加载或杀掉正在运行的任务。
+OpenWebUI 后端/容器须能访问 Tailnet。模型列表只发现 `minicpm-64k`。
+支持文本多轮聊天、真实 SSE 流式、采样参数和 token 用量；模型首次加载后常驻，
+Chat及原有 `/v1/jobs` 共用一个 GPU 准入槽位。Chat 忙时429，不会并行加载或杀掉正在运行的任务。
 关闭 OpenWebUI 自动标题/标签等后台模型任务，避免和聊天争用资源。
-当前接口支持函数工具调用及工具结果回传，工具由 Octop 等客户端执行；不支持图片或跨请求 KV 缓存；思考可在输入框旁“模型控件”中切换，普通聊天默认开启，标准测试选择关闭。
+当前接口支持函数工具调用及工具结果回传，工具由 Octop 等客户端执行；不支持图片，支持单槽跨请求前缀缓存；思考可在输入框旁“模型控件”中切换，普通聊天默认开启，标准测试选择关闭。
 当前账号已开启“始终展开详细信息”，思考内容实时展开显示。详细配置、恢复规则和 SDK 示例见
 [调用手册](docs/nx5-service/API.md)和[发布验收](docs/14-nx5-openai-service-20261021.md)；舰队页面为 `http://nx6.taild500c8.ts.net:8300/capabilities`。
 
 ## Octop 智能体
 
 [打开 bus002 Octop](http://bus002.taild500c8.ts.net:8088)，在聊天模型选择器中选择 `nx5-local` 下的
-**NX5 · Qwen3.6 35B-A3B · 128K** 或 **NX5 · MiniCPM-V4.7 35B-A3B · 64K**。
-思考默认开启，支持工具调用和结果回传；两个模型仍按需加载、互斥运行。
-按用户要求将 Octop 默认模型设为 MiniCPM；原有 `siyuan-nx6` 连接与 Qwen 保留可选。配置、网络及验收见 [Octop 接入说明](docs/16-octop-20261022.md)。
+**NX5 · MiniCPM-V4.7 35B-A3B · 64K**。
+思考默认开启，支持工具调用和结果回传；模型与上下文缓存跨请求保留。
+Octop默认模型为MiniCPM；原有 `siyuan-nx6` 连接不变，nx5连接移除Qwen选项。
+配置、网络及旧版验收见 [Octop 接入说明](docs/16-octop-20261022.md)，当前接口语义见[调用手册](docs/nx5-service/API.md)。
 
 ## 硬件与环境
 

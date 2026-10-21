@@ -2,14 +2,9 @@
   "service_id": "nx5-ssd-llm",
   "capabilities": [
     {
-      "capability_id": "qwen36",
-      "alias": "Qwen3.6-35B-A3B · 128K",
-      "description": "UD-IQ4_XS，SSD专家window128，MTP draft2；文本、代码与SVG；思考可切换，WebUI默认开启；标准测试关闭。128K容量及8218-token输入已验证，未测满128K。 支持OpenWebUI / OpenAI文本多轮聊天和SSE流式。 支持函数工具调用、参数流式输出和工具结果回传。"
-    },
-    {
       "capability_id": "minicpm",
       "alias": "MiniCPM-V4.7 · 64K",
-      "description": "SSD专家window176，DSpark draft7；文本、代码与SVG；思考可切换，WebUI默认开启；标准测试关闭。64K容量及8218-token输入已验证，未测满64K。 支持OpenWebUI / OpenAI文本多轮聊天和SSE流式。 支持函数工具调用、参数流式输出和工具结果回传。"
+      "description": "SSD专家window176，DSpark draft7；文本、代码与SVG；思考可切换，WebUI默认开启；标准测试关闭。64K容量及8218-token输入已验证，未测满64K。 支持OpenWebUI / OpenAI文本多轮聊天和SSE流式。 支持函数工具调用、参数流式输出和工具结果回传。 模型首次加载后常驻，工具往返复用精确前缀缓存；改变前缀或切换会话可能重新预处理。"
     }
   ],
   "input": {
@@ -18,7 +13,6 @@
     "max_prompt_characters": 500000,
     "max_request_bytes": 2097152,
     "profiles": [
-      "qwen36-128k",
       "minicpm-64k"
     ],
     "modalities": [
@@ -30,7 +24,7 @@
       "async-jobs"
     ],
     "streaming": true,
-    "multi_turn": "full history in each request",
+    "multi_turn": "full history in each request; one resident slot reuses exact token prefixes",
     "max_messages": 1024,
     "thinking": {
       "parameter": "enable_thinking",
@@ -51,5 +45,5 @@
       "execution": "caller executes; gateway does not run tools"
     }
   },
-  "availability_scope": "API常驻；两个模型按请求加载、完成后卸载并释放中央nx5-igpu租约；互斥不排队。OpenAI Chat Completions、模型发现和SSE；支持文本及函数工具调用；工具由客户端执行，无图片输入。ready只表示入口可受理，仍需租约与运行库校验。"
+  "availability_scope": "仅MiniCPM：首次请求加载，完成后常驻模型、SSD专家窗口和单槽前缀缓存；空闲继续持有中央nx5-igpu独占租约。并发1，不排队；工具由客户端执行。停止服务或认证POST /v1/model/unload后释放模型及租约。"
 }

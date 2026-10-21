@@ -1,7 +1,7 @@
 {
-  "binary": "nx5-chat-runtime/v5/llama-nx5-chat",
-  "binary_sha256": "6cd867100bed9bdc218b1ad29f1e465b0f2fcd55729f6a80d0229fd3ebfb9dcf",
-  "source_sha256": "311e24519d21bb4746f1b5783347630a9fc290cb7b8d15c93af95bb64bb53388",
+  "binary": "nx5-chat-runtime/v6/llama-nx5-chat",
+  "binary_sha256": "c3ab66f12778a84e638d83c69388e02e2e3c0c9ad2abc9750ed72d16e18c855d",
+  "source_sha256": "7d207b556945037b631f0dbfd7535fd74cc954b4d624808325f5dacf93725e21",
   "libraries": {
     "minicpm-les/llama.cpp-omni/build-jetson/bin/libllama-cli-impl.so": "a44c470bb494493ab44956873aecdbe34af4113edd080adf51ba249b6325e808",
     "minicpm-les/llama.cpp-omni/build-jetson/bin/libllama-common.so.0": "8a30e9de55258c64e8d1c8dae9a059ce99ceb74c0ae01f8c942caddf156d51a3",

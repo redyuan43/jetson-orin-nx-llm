@@ -28,7 +28,7 @@ ws.addEventListener('message',e=>{
  if(type==='reasoning')thinkingChars+=(x.content||x.text||'').length;
  if(type==='done'||type==='turn.ended'){
   done=true;clearTimeout(timer);const proof={model,thread_id:thread,session_key:session,wall_s:(Date.now()-started)/1000,events,tool_results:toolResults,text,thinking_chars:thinkingChars,errors,done:true};
-  fs.writeFileSync(path.join(process.cwd(),'reports/2026-10-22-octop-tools','octop-task-'+model+'.json'),JSON.stringify(proof,null,2)+'\n');
+  fs.writeFileSync(path.join(process.cwd(),process.argv[3] || 'reports/2026-10-22-octop-tools','octop-task-'+model+'.json'),JSON.stringify(proof,null,2)+'\n');
   console.log(JSON.stringify(proof));ws.close();
   if(errors.length||!toolResults.some(r=>(r.messages||[]).some(m=>m.name==='current_time' && m.status==='success'))||!text.trim()||thinkingChars===0||x.failed)process.exitCode=1;
  }

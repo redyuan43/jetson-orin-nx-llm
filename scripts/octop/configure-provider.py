@@ -47,7 +47,7 @@ def main():
         result = call('/api/admin/providers', profile)
     assert result['api_key'] == profile['api_key'] and result['enabled']
     resolved = [p for p in call('/api/providers/resolved') if p['provider_name'] == profile['name']]
-    assert {p['model'] for p in resolved} == {'qwen36-128k', 'minicpm-64k'}
+    assert {p['model'] for p in resolved} == {m['id'] for m in profile['models'] if m['enabled']}
     after = call('/api/admin/providers')
     assert call('/api/providers/active-model') == active
     for provider in existing:
