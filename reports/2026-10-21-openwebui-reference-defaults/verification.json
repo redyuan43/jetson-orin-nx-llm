@@ -1,0 +1,66 @@
+{
+  "reference": {
+    "repository": "https://github.com/bbinwang/pelican-bicycle",
+    "commit": "b14acbb2ebe9d9be5f0dec3d35d8f4ae6fcaa432",
+    "file_url": "https://raw.githubusercontent.com/bbinwang/pelican-bicycle/b14acbb2ebe9d9be5f0dec3d35d8f4ae6fcaa432/configs/Qwen3.6-35B-A3B-UD-IQ4_XS.config",
+    "sha256": "c11ceb4648a808b9795d989a3e3999c8ad018e9cdc8ad55fddc467b69676f94a",
+    "parameters": {
+      "--temp": "0.7",
+      "--top-p": "0.8",
+      "--top-k": "20",
+      "--min-p": "0.0",
+      "--presence-penalty": "1.5",
+      "--repeat-penalty": "1.0",
+      "--cache-type-k": "q8_0",
+      "--cache-type-v": "q8_0",
+      "--spec-type": "draft-mtp",
+      "--spec-draft-n-max": "2",
+      "--reasoning": "off",
+      "--reasoning-budget": "0"
+    }
+  },
+  "qwen_saved_defaults": {
+    "max_tokens": 7680,
+    "temperature": 0.7,
+    "top_p": 0.8,
+    "presence_penalty": 1.5
+  },
+  "minicpm_defaults_unchanged": {
+    "max_tokens": 7680
+  },
+  "prior_qwen_runtime_parameters": {
+    "--temp": "0.7",
+    "--top-p": "0.8",
+    "--top-k": "20",
+    "--min-p": "0",
+    "--presence-penalty": "1.5",
+    "--repeat-penalty": "1.0",
+    "--cache-type-k": "q8_0",
+    "--cache-type-v": "q8_0",
+    "--spec-type": "draft-mtp",
+    "--spec-draft-n-max": "2",
+    "--reasoning": "off",
+    "--reasoning-budget": "0"
+  },
+  "prior_qwen_request_sampling_overrides": {},
+  "profile_application": "OpenWebUI routers/openai.py reads saved model parameters and applies them to outgoing requests; /api/models intentionally hides sampling parameters. Verified through authenticated model admin GET.",
+  "adaptations": {
+    "context": 131072,
+    "reference_context": 200000,
+    "batch": 2048,
+    "ubatch": 8,
+    "reference_batch_ubatch": [
+      384,
+      384
+    ],
+    "flash_attention": "on",
+    "reference_flash_attention": "auto",
+    "seed": 42,
+    "reference_seed": "unspecified",
+    "ssd_experts": true,
+    "output_limit": 7680,
+    "reference_output_limit": "unspecified"
+  },
+  "new_inference_run": false,
+  "passed": true
+}
