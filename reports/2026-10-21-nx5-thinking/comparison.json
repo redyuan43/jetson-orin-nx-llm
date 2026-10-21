@@ -1,0 +1,51 @@
+{
+  "comparison": "nx5 vs nano5; original prompt, same weights/runtime, reasoning on, same inference parameters",
+  "argument_differences_excluding_paths": {},
+  "prompt_sha256": "12ade31a5d459db7bab5a67ddcbbd6ca4e7a6dd6cffd67c8894e7594ef7c7328",
+  "template_sha256": "49c37bcc86c7f7f20ed2ebf79e9f872be41ba2b5f9d0d51e6712cc038ef51d6c",
+  "nano5": {
+    "wall_s": 555.4819697139901,
+    "output_tokens_including_reasoning": 3653,
+    "decode_tps": 6.76,
+    "decode_s": 540.01969,
+    "prompt_s": 5.32685,
+    "prompt_tokens": 36,
+    "draft_acceptance": 0.7503,
+    "min_available_mib": 671.8828125,
+    "physical_read_gib": 389.3912239074707,
+    "peak_rss_mib": 5940.40234375,
+    "oom_kill_delta": 0,
+    "rc": 0,
+    "stop_reason": null
+  },
+  "nx5": {
+    "wall_s": 291.20739831800165,
+    "output_tokens_including_reasoning": 3653,
+    "decode_tps": 13.14,
+    "decode_s": 277.95321,
+    "prompt_s": 3.1831199999999997,
+    "prompt_tokens": 36,
+    "draft_acceptance": 0.7503,
+    "min_available_mib": 8810.34765625,
+    "physical_read_gib": 41.74798583984375,
+    "peak_rss_mib": 5973.015625,
+    "oom_kill_delta": 0,
+    "rc": 0,
+    "stop_reason": null
+  },
+  "html_identical_to_nano5": true,
+  "nx5_html_sha256": "210f4f6cd4691429d1d4049bfd63c17a16fc23b0669af65151c6bda385e876ee",
+  "lease_after": "released",
+  "production_defaults_changed": false,
+  "scope_note": "One sample per machine; different physical RAM and OS page-cache state are not controlled.",
+  "decode_speed_ratio": 1.9437869822485208,
+  "browser_errors": [
+    "Missing } in template expression"
+  ],
+  "html_visual_passed": false,
+  "findings": [
+    "Wheel rims orbit away from the stationary hubs",
+    "Head translation is overwritten by CSS rotation; head clips outside scene",
+    "JS parse error prevents registering button handlers; pause click leaves animations running"
+  ]
+}

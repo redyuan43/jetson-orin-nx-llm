@@ -1,0 +1,769 @@
+{
+  "page_errors": [
+    "Missing } in template expression"
+  ],
+  "blocked_requests": [],
+  "controls": {
+    "labels": [
+      "暂停动画",
+      "播放动画",
+      "加速",
+      "减速"
+    ],
+    "after_pause": [
+      {
+        "state": "running",
+        "duration": 300
+      },
+      {
+        "state": "running",
+        "duration": 15000
+      },
+      {
+        "state": "running",
+        "duration": 15000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 1000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 1000
+      }
+    ],
+    "after_play": [
+      {
+        "state": "running",
+        "duration": 199.9116483291597
+      },
+      {
+        "state": "running",
+        "duration": 300
+      },
+      {
+        "state": "running",
+        "duration": 15000
+      },
+      {
+        "state": "running",
+        "duration": 15000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 1000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 1000
+      }
+    ],
+    "before_speed": [
+      {
+        "state": "running",
+        "duration": 199.9116483291597
+      },
+      {
+        "state": "running",
+        "duration": 300
+      },
+      {
+        "state": "running",
+        "duration": 15000
+      },
+      {
+        "state": "running",
+        "duration": 15000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 1000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 1000
+      }
+    ],
+    "after_speed": [
+      {
+        "state": "running",
+        "duration": 172.701639745006
+      },
+      {
+        "state": "running",
+        "duration": 300
+      },
+      {
+        "state": "running",
+        "duration": 15000
+      },
+      {
+        "state": "running",
+        "duration": 15000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 1000
+      },
+      {
+        "state": "running",
+        "duration": 2000
+      },
+      {
+        "state": "running",
+        "duration": 1000
+      }
+    ]
+  },
+  "first": {
+    "title": "鹈鹕骑自行车动画",
+    "svg_count": 1,
+    "animations": [
+      {
+        "target": "g",
+        "id": "",
+        "cls": "cloud",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "cloud",
+        "state": "running"
+      },
+      {
+        "target": "circle",
+        "id": "",
+        "cls": "wheel",
+        "state": "running"
+      },
+      {
+        "target": "circle",
+        "id": "",
+        "cls": "wheel",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "pedal",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "pelican-body",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "pelican-head",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "pelican-leg",
+        "state": "running"
+      }
+    ],
+    "smil": [],
+    "groups": [
+      {
+        "id": "",
+        "cls": "cloud",
+        "transform": null,
+        "css_transform": "matrix(1, 0, 0, 1, -100, 0)",
+        "box": {
+          "x": 155,
+          "y": 283.171875,
+          "width": 105,
+          "height": 45
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": -100,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": "cloud",
+        "transform": null,
+        "css_transform": "matrix(1, 0, 0, 1, 100, 0)",
+        "box": {
+          "x": 630,
+          "y": 258.171875,
+          "width": 145,
+          "height": 55
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": 100,
+          "f": 0
+        }
+      },
+      {
+        "id": "bicycle",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 185,
+          "y": 208.171875,
+          "width": 415,
+          "height": 365
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": "pedal",
+        "transform": "translate(250, 250)",
+        "css_transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "box": {
+          "x": 185,
+          "y": 208.171875,
+          "width": 30,
+          "height": 30
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": "pelican-body",
+        "transform": null,
+        "css_transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "box": {
+          "x": 180,
+          "y": 203.171875,
+          "width": 310,
+          "height": 250
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": "pelican-head",
+        "transform": "translate(270, 170)",
+        "css_transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "box": {
+          "x": 180,
+          "y": 203.171875,
+          "width": 50,
+          "height": 40
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": "pelican-leg",
+        "transform": "translate(250, 250)",
+        "css_transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "box": {
+          "x": 195,
+          "y": 223.171875,
+          "width": 10,
+          "height": 35
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": 0,
+          "f": 0
+        }
+      }
+    ]
+  },
+  "next": {
+    "title": "鹈鹕骑自行车动画",
+    "svg_count": 1,
+    "animations": [
+      {
+        "target": "g",
+        "id": "",
+        "cls": "cloud",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "cloud",
+        "state": "running"
+      },
+      {
+        "target": "circle",
+        "id": "",
+        "cls": "wheel",
+        "state": "running"
+      },
+      {
+        "target": "circle",
+        "id": "",
+        "cls": "wheel",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "pedal",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "pelican-body",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "pelican-head",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "pelican-leg",
+        "state": "running"
+      }
+    ],
+    "smil": [],
+    "groups": [
+      {
+        "id": "",
+        "cls": "cloud",
+        "transform": null,
+        "css_transform": "matrix(1, 0, 0, 1, -70.6674, 0)",
+        "box": {
+          "x": 184.33255004882812,
+          "y": 283.171875,
+          "width": 105,
+          "height": 45
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": -70.66744232177734,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": "cloud",
+        "transform": null,
+        "css_transform": "matrix(1, 0, 0, 1, 129.333, 0)",
+        "box": {
+          "x": 659.3325805664062,
+          "y": 258.171875,
+          "width": 145,
+          "height": 55
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": 129.3325653076172,
+          "f": 0
+        }
+      },
+      {
+        "id": "bicycle",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 321.6136474609375,
+          "y": 211.33123779296875,
+          "width": 548.9331665039062,
+          "height": 351.84063720703125
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": "pedal",
+        "transform": "translate(250, 250)",
+        "css_transform": "matrix(-0.669085, 0.743185, -0.743185, -0.669085, 0, 0)",
+        "box": {
+          "x": 828.1786499023438,
+          "y": 312.8492736816406,
+          "width": 42.3681640625,
+          "height": 42.368133544921875
+        },
+        "matrix": {
+          "a": -0.6690854682513193,
+          "b": 0.7431854655299125,
+          "c": -0.7431854655299125,
+          "d": -0.6690854682513193,
+          "e": 649.3627335813783,
+          "f": 110.86145399129012
+        }
+      },
+      {
+        "id": "",
+        "cls": "pelican-body",
+        "transform": null,
+        "css_transform": "matrix(1, 0, 0, 1, 0, -2.78687)",
+        "box": {
+          "x": 178.56869506835938,
+          "y": 198.9536895751953,
+          "width": 311.4313049316406,
+          "height": 251.4313201904297
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": 0,
+          "f": -2.786874532699585
+        }
+      },
+      {
+        "id": "",
+        "cls": "pelican-head",
+        "transform": "translate(270, 170)",
+        "css_transform": "matrix(0.997234, 0.0743319, -0.0743319, 0.997234, 0, 0)",
+        "box": {
+          "x": 178.56869506835938,
+          "y": 198.9536895751953,
+          "width": 52.83494567871094,
+          "height": 43.60594177246094
+        },
+        "matrix": {
+          "a": 0.997233560017308,
+          "b": 0.07433186917605479,
+          "c": -0.07433186917605479,
+          "d": 0.997233560017308,
+          "e": 0,
+          "f": -2.786874532699585
+        }
+      },
+      {
+        "id": "",
+        "cls": "pelican-leg",
+        "transform": "translate(250, 250)",
+        "css_transform": "matrix(0.867142, -0.498062, 0.498062, 0.867142, 0, 0)",
+        "box": {
+          "x": 195.66429138183594,
+          "y": 217.8946990966797,
+          "width": 26.10357666015625,
+          "height": 35.33056640625
+        },
+        "matrix": {
+          "a": 0.8671416757229587,
+          "b": -0.4980615566618036,
+          "c": 0.4980615566618036,
+          "d": 0.8671416757229587,
+          "e": 0,
+          "f": -2.786874532699585
+        }
+      }
+    ]
+  },
+  "later": {
+    "title": "鹈鹕骑自行车动画",
+    "svg_count": 1,
+    "animations": [
+      {
+        "target": "g",
+        "id": "",
+        "cls": "cloud",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "cloud",
+        "state": "running"
+      },
+      {
+        "target": "circle",
+        "id": "",
+        "cls": "wheel",
+        "state": "running"
+      },
+      {
+        "target": "circle",
+        "id": "",
+        "cls": "wheel",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "pedal",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "pelican-body",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "pelican-head",
+        "state": "running"
+      },
+      {
+        "target": "g",
+        "id": "",
+        "cls": "pelican-leg",
+        "state": "running"
+      }
+    ],
+    "smil": [],
+    "groups": [
+      {
+        "id": "",
+        "cls": "cloud",
+        "transform": null,
+        "css_transform": "matrix(1, 0, 0, 1, -17.335, 0)",
+        "box": {
+          "x": 237.6649627685547,
+          "y": 283.171875,
+          "width": 105.00001525878906,
+          "height": 45
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": -17.335039138793945,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": "cloud",
+        "transform": null,
+        "css_transform": "matrix(1, 0, 0, 1, 182.665, 0)",
+        "box": {
+          "x": 712.6649780273438,
+          "y": 258.171875,
+          "width": 145,
+          "height": 55
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": 182.6649627685547,
+          "f": 0
+        }
+      },
+      {
+        "id": "bicycle",
+        "cls": null,
+        "transform": null,
+        "css_transform": "none",
+        "box": {
+          "x": 230.3141326904297,
+          "y": 147.41326904296875,
+          "width": 359.68585205078125,
+          "height": 443.26300048828125
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "id": "",
+        "cls": "pedal",
+        "transform": "translate(250, 250)",
+        "css_transform": "matrix(0.978175, 0.207781, -0.207781, 0.978175, 0, 0)",
+        "box": {
+          "x": 230.3141326904297,
+          "y": 147.41326904296875,
+          "width": 35.57868957519531,
+          "height": 35.57867431640625
+        },
+        "matrix": {
+          "a": 0.9781754607377735,
+          "b": 0.20778057659570706,
+          "c": -0.20778057659570706,
+          "d": 0.9781754607377735,
+          "e": 48.10347709780936,
+          "f": -57.969265126266805
+        }
+      },
+      {
+        "id": "",
+        "cls": "pelican-body",
+        "transform": null,
+        "css_transform": "matrix(1, 0, 0, 1, 0, -0.177317)",
+        "box": {
+          "x": 179.9849395751953,
+          "y": 202.9794921875,
+          "width": 310.01507568359375,
+          "height": 250.01507568359375
+        },
+        "matrix": {
+          "a": 1,
+          "b": 0,
+          "c": 0,
+          "d": 1,
+          "e": 0,
+          "f": -0.1773172914981842
+        }
+      },
+      {
+        "id": "",
+        "cls": "pelican-head",
+        "transform": "translate(270, 170)",
+        "css_transform": "matrix(1, 0.000753631, -0.000753631, 1, 0, 0)",
+        "box": {
+          "x": 179.9849395751953,
+          "y": 202.9794921875,
+          "width": 50.030120849609375,
+          "height": 40.03767395019531
+        },
+        "matrix": {
+          "a": 0.9999997160200421,
+          "b": 0.0007536311000960797,
+          "c": -0.0007536311000960797,
+          "d": 0.9999997160200421,
+          "e": 0,
+          "f": -0.1773172914981842
+        }
+      },
+      {
+        "id": "",
+        "cls": "pelican-leg",
+        "transform": "translate(250, 250)",
+        "css_transform": "matrix(0.997031, 0.0770071, -0.0770071, 0.997031, 0, 0)",
+        "box": {
+          "x": 192.31959533691406,
+          "y": 222.60952758789062,
+          "width": 12.665557861328125,
+          "height": 35.6661376953125
+        },
+        "matrix": {
+          "a": 0.9970305448379049,
+          "b": 0.07700709486943685,
+          "c": -0.07700709486943685,
+          "d": 0.9970305448379049,
+          "e": 0,
+          "f": -0.1773172914981842
+        }
+      }
+    ]
+  }
+}
