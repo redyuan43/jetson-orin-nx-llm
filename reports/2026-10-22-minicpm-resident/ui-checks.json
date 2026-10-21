@@ -1,0 +1,16 @@
+{
+  "webui": {
+    "models": [
+      "minicpm-64k"
+    ],
+    "selected": [
+      "minicpm-64k "
+    ],
+    "errors": []
+  },
+  "fleet": {
+    "resident_label": true,
+    "mobile_overflow": false,
+    "errors": []
+  }
+}

@@ -3,6 +3,6 @@
   "image": "ghcr.io/open-webui/open-webui@sha256:5adfb0355bbe4a5860c0ba9482cc0b40f573de3749a21a64cf4789391a14fffc",
   "image_id": "sha256:5adfb0355bbe4a5860c0ba9482cc0b40f573de3749a21a64cf4789391a14fffc",
   "platform": "linux/arm64",
-  "settings_sha256": "04485dc4585b2cd761892afda3cd87c24bb403d0f540faeba0d8f66f1e256344",
+  "settings_sha256": "f2ae0211f88bb08ce1f405c278d05eb26a6d09ed0d425251bc4d6364d0bf9a2f",
   "upstream": "https://github.com/open-webui/open-webui/releases/tag/v0.12.3"
 }

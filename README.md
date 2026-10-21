@@ -11,7 +11,8 @@
 完整历史仍由客户端发送，改变系统提示或工具定义会影响缓存命中。
 入口 `http://nx5.taild500c8.ts.net:18347/v1`，需要Tailscale与专用Bearer令牌；普通聊天默认开启思考。
 [舰队能力页](http://nx6.taild500c8.ts.net:8300/capabilities) ·
-[调用手册](docs/nx5-service/API.md)。Qwen模型文件与历史实验保留，当前服务不加载Qwen。
+[调用手册](docs/nx5-service/API.md) · [常驻与缓存验收](docs/17-minicpm-resident-20261022.md)。
+同一Octop工具任务从旧版601.8秒降至热缓存22.9秒；首次长输入仍需约310秒。Qwen文件与历史实验保留，当前服务不加载Qwen。
 
 **Qwen3.6-35B-A3B MTP（UD-IQ4_XS）已在nx5跑通SSD专家加载：** 约14.53 GiB专家在SSD，
 8K / window128 / MTP draft2。关闭思考的英文SVG原题实测 **17.85 token/s，完整输出2分19秒**，

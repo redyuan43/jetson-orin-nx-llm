@@ -1,0 +1,24 @@
+{
+  "8300": {
+    "name": "nx5 · MiniCPM 64K 常驻",
+    "status": "available",
+    "contract_status": "current",
+    "release": {
+      "release": "nx5-ssd-llm-322926fce811",
+      "commit": "e3b9dd08f816be80fe4b2e470aae178a0157452b7a1e62f5c6d9966c918cc5fd",
+      "source_commit": "322926fce8116719b1395408e996fc03dfa07655"
+    },
+    "schema_version": "e3b9dd08f816be80fe4b2e470aae178a0157452b7a1e62f5c6d9966c918cc5fd"
+  },
+  "8301": {
+    "name": "nx5 · MiniCPM 64K 常驻",
+    "status": "available",
+    "contract_status": "current",
+    "release": {
+      "release": "nx5-ssd-llm-322926fce811",
+      "commit": "e3b9dd08f816be80fe4b2e470aae178a0157452b7a1e62f5c6d9966c918cc5fd",
+      "source_commit": "322926fce8116719b1395408e996fc03dfa07655"
+    },
+    "schema_version": "e3b9dd08f816be80fe4b2e470aae178a0157452b7a1e62f5c6d9966c918cc5fd"
+  }
+}

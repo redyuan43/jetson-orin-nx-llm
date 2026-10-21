@@ -55,6 +55,16 @@ for profile in json.loads(a.profiles.read_text()):
     assert result['meta']['capabilities']['builtin_tools'] is False
     assert filter_id in result['meta']['filterIds']
     proof['profiles'].append({k:result[k] for k in ('id','name','params','meta')})
+profiles=json.loads(a.profiles.read_text())
+active_ids=[p['id'] for p in profiles if p.get('is_active',True)]
+if active_ids == ['minicpm-64k']:
+    defaults=call('/api/v1/configs/models')
+    before=dict(defaults)
+    defaults['DEFAULT_MODELS']='minicpm-64k'
+    defaults['MODEL_ORDER_LIST']=['minicpm-64k']+[m for m in defaults.get('MODEL_ORDER_LIST') or [] if m not in ('qwen36-128k','minicpm-64k')]
+    applied=call('/api/v1/configs/models',defaults)
+    assert applied['DEFAULT_MODELS']=='minicpm-64k'
+    proof['defaults']={k:applied[k] for k in ('DEFAULT_MODELS','MODEL_ORDER_LIST')}
 proof['models']=[{'id':m['id'],'name':m['name']} for m in call('/api/models')['data']]
 proof['tasks']={k:v for k,v in call('/api/v1/tasks/config').items() if k.startswith('ENABLE_')}
 for name in ('ENABLE_AUTOCOMPLETE_GENERATION','ENABLE_FOLLOW_UP_GENERATION','ENABLE_TAGS_GENERATION','ENABLE_TITLE_GENERATION'):

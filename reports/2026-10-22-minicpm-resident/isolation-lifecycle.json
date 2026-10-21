@@ -1,0 +1,99 @@
+{
+  "passed_cache_isolation": true,
+  "old_pid_exited": 1049739,
+  "old_lease_released": "released",
+  "reloaded_new_pid": 1118525,
+  "jobs": [
+    {
+      "id": "op_6eb840e9cfb07cba0150aa83b0d51714",
+      "result": {
+        "text": "ORANGE_739",
+        "profile": "minicpm-64k",
+        "reasoning_content": "ORANGE_739\n",
+        "tool_calls": [],
+        "context_capacity": 65536,
+        "input_tokens": 7708,
+        "output_tokens": 16,
+        "cached_input_tokens": 7666,
+        "prompt_tokens_processed": 42,
+        "prefill_s": 1.405489,
+        "generation_s": 1.096774,
+        "decode_tps": 14.588237868512566,
+        "finish_reason": "stop",
+        "cold_start": false,
+        "resident_pid": 1049739,
+        "process_wall_s": 2.619796705999761,
+        "min_available_mib": 872.56640625,
+        "lease_status": "held",
+        "model_loaded_after": true
+      }
+    },
+    {
+      "id": "op_ad5d62c10849bf67a344b20ca2a71701",
+      "result": {
+        "text": "VIOLET_826",
+        "profile": "minicpm-64k",
+        "reasoning_content": "VIOLET_826\n",
+        "tool_calls": [],
+        "context_capacity": 65536,
+        "input_tokens": 7709,
+        "output_tokens": 18,
+        "cached_input_tokens": 7666,
+        "prompt_tokens_processed": 43,
+        "prefill_s": 1.131068,
+        "generation_s": 1.046446,
+        "decode_tps": 17.20107869875751,
+        "finish_reason": "stop",
+        "cold_start": false,
+        "resident_pid": 1049739,
+        "process_wall_s": 2.294587192009203,
+        "min_available_mib": 993.38671875,
+        "lease_status": "held",
+        "model_loaded_after": true
+      }
+    },
+    {
+      "id": "op_60a35341798a7a3762da2e35ee0da629",
+      "result": {
+        "text": "",
+        "profile": "minicpm-64k",
+        "reasoning_content": "40",
+        "tool_calls": [],
+        "context_capacity": 65536,
+        "input_tokens": 23,
+        "output_tokens": 3,
+        "cached_input_tokens": 0,
+        "prompt_tokens_processed": 23,
+        "prefill_s": 2.022356,
+        "generation_s": 0.504333,
+        "decode_tps": 5.948450726008411,
+        "finish_reason": "stop",
+        "cold_start": true,
+        "resident_pid": 1118525,
+        "process_wall_s": 10.972020433007856,
+        "min_available_mib": 1134.74609375,
+        "lease_status": "held",
+        "model_loaded_after": true
+      }
+    }
+  ],
+  "health": {
+    "service_id": "nx5-ssd-llm",
+    "release": "nx5-ssd-llm-322926fce811",
+    "commit": "e3b9dd08f816be80fe4b2e470aae178a0157452b7a1e62f5c6d9966c918cc5fd",
+    "source_commit": "322926fce8116719b1395408e996fc03dfa07655",
+    "model_loaded": true,
+    "resident_pid": 1118525,
+    "resident_since": 1792602289.0307934,
+    "lease_status": "held",
+    "resident_error": null,
+    "cache": "single-slot exact-prefix with recurrent checkpoints",
+    "state": "ready",
+    "mode": "minicpm-64k",
+    "active": 0,
+    "observed_at": 1792602377.428263,
+    "resource": "nx5-igpu",
+    "availability_scope": "MiniCPM loads on first request and stays resident with one prefix-cache slot and a held central lease."
+  },
+  "reload_smoke_note": "Simple arithmetic produced 40 entirely in reasoning_content, with empty final content; process reload succeeded. Final response quality is validated separately by the complete Octop tool task."
+}

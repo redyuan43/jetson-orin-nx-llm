@@ -1,0 +1,8 @@
+{
+  "active_unload_rejected": true,
+  "concurrent_request_rejected": true,
+  "unauthorized_rejected": true,
+  "qwen_rejected": true,
+  "only_minicpm_discovered": true,
+  "resident_pid_preserved": 1049739
+}
