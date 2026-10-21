@@ -1,0 +1,25 @@
+{
+  "url": "http://nx6.taild500c8.ts.net:18348",
+  "started_at": "2026-10-21T13:31:31.691Z",
+  "chats": [],
+  "page_errors": [],
+  "http_errors": [
+    {
+      "status": 403,
+      "path": "/api/v1/channels/"
+    }
+  ],
+  "health_before": {
+    "service_id": "nx5-ssd-llm",
+    "release": "nx5-ssd-llm-b0c8e33e11b7",
+    "commit": "72ea471411b2dabf19dbe7775af4cd03749aa74f8bd0dc62a72ae0fb11ebf26d",
+    "source_commit": "b0c8e33e11b75c6c4c6b5582e54e1ef436f84e6e",
+    "state": "ready",
+    "mode": "off",
+    "active": 0,
+    "model_loaded": false,
+    "observed_at": 1792589498.6348078,
+    "resource": "nx5-igpu",
+    "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+  }
+}

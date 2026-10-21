@@ -1,0 +1,24 @@
+[
+  {
+    "id": "qwen36-128k",
+    "name": "qwen36-128k",
+    "base_model_id": null,
+    "params": {"max_tokens": 7680},
+    "meta": {
+      "description": "Qwen3.6 35B-A3B UD-IQ4_XS · 128K · SSD专家/MTP2 · 思考关闭。仅文本；与MiniCPM互斥，一次选一个模型。",
+      "capabilities": {"vision": false, "file_context": false, "web_search": false, "image_generation": false, "code_interpreter": false, "terminal": false, "builtin_tools": false}
+    },
+    "is_active": true
+  },
+  {
+    "id": "minicpm-64k",
+    "name": "minicpm-64k",
+    "base_model_id": null,
+    "params": {"max_tokens": 7680},
+    "meta": {
+      "description": "MiniCPM-V4.7 35B-A3B · 64K · SSD专家/DSpark7 · 思考关闭。此接口仅文本；与Qwen互斥，一次选一个模型。",
+      "capabilities": {"vision": false, "file_context": false, "web_search": false, "image_generation": false, "code_interpreter": false, "terminal": false, "builtin_tools": false}
+    },
+    "is_active": true
+  }
+]

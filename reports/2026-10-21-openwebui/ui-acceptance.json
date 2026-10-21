@@ -1,0 +1,89 @@
+{
+  "url": "http://nx6.taild500c8.ts.net:18348",
+  "started_at": "2026-10-21T13:35:34.586Z",
+  "chats": [
+    {
+      "model": "qwen36-128k",
+      "prompt": "连接验证：只回答计算结果，17×23等于多少？",
+      "expected": "391",
+      "wall_s": 15.06,
+      "url": "http://nx6.taild500c8.ts.net:18348/c/12309e3f-ccb4-4863-8e44-981437f6493e",
+      "text": "跳转到主要内容\nOpen WebUI\n新对话\n⌘⇧O\n搜索\n⌘K\n笔记\n工作空间\n分组\n对话\n今天\n连接验证：只回答计算结果，17×23等于多少？\n连接验证：只回答计算结果，17×23等于多少？\n3分钟前\n加载中……\nIvan\n连接验证：只回答计算结果，17×23等于多少？\n对话内容\n\n连接验证：只回答计算结果，17×23等于多少？\n\n10月21日 21:35\nqwen36-128k\n\n391\n\n10月21日 21:35\n\n\n\n\nqwen36-128k",
+      "health_after": {
+        "service_id": "nx5-ssd-llm",
+        "release": "nx5-ssd-llm-b0c8e33e11b7",
+        "commit": "72ea471411b2dabf19dbe7775af4cd03749aa74f8bd0dc62a72ae0fb11ebf26d",
+        "source_commit": "b0c8e33e11b75c6c4c6b5582e54e1ef436f84e6e",
+        "state": "ready",
+        "mode": "off",
+        "active": 0,
+        "model_loaded": false,
+        "observed_at": 1792589756.248889,
+        "resource": "nx5-igpu",
+        "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+      }
+    },
+    {
+      "model": "minicpm-64k",
+      "prompt": "连接验证：只回答计算结果，19×23等于多少？",
+      "expected": "437",
+      "wall_s": 16.537,
+      "url": "http://nx6.taild500c8.ts.net:18348/c/2bd14fc9-c7c5-4f0d-80c7-869c09f24079",
+      "text": "跳转到主要内容\nOpen WebUI\n新对话\n⌘⇧O\n搜索\n⌘K\n笔记\n工作空间\n分组\n对话\n今天\n连接验证：只回答计算结果，19×23等于多少？\n连接验证：只回答计算结果，17×23等于多少？\n3分钟前\n连接验证：只回答计算结果，17×23等于多少？\n7分钟前\n加载中……\nIvan\n连接验证：只回答计算结果，19×23等于多少？\n对话内容\n\n连接验证：只回答计算结果，19×23等于多少？\n\n10月21日 21:39\nminicpm-64k\n\n437\n\n10月21日 21:39\n\n\n\n\nminicpm-64k",
+      "health_after": {
+        "service_id": "nx5-ssd-llm",
+        "release": "nx5-ssd-llm-b0c8e33e11b7",
+        "commit": "72ea471411b2dabf19dbe7775af4cd03749aa74f8bd0dc62a72ae0fb11ebf26d",
+        "source_commit": "b0c8e33e11b75c6c4c6b5582e54e1ef436f84e6e",
+        "state": "ready",
+        "mode": "off",
+        "active": 0,
+        "model_loaded": false,
+        "observed_at": 1792589961.5466278,
+        "resource": "nx5-igpu",
+        "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+      }
+    }
+  ],
+  "page_errors": [],
+  "http_errors": [
+    {
+      "status": 403,
+      "path": "/api/v1/channels/"
+    },
+    {
+      "status": 403,
+      "path": "/api/v1/channels/"
+    }
+  ],
+  "health_before": {
+    "service_id": "nx5-ssd-llm",
+    "release": "nx5-ssd-llm-b0c8e33e11b7",
+    "commit": "72ea471411b2dabf19dbe7775af4cd03749aa74f8bd0dc62a72ae0fb11ebf26d",
+    "source_commit": "b0c8e33e11b75c6c4c6b5582e54e1ef436f84e6e",
+    "state": "ready",
+    "mode": "off",
+    "active": 0,
+    "model_loaded": false,
+    "observed_at": 1792589941.9838395,
+    "resource": "nx5-igpu",
+    "availability_scope": "API admission state; central lease and runtime verification are required before inference."
+  },
+  "mobile": {
+    "width": 390,
+    "bodyWidth": 390
+  },
+  "expected_denials": [
+    {
+      "status": 403,
+      "path": "/api/v1/channels/"
+    },
+    {
+      "status": 403,
+      "path": "/api/v1/channels/"
+    }
+  ],
+  "passed": true,
+  "validation_note": "Channels 403 is the disabled optional feature; both chat results and release of the model were verified.",
+  "reviewed_at": "2026-10-21T13:43:48.841Z"
+}

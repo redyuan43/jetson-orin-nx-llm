@@ -1,0 +1,74 @@
+{
+  "profiles": [
+    {
+      "id": "qwen36-128k",
+      "name": "qwen36-128k",
+      "params": {
+        "max_tokens": 7680
+      },
+      "meta": {
+        "profile_image_url": null,
+        "background_image_url": null,
+        "description": "Qwen3.6 35B-A3B UD-IQ4_XS · 128K · SSD专家/MTP2 · 思考关闭。仅文本；与MiniCPM互斥，一次选一个模型。",
+        "i18n": null,
+        "capabilities": {
+          "vision": false,
+          "file_context": false,
+          "web_search": false,
+          "image_generation": false,
+          "code_interpreter": false,
+          "terminal": false,
+          "builtin_tools": false
+        },
+        "knowledge": null,
+        "voice": null,
+        "voice_avatar": null
+      }
+    },
+    {
+      "id": "minicpm-64k",
+      "name": "minicpm-64k",
+      "params": {
+        "max_tokens": 7680
+      },
+      "meta": {
+        "profile_image_url": null,
+        "background_image_url": null,
+        "description": "MiniCPM-V4.7 35B-A3B · 64K · SSD专家/DSpark7 · 思考关闭。此接口仅文本；与Qwen互斥，一次选一个模型。",
+        "i18n": null,
+        "capabilities": {
+          "vision": false,
+          "file_context": false,
+          "web_search": false,
+          "image_generation": false,
+          "code_interpreter": false,
+          "terminal": false,
+          "builtin_tools": false
+        },
+        "knowledge": null,
+        "voice": null,
+        "voice_avatar": null
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "qwen36-128k",
+      "name": "qwen36-128k"
+    },
+    {
+      "id": "minicpm-64k",
+      "name": "minicpm-64k"
+    }
+  ],
+  "tasks": {
+    "ENABLE_AUTOCOMPLETE_GENERATION": false,
+    "ENABLE_FOLLOW_UP_GENERATION": false,
+    "ENABLE_TAGS_GENERATION": false,
+    "ENABLE_TITLE_GENERATION": false,
+    "ENABLE_SEARCH_QUERY_GENERATION": true,
+    "ENABLE_RETRIEVAL_QUERY_GENERATION": true,
+    "ENABLE_VOICE_MODE_PROMPT": true
+  },
+  "passed": true
+}
