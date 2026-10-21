@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-21T15:49:26.344Z",
+  "expandDetails": true,
+  "done": true,
+  "error": null,
+  "reasoning_chars": 6204,
+  "answer_chars": 1917,
+  "visible_markdown_chars": [
+    96,
+    5816,
+    1650
+  ],
+  "reasoning_visible": true,
+  "answer_visible": true,
+  "stats_visible": true,
+  "reasoning_expanded": true,
+  "page_errors": []
+}

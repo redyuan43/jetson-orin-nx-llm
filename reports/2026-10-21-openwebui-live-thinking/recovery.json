@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-21T15:47:40.974000+00:00",
+  "chat_id": "cea5de0b-fcb2-4069-88ab-31b0f4f17c95",
+  "message_id": "d03f39f9-9039-4edc-9080-21c09114a139",
+  "job_id": "op_435d40054c29a20fa25d560304fcc9ba",
+  "cause": "Inspection sent Escape, which OpenWebUI interpreted as stop; subsequent retry received device_job_busy while original inference continued.",
+  "source_status": "succeeded",
+  "finish_reason": "stop",
+  "reasoning_chars": 6204,
+  "answer_chars": 1914,
+  "usage": {
+    "decode_tps": 11.251203429681166,
+    "generation_s": 249.395544,
+    "prefill_s": 4.418651,
+    "process_wall_s": 262.5144424360042,
+    "prompt_tokens": 63,
+    "completion_tokens": 2806,
+    "total_tokens": 2869,
+    "input_tokens": 63,
+    "output_tokens": 2806,
+    "total_s": 264.41847920417786
+  },
+  "exact_original_output_restored": true,
+  "other_messages_preserved": true,
+  "new_inference_started": false
+}

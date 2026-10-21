@@ -1,0 +1,9 @@
+{
+  "at": "2026-10-21T15:41:58.727994+00:00",
+  "setting": "ui.expandDetails",
+  "before": null,
+  "after": true,
+  "other_settings_preserved": true,
+  "scope": "signed-in user",
+  "restart_required": false
+}
