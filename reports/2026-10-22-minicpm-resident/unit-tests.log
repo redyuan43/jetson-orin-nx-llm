@@ -21,6 +21,7 @@ test_tools_round_trip_accepts_result_and_preserves_reasoning (test_nx5_chat.Chat
 test_context_limit_does_not_discard_cache (test_nx5_resident.ResidentTests) ... ok
 test_old_guard_cannot_close_replacement_process (test_nx5_resident.ResidentTests) ... ok
 test_release_follows_process_exit_and_is_idempotent (test_nx5_resident.ResidentTests) ... ok
+test_reservation_and_lease_have_distinct_digests (test_nx5_resident.ResidentTests) ... ok
 test_shutdown_cannot_reload (test_nx5_resident.ResidentTests) ... ok
 test_two_requests_reuse_process_and_retained_usage (test_nx5_resident.ResidentTests) ... ok
 test_unconfirmed_receipt_blocks_new_process (test_nx5_resident.ResidentTests) ... ok
@@ -35,6 +36,6 @@ test_missing_or_invalid_metrics_never_fabricate_speed (test_openwebui_stats.Stat
 test_stream_requests_usage_and_status_preserves_answer (test_openwebui_stats.StatsTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 34 tests in 6.585s
+Ran 35 tests in 6.577s
 
 OK

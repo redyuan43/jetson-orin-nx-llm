@@ -95,9 +95,9 @@ class CentralLease:
             reservation = self.api('POST', '/internal/v1/reservations', body)
             if reservation['status'] == 'held':
                 lease = self.api('GET', '/internal/v1/leases/' + record['operation_id'])
-                if lease['status'] != 'held' or lease['request_digest'] != record['request_digest']:
+                if lease['status'] != 'held' or lease['operation_id'] != record['operation_id']:
                     raise RuntimeError('lease_mismatch')
-                record.update(status='held', held_at=time.time())
+                record.update(status='held', held_at=time.time(), lease_digest=lease['request_digest'])
                 save(record)
                 return record
             if reservation['status'] == 'preparing':
@@ -115,7 +115,7 @@ class CentralLease:
         require_idle()
         self.observe('off', 0)
         self.api('POST', '/internal/v1/leases/' + record['operation_id'] + '/release', {
-            'terminal_status': 'succeeded', 'request_digest': record['request_digest'],
+            'terminal_status': 'succeeded', 'request_digest': record['lease_digest'],
             'evidence_digest': digest({'process_exited': True, 'operation_id': record['operation_id']})})
         lease = self.api('GET', '/internal/v1/leases/' + record['operation_id'])
         if lease['status'] != 'released':
@@ -270,7 +270,7 @@ class ResidentModel:
                         raise RuntimeError('resident_process_exited')
                     if time.monotonic() - last_heartbeat >= 10:
                         lease = central.api('GET', '/internal/v1/leases/' + record['operation_id'])
-                        if lease['status'] != 'held' or lease['request_digest'] != record['request_digest']:
+                        if lease['status'] != 'held' or lease['request_digest'] != record['lease_digest']:
                             raise RuntimeError('resident_lease_lost')
                         central.observe('llm', int(self.active))
                         last_heartbeat = time.monotonic()

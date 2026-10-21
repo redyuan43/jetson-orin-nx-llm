@@ -27,6 +27,27 @@ class ResidentTests(unittest.TestCase):
         self.assertEqual(central.api.call_args.args[2],
                          {'mode':'off','state':'ready','active':0,'operation_id':None})
 
+    def test_reservation_and_lease_have_distinct_digests(self):
+        central = object.__new__(CentralLease)
+        central.group = '/group'
+        central.observe = Mock()
+        record = {}
+        def api(method, path, body=None, controller=False):
+            if path.endswith('/activity'):
+                return {'leases': [], 'pending': [], 'transition': None}
+            if path.endswith('/reservations'):
+                return {'status':'held'}
+            return {'status':'held','operation_id':record['operation_id'],'request_digest':'canonical-lease-digest'}
+        central.api = Mock(side_effect=api)
+        with patch('resident.require_idle'):
+            result = central.acquire({'x':1},'rev',lambda value: record.update(value))
+        self.assertEqual(result['lease_digest'],'canonical-lease-digest')
+        self.assertNotEqual(result['request_digest'],result['lease_digest'])
+        central.api = Mock(return_value={'status':'released'})
+        with patch('resident.require_idle'):
+            central.release(result)
+        self.assertEqual(central.api.call_args_list[0].args[2]['request_digest'],'canonical-lease-digest')
+
     def test_two_requests_reuse_process_and_retained_usage(self):
         child = Mock(pid=456, stdin=io.StringIO())
         child.poll.return_value = None
