@@ -51,3 +51,5 @@
 - 35项Python测试、27项舰队门户测试通过。8300/8301契约均为current且与服务版本指纹一致；WebUI仅MiniCPM，桌面/手机页面无脚本错误和横向溢出。
 
 [Octop](http://bus002.taild500c8.ts.net:8088) · [OpenWebUI](http://nx6.taild500c8.ts.net:18348) · [舰队](http://nx6.taild500c8.ts.net:8300/capabilities) · [调用手册](nx5-service/API.md)
+
+最终卸载复核后再次完成真实Octop工具任务，正确输出日期和时区。最终PID 1118525 保持驻留，active=0、中央租约held，工具返回轮继续命中 8046 个token；见[最终状态](../reports/2026-10-22-minicpm-resident/final-state.json)及[最终预热任务](../reports/2026-10-22-minicpm-resident/octop-final-prewarm.json)。

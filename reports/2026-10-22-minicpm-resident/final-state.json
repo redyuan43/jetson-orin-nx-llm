@@ -1,0 +1,82 @@
+{
+  "health": {
+    "service_id": "nx5-ssd-llm",
+    "release": "nx5-ssd-llm-322926fce811",
+    "commit": "e3b9dd08f816be80fe4b2e470aae178a0157452b7a1e62f5c6d9966c918cc5fd",
+    "source_commit": "322926fce8116719b1395408e996fc03dfa07655",
+    "model_loaded": true,
+    "resident_pid": 1118525,
+    "resident_since": 1792602289.0307934,
+    "lease_status": "held",
+    "resident_error": null,
+    "cache": "single-slot exact-prefix with recurrent checkpoints",
+    "state": "ready",
+    "mode": "minicpm-64k",
+    "active": 0,
+    "observed_at": 1792602678.102153,
+    "resource": "nx5-igpu",
+    "availability_scope": "MiniCPM loads on first request and stays resident with one prefix-cache slot and a held central lease."
+  },
+  "lease_held": true,
+  "sole_lease": true,
+  "final_jobs": [
+    {
+      "id": "op_d5053828e51c7e2b98b73b941477fd81",
+      "result": {
+        "text": "",
+        "profile": "minicpm-64k",
+        "reasoning_content": "用户要求调用 current_time 工具获取当前时间，然后只回答工具返回的日期和时区。这是一个简单的工具调用任务。\n",
+        "tool_calls": [
+          {
+            "type": "function",
+            "function": {
+              "name": "current_time",
+              "arguments": "{}"
+            },
+            "id": "xrEdjAJeJQDujFKHFEMdTK1yoEAyRBJD"
+          }
+        ],
+        "context_capacity": 65536,
+        "input_tokens": 8058,
+        "output_tokens": 45,
+        "cached_input_tokens": 0,
+        "prompt_tokens_processed": 8058,
+        "prefill_s": 261.735856,
+        "generation_s": 4.327666,
+        "decode_tps": 10.398214649651798,
+        "finish_reason": "tool_calls",
+        "cold_start": false,
+        "resident_pid": 1118525,
+        "process_wall_s": 266.18916428300145,
+        "min_available_mib": 888.6953125,
+        "lease_status": "held",
+        "model_loaded_after": true
+      }
+    },
+    {
+      "id": "op_4b2684148a8c40d3e3aeba86f5bb88d6",
+      "result": {
+        "text": "2026-10-22 CST (UTC+0800)",
+        "profile": "minicpm-64k",
+        "reasoning_content": "用户要求只回答工具返回的日期和时区。根据工具返回的结果，日期是 2026-10-22，时区是 CST (UTC+0800)。\n",
+        "tool_calls": [],
+        "context_capacity": 65536,
+        "input_tokens": 8150,
+        "output_tokens": 66,
+        "cached_input_tokens": 8046,
+        "prompt_tokens_processed": 104,
+        "prefill_s": 2.884643,
+        "generation_s": 4.52991,
+        "decode_tps": 14.569825890580608,
+        "finish_reason": "stop",
+        "cold_start": false,
+        "resident_pid": 1118525,
+        "process_wall_s": 7.575293533998774,
+        "min_available_mib": 821.01171875,
+        "lease_status": "held",
+        "model_loaded_after": true
+      }
+    }
+  ],
+  "memory_available_mib": 889.73046875
+}
