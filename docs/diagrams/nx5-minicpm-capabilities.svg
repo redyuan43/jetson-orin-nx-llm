@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1760" viewBox="0 0 1800 1760" role="img" aria-labelledby="title desc">
+<title id="title">它擅长什么，哪里要留余地？</title><desc id="desc">模型能力地图：以官方 Instruct 对比和 nx5 本轮实测为依据；“相对强弱”仅针对所列任务与对比模型。</desc>
+<metadata>{&quot;date&quot;: &quot;2026-10-21&quot;, &quot;profile&quot;: &quot;nx5-minicpm-v47-64k&quot;, &quot;sources&quot;: [&quot;https://github.com/OpenBMB/MiniCPM-V/blob/main/docs/minicpm_v4dot7_zh.md&quot;, &quot;https://huggingface.co/openbmb/MiniCPM-V-4.7-35B-A3B/blob/main/config.json&quot;, &quot;https://github.com/OpenBMB/MiniCPM-V/blob/main/assets/minicpmv4.7/overall_performance_35ba3b_instruct.png&quot;, &quot;https://github.com/OpenBMB/MiniCPM-V/blob/main/assets/minicpmv4.7/overall_performance_35ba3b_language.png&quot;, &quot;../08-nx5-64k-fixed-20261021.md&quot;]}</metadata>
+<style>text{font-family:'PingFang SC','Noto Sans CJK SC','Microsoft YaHei',Arial,sans-serif;font-variant-numeric:tabular-nums}a:hover text{text-decoration:underline}</style>
+<defs>
+<marker id="arrow-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#147D76"/></marker>
+<marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#A86718"/></marker>
+<marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#346FAA"/></marker>
+<marker id="arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6F55AA"/></marker>
+<marker id="arrow-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#536B7D"/></marker>
+</defs>
+<rect x="0" y="0" width="1800" height="1760" rx="0" fill="#F3F6F8"/>
+<rect x="60" y="56" width="42" height="7" rx="3" fill="#147D76"/>
+<text x="118" y="68" font-size="18" fill="#147D76" font-weight="700" text-anchor="start">NX5  /  MINICPM-V 4.7</text>
+<text x="1740" y="68" font-size="18" fill="#536B7D" font-weight="400" text-anchor="end">2026.10.21   ·   02 / 02</text>
+<text x="60" y="132" font-size="46" fill="#173149" font-weight="700" text-anchor="start">它擅长什么，哪里要留余地？</text>
+<text x="60" y="178" font-size="22" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="1680">模型能力地图：以官方 Instruct 对比和 nx5 本轮实测为依据；“相对强弱”仅针对所列任务与对比模型。</text>
+<rect x="60" y="216" width="405" height="100" rx="16" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<text x="84" y="260" font-size="32" fill="#147D76" font-weight="700" text-anchor="start" data-max-width="357">35B-A3B · MoE</text>
+<text x="84" y="292" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="357">总量约 35.5B · 每 token 激活约 3B</text>
+<rect x="485" y="216" width="405" height="100" rx="16" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<text x="509" y="260" font-size="32" fill="#346FAA" font-weight="700" text-anchor="start" data-max-width="357">40 层 · 混合注意力</text>
+<text x="509" y="292" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="357">30 层 GDN + 10 层全注意力</text>
+<rect x="910" y="216" width="405" height="100" rx="16" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<text x="934" y="260" font-size="32" fill="#147D76" font-weight="700" text-anchor="start" data-max-width="357">256 选 8 + 共享专家</text>
+<text x="934" y="292" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="357">每层独立路由 · 不裁剪专家候选集</text>
+<rect x="1335" y="216" width="405" height="100" rx="16" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<text x="1359" y="260" font-size="32" fill="#6F55AA" font-weight="700" text-anchor="start" data-max-width="357">当前部署 64K</text>
+<text x="1359" y="292" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="357">官方配置上限 256K ≠ 本机已验证容量</text>
+<rect x="60" y="342" width="1680" height="322" rx="22" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<rect x="84" y="363" width="32" height="32" rx="9" fill="#147D76"/>
+<text x="100" y="386" font-size="17" fill="white" font-weight="700" text-anchor="middle">1</text>
+<text x="130" y="388" font-size="26" fill="#173149" font-weight="700" text-anchor="start">模型架构：视觉编码 + 稀疏语言模型</text>
+<rect x="84" y="441" width="248" height="136" rx="16" fill="#EBF3FC"/>
+<text x="108" y="480" font-size="25" fill="#346FAA" font-weight="700" text-anchor="start">输入</text>
+<text x="108" y="516" font-size="23" fill="#173149" font-weight="650" text-anchor="start">文字</text>
+<text x="108" y="550" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start">单图 / 多图 / 视频帧</text>
+<rect x="392" y="441" width="288" height="136" rx="16" fill="#F1EDF9"/>
+<text x="414" y="480" font-size="25" fill="#6F55AA" font-weight="700" text-anchor="start">视觉编码器</text>
+<text x="414" y="516" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="244">27 层 · SigLIP2 基础</text>
+<text x="414" y="550" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="244">视觉 token 压缩 4× / 16×</text>
+<rect x="740" y="441" width="574" height="136" rx="16" fill="#E8F5F1"/>
+<text x="764" y="480" font-size="25" fill="#147D76" font-weight="700" text-anchor="start">Qwen3.5 MoE 文本架构</text>
+<rect x="764" y="496" width="94" height="34" rx="8" fill="#147D76"/>
+<text x="811" y="520" font-size="17" fill="white" font-weight="650" text-anchor="middle">GDN</text>
+<rect x="868" y="496" width="94" height="34" rx="8" fill="#147D76"/>
+<text x="915" y="520" font-size="17" fill="white" font-weight="650" text-anchor="middle">GDN</text>
+<rect x="972" y="496" width="94" height="34" rx="8" fill="#147D76"/>
+<text x="1019" y="520" font-size="17" fill="white" font-weight="650" text-anchor="middle">GDN</text>
+<rect x="1076" y="496" width="94" height="34" rx="8" fill="#346FAA"/>
+<text x="1123" y="520" font-size="17" fill="white" font-weight="650" text-anchor="middle">全注意力</text>
+<text x="1190" y="520" font-size="24" fill="#173149" font-weight="700" text-anchor="start">× 10</text>
+<text x="764" y="556" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="526">每层 MoE：256 个路由专家中选 8 个，另加共享专家</text>
+<rect x="1374" y="441" width="342" height="136" rx="16" fill="#EBF3FC"/>
+<text x="1398" y="480" font-size="25" fill="#346FAA" font-weight="700" text-anchor="start" data-max-width="294">输出文字 / JSON / 代码</text>
+<text x="1398" y="516" font-size="20" fill="#173149" font-weight="400" text-anchor="start">看图问答、文字回答</text>
+<text x="1398" y="550" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="294">HTML / SVG 是代码生成任务</text>
+<path d="M 340 543 H 382" fill="none" stroke="#536B7D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-muted)"/>
+<path d="M 688 543 H 730" fill="none" stroke="#536B7D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-muted)"/>
+<path d="M 1322 543 H 1364" fill="none" stroke="#536B7D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-muted)"/>
+<path d="M 208 441 V 416 H 858 V 434" fill="none" stroke="#346FAA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+<rect x="420" y="398" width="256" height="30" rx="0" fill="white"/>
+<text x="548" y="420" font-size="18" fill="#346FAA" font-weight="400" text-anchor="middle">文字直接进入语言模型</text>
+<text x="84" y="614" font-size="21" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="1632">GDN 用循环状态保存信息；全注意力层使用 KV。MoE 减少单步计算量，但完整专家权重仍需保存。</text>
+<text x="84" y="645" font-size="19" fill="#6F55AA" font-weight="400" text-anchor="start" data-max-width="1632">nx5 当前固定入口仅验收文字输入；视觉编码器、图片 / 视频输入尚未纳入本轮部署验收。</text>
+<rect x="60" y="689" width="32" height="32" rx="9" fill="#147D76"/>
+<text x="76" y="712" font-size="17" fill="white" font-weight="700" text-anchor="middle">2</text>
+<text x="106" y="714" font-size="26" fill="#173149" font-weight="700" text-anchor="start">能力强弱：看任务证据，不把不同榜单分数混成一个总分</text>
+<rect x="60" y="740" width="540" height="505" rx="20" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<rect x="60" y="740" width="540" height="90" rx="20" fill="#E8F5F1"/>
+<text x="84" y="780" font-size="27" fill="#147D76" font-weight="700" text-anchor="start">相对强项</text>
+<text x="84" y="810" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start">官方模型成绩 [1][2]</text>
+<rect x="630" y="740" width="540" height="505" rx="20" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<rect x="630" y="740" width="540" height="90" rx="20" fill="#FFF4E3"/>
+<text x="654" y="780" font-size="27" fill="#A86718" font-weight="700" text-anchor="start">相对短板</text>
+<text x="654" y="810" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start">官方模型成绩 [1][2]</text>
+<rect x="1200" y="740" width="540" height="505" rx="20" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<rect x="1200" y="740" width="540" height="90" rx="20" fill="#EBF3FC"/>
+<text x="1224" y="780" font-size="27" fill="#346FAA" font-weight="700" text-anchor="start">nx5 的实际表现</text>
+<text x="1224" y="810" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start">当前量化与运行配置 [4]</text>
+<text x="84" y="868" font-size="23" fill="#147D76" font-weight="700" text-anchor="start" data-max-width="492">文档、OCR 与图表理解</text>
+<text x="84" y="901" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">OmniDocBench 1.6：94.24</text>
+<text x="84" y="930" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">官方同表其他模型最高：82.14</text>
+<text x="84" y="963" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="492">读文档是优势方向；不代表每个 OCR 子项都领先。</text>
+<text x="84" y="1005" font-size="23" fill="#147D76" font-weight="700" text-anchor="start" data-max-width="492">通用视觉理解</text>
+<text x="84" y="1038" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">MMBench：91.72</text>
+<text x="84" y="1067" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">官方同表其他模型最高：89.63</text>
+<text x="84" y="1100" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="492">适合看图问答；精细定位仍要单独评估。</text>
+<text x="84" y="1142" font-size="23" fill="#147D76" font-weight="700" text-anchor="start" data-max-width="492">中文知识与视频理解</text>
+<text x="84" y="1175" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">CMMLU：90.21 · Video-MME：76.40</text>
+<text x="84" y="1206" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="492">这两项在官方所列对比中领先。</text>
+<text x="654" y="868" font-size="23" fill="#A86718" font-weight="700" text-anchor="start" data-max-width="492">代码生成</text>
+<text x="654" y="901" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">LiveCodeBench-v6：56.57</text>
+<text x="654" y="930" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">同表 Gemma-4 31B：71.24</text>
+<text x="654" y="963" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="492">有代码能力，但复杂实现与调试不是相对强项。</text>
+<text x="654" y="1005" font-size="23" fill="#A86718" font-weight="700" text-anchor="start" data-max-width="492">GUI 元素定位</text>
+<text x="654" y="1038" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">ScreenSpot：86.99</text>
+<text x="654" y="1067" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">同表 Qwen3.8 27B：93.31</text>
+<text x="654" y="1100" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="492">能理解截图，不等于总能准确点击目标。</text>
+<text x="654" y="1142" font-size="23" fill="#A86718" font-weight="700" text-anchor="start" data-max-width="492">复杂指令遵循</text>
+<text x="654" y="1175" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">IFBench：47.67 · Gemma-4 31B：54.33</text>
+<text x="654" y="1206" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="492">约束较多时，输出格式和细节需要核验。</text>
+<text x="1224" y="868" font-size="23" fill="#346FAA" font-weight="700" text-anchor="start" data-max-width="492">有原文的字段检索：本次通过</text>
+<text x="1224" y="901" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">8,218-token 输入，六个核验码 6/6 正确</text>
+<text x="1224" y="930" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">JSON 可解析，未漏项或添加字段</text>
+<text x="1224" y="963" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="492">属于一次检索样本，不能推成全面长上下文成绩。</text>
+<text x="1224" y="1005" font-size="23" fill="#AF5557" font-weight="700" text-anchor="start" data-max-width="492">SVG 动画：本次未通过</text>
+<text x="1224" y="1038" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">能生成完整 HTML，但车轮旋转中心错误</text>
+<text x="1224" y="1067" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">关闭 DSpark 后仍出现定位问题</text>
+<text x="1224" y="1100" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="492">这次 8K → 64K 的 HTML 内容逐字节相同。</text>
+<text x="1224" y="1142" font-size="23" fill="#346FAA" font-weight="700" text-anchor="start" data-max-width="492">多模态与工具：尚未验收</text>
+<text x="1224" y="1175" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="492">图片 / 视频问答、工具调用、HTTP 服务</text>
+<text x="1224" y="1206" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="492">官方支持的能力不等于本机固定入口已提供。</text>
+<text x="60" y="1280" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="1680">官方分数口径：35B-A3B、Instruct；视觉取 4× 压缩、Video-MME 无字幕。分数仅可在同一榜单内对比。</text>
+<text x="60" y="1310" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="1680">以上“官方成绩”来自官方检查点对比表，并非 nx5 混合 Q3_K / GGUF 量化版本的实测分数。</text>
+<rect x="60" y="1336" width="32" height="32" rx="9" fill="#147D76"/>
+<text x="76" y="1359" font-size="17" fill="white" font-weight="700" text-anchor="middle">3</text>
+<text x="106" y="1361" font-size="26" fill="#173149" font-weight="700" text-anchor="start">在这台 nx5 上怎么用</text>
+<rect x="60" y="1385" width="405" height="124" rx="16" fill="#E8F5F1"/>
+<text x="82" y="1419" font-size="20" fill="#147D76" font-weight="700" text-anchor="start">现在可优先使用</text>
+<text x="82" y="1456" font-size="22" fill="#173149" font-weight="650" text-anchor="start" data-max-width="361">带原文的字段抽取 / 检索</text>
+<text x="82" y="1487" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="361">本轮已有实际样本通过</text>
+<rect x="485" y="1385" width="405" height="124" rx="16" fill="#EBF3FC"/>
+<text x="507" y="1419" font-size="20" fill="#346FAA" font-weight="700" text-anchor="start">值得下一步验收</text>
+<text x="507" y="1456" font-size="22" fill="#173149" font-weight="650" text-anchor="start" data-max-width="361">文档 OCR / 截图 / 视频问答</text>
+<text x="507" y="1487" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="361">模型优势方向，需接入视觉链路</text>
+<rect x="910" y="1385" width="405" height="124" rx="16" fill="#FFF4E3"/>
+<text x="932" y="1419" font-size="20" fill="#A86718" font-weight="700" text-anchor="start">生成后必须检查</text>
+<text x="932" y="1456" font-size="22" fill="#173149" font-weight="650" text-anchor="start" data-max-width="361">复杂代码 / SVG / 动画</text>
+<text x="932" y="1487" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="361">实际运行、看图检查、再修正</text>
+<rect x="1335" y="1385" width="405" height="124" rx="16" fill="#F1EDF9"/>
+<text x="1357" y="1419" font-size="20" fill="#6F55AA" font-weight="700" text-anchor="start">当前输出范围</text>
+<text x="1357" y="1456" font-size="22" fill="#173149" font-weight="650" text-anchor="start" data-max-width="361">文字、结构化文本与代码</text>
+<text x="1357" y="1487" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="361">当前链路不提供语音或图像生成</text>
+<rect x="60" y="1530" width="1680" height="86" rx="14" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<text x="84" y="1566" font-size="21" fill="#173149" font-weight="700" text-anchor="start">质量边界</text>
+<text x="220" y="1566" font-size="20" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="1490">未做原始高精度权重与当前量化的全面质量对照，不能量化能力损失，也不能宣称完全无损。</text>
+<text x="220" y="1596" font-size="20" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="1490">64K 只通过容量与约 8K 实际输入验证；完整 64K 历史、多轮常驻质量尚未验证。</text>
+<a href="https://github.com/OpenBMB/MiniCPM-V/blob/main/assets/minicpmv4.7/overall_performance_35ba3b_instruct.png" target="_blank">
+<text x="60" y="1660" font-size="18" fill="#346FAA" font-weight="500" text-anchor="start">[1] 官方视觉评测表</text>
+</a>
+<a href="https://github.com/OpenBMB/MiniCPM-V/blob/main/assets/minicpmv4.7/overall_performance_35ba3b_language.png" target="_blank">
+<text x="410" y="1660" font-size="18" fill="#346FAA" font-weight="500" text-anchor="start">[2] 官方语言评测表</text>
+</a>
+<a href="https://huggingface.co/openbmb/MiniCPM-V-4.7-35B-A3B/blob/main/config.json" target="_blank">
+<text x="760" y="1660" font-size="18" fill="#346FAA" font-weight="500" text-anchor="start">[3] 官方模型配置</text>
+</a>
+<a href="../08-nx5-64k-fixed-20261021.md" target="_blank">
+<text x="1100" y="1660" font-size="18" fill="#346FAA" font-weight="500" text-anchor="start">[4] nx5 本轮验收报告</text>
+</a>
+<a href="https://github.com/OpenBMB/MiniCPM-V/blob/main/docs/minicpm_v4dot7_zh.md" target="_blank">
+<text x="60" y="1705" font-size="18" fill="#346FAA" font-weight="500" text-anchor="start">模型能力与视觉压缩说明：OpenBMB 官方指南</text>
+</a>
+<text x="1740" y="1705" font-size="18" fill="#536B7D" font-weight="400" text-anchor="end">强弱判断范围：官方所列对比 + 本轮本机证据</text>
+</svg>

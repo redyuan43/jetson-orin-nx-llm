@@ -1,5 +1,7 @@
 # MiniCPM-V 4.7 35B-A3B on Jetson Orin NX 16GB
 
+> 历史记录：关于 CLI 无投机循环、DSpark 个位数接受率、15.3 t/s 硬件上限和内存余量的结论已被复核纠正。请以 [2026-10-21 nx5 复核](06-nx5-audit-20261021.md) 为准。
+
 ## 1. Model architecture
 
 Read from the GGUF metadata (`qwen35moe`), not from documentation:

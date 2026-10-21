@@ -1,0 +1,35 @@
+[
+  {
+    "title": "nx5 的模型，存在哪里？",
+    "width": 1800,
+    "height": 1700,
+    "textCount": 98,
+    "outsideCanvas": [],
+    "tooWide": [],
+    "textOverlaps": [],
+    "images": 0,
+    "links": [
+      "../../configs/minicpm-v47-64k.json",
+      "../08-nx5-64k-fixed-20261021.md"
+    ],
+    "file": "nx5-minicpm-64k-storage.svg"
+  },
+  {
+    "title": "它擅长什么，哪里要留余地？",
+    "width": 1800,
+    "height": 1760,
+    "textCount": 99,
+    "outsideCanvas": [],
+    "tooWide": [],
+    "textOverlaps": [],
+    "images": 0,
+    "links": [
+      "https://github.com/OpenBMB/MiniCPM-V/blob/main/assets/minicpmv4.7/overall_performance_35ba3b_instruct.png",
+      "https://github.com/OpenBMB/MiniCPM-V/blob/main/assets/minicpmv4.7/overall_performance_35ba3b_language.png",
+      "https://huggingface.co/openbmb/MiniCPM-V-4.7-35B-A3B/blob/main/config.json",
+      "../08-nx5-64k-fixed-20261021.md",
+      "https://github.com/OpenBMB/MiniCPM-V/blob/main/docs/minicpm_v4dot7_zh.md"
+    ],
+    "file": "nx5-minicpm-capabilities.svg"
+  }
+]

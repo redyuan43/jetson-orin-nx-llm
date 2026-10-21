@@ -1,0 +1,59 @@
+{
+  "normalization": "Remove ANSI CSI codes and handle backspaces, then extract response between CLI prompt and timing trailer. HTML extraction is separately byte-preserving.",
+  "comparisons": [
+    {
+      "a": "base-w208-512",
+      "b": "pf8-w200-512",
+      "equal": true,
+      "a_chars": 1771,
+      "b_chars": 1771,
+      "a_sha256": "1c27ca7e0b4fdeaea3eecaa116d733c49799f90783f9931b4b12364bcfff32a4",
+      "b_sha256": "1c27ca7e0b4fdeaea3eecaa116d733c49799f90783f9931b4b12364bcfff32a4"
+    },
+    {
+      "a": "gpu-offload-w208-512",
+      "b": "mapped-w208-512",
+      "equal": true,
+      "a_chars": 1772,
+      "b_chars": 1772,
+      "a_sha256": "96c2a57d4d8c32705ab284c08e20d02c3e1c5a22cf618a2a8e2ad7bb18fcc3a9",
+      "b_sha256": "96c2a57d4d8c32705ab284c08e20d02c3e1c5a22cf618a2a8e2ad7bb18fcc3a9"
+    },
+    {
+      "a": "mapped-d7-8k-w208-1024",
+      "b": "mapped-d7-8k-w192-1024",
+      "equal": true,
+      "a_chars": 3214,
+      "b_chars": 3214,
+      "a_sha256": "a639d5056c67726762d928bf29122b0ee56dbe8d5248d614d5c2323eba3577df",
+      "b_sha256": "a639d5056c67726762d928bf29122b0ee56dbe8d5248d614d5c2323eba3577df"
+    },
+    {
+      "a": "mapped-d7-8k-w200-1024",
+      "b": "mapped-d7-8k-w200-repeat",
+      "equal": true,
+      "a_chars": 3214,
+      "b_chars": 3214,
+      "a_sha256": "a639d5056c67726762d928bf29122b0ee56dbe8d5248d614d5c2323eba3577df",
+      "b_sha256": "a639d5056c67726762d928bf29122b0ee56dbe8d5248d614d5c2323eba3577df"
+    },
+    {
+      "a": "mapped-d7-8k-w200-1024",
+      "b": "mapped-d7-8k-w200-nographs",
+      "equal": true,
+      "a_chars": 3214,
+      "b_chars": 3214,
+      "a_sha256": "a639d5056c67726762d928bf29122b0ee56dbe8d5248d614d5c2323eba3577df",
+      "b_sha256": "a639d5056c67726762d928bf29122b0ee56dbe8d5248d614d5c2323eba3577df"
+    },
+    {
+      "a": "mapped-8k-w208-1024",
+      "b": "mapped-d7-8k-w208-1024",
+      "equal": false,
+      "a_chars": 3211,
+      "b_chars": 3214,
+      "a_sha256": "2fa403db7d755ef34019c774519c1cdf7661bbbce504d3053912e83a17b73ba4",
+      "b_sha256": "a639d5056c67726762d928bf29122b0ee56dbe8d5248d614d5c2323eba3577df"
+    }
+  ]
+}

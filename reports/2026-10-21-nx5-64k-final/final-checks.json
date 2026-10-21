@@ -1,0 +1,16 @@
+{
+  "profile_sha256": "bec2c47c32fe6979db398169baf4326cda849a1ad8da25bec0a1e1728251f59b",
+  "pelican_html_equals_8k": true,
+  "new_oom_kills": 0,
+  "llama_cli_processes_after": 0,
+  "checked_scopes": [
+    "65536 context allocation",
+    "8218-token input, six exact retrievals",
+    "full original Chinese HTML request through pinned entry point"
+  ],
+  "unvalidated": [
+    "full 64K history",
+    "unbounded multi-turn residency",
+    "general quality equivalence across CPU/CUDA/speculative paths"
+  ]
+}

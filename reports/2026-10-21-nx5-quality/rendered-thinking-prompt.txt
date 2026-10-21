@@ -1,0 +1,4 @@
+<|im_start|>user
+创建一个HTML，内容是SVG绘制一个鹈鹕骑自行车的2D动画，不许参考任何本机其他项目直接自己搞<|im_end|>
+<|im_start|>assistant
+<think>

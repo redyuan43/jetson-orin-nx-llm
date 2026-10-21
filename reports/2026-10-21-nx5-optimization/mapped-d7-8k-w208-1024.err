@@ -1,0 +1,154 @@
+0.00.068.538 I srv    load_model: loading model '/home/nx/github/qwen38-kvmem/models/MiniCPM-V-4.7/stripped.gguf'
+[moe-ssd] init pack=on pack_layers=40/40 bank=64 shared=on experts=256 io_threads=8 stride0=1351680 preadv=on park_window=on
+[moe-ssd] lookahead-prefetch: off (LLAMA_MOE_LOOKAHEAD_PREFETCH=unset)
+[moe-ssd] decode-cache: 预读与缓存共用一个 LRU 窗口（窗口 208 slot，K=0）
+[moe-ssd] decode-cache: 按层宽度 off（均匀）（前几层 0:208 1:208 2:208 3:208 4:208 5:208 ）
+[moe-ssd] decode-cache: 窗口覆盖批宽 1..8（投机验证也走窗口）
+[moe-ssd] decode-cache: on cache=208 + prefetch=0 slots/layer × 40 层 = 8320 slots (10725 MiB，与 64-slot 的 prefill 共享 bank 同处一块 base)
+[moe-ssd] decode-cache: 40 层绑定 decode 张量（每层 208 = cache 208 + prefetch 0 slot，pack ok）
+[moe-ssd] prewarm: 表 /home/nx/github/qwen38-kvmem/minicpm/prewarm_top128.txt -> 40 层 / 1203 个专家, decode_window=208, enabled=on
+0.04.193.846 W llama_context: n_ctx_seq (8192) < n_ctx_train (262144) -- the full capacity of the model will not be utilized
+0.04.430.062 I common_init_from_params: warming up the model with an empty run - please wait ... (--no-warmup to disable)
+[moe-ssd] prewarm: 表 1203 专家 -> 认领 1203 / 读入 1203 / 发布 1203，1550.7 MiB，wall=605.5 ms (8 线程，缓存区)
+[moe-ssd] layer l=0 tok=2 used=8 unique=13 miss=4 hit=9 pack=1 nth=4 pread_wall=3.1ms pread_sum=10.5ms pread_max=2.9ms bytes=5.2MiB par=3.41
+[moe-ssd] layer l=1 tok=2 used=8 unique=13 miss=5 hit=8 pack=1 nth=5 pread_wall=2.8ms pread_sum=12.6ms pread_max=2.6ms bytes=6.4MiB par=4.47
+[moe-ssd] layer l=19 tok=2 used=8 unique=14 miss=6 hit=8 pack=1 nth=6 pread_wall=3.1ms pread_sum=16.1ms pread_max=2.8ms bytes=7.7MiB par=5.19
+[moe-ssd] layer l=39 tok=2 used=8 unique=14 miss=1 hit=13 pack=1 nth=1 pread_wall=1.8ms pread_sum=1.8ms pread_max=1.8ms bytes=1.3MiB par=1.00
+[moe-ssd] prefill #1 tok=2 used=8 layers=40 unique/l=13 miss=158 hit=343 pack=40/40 nth=8 pread_wall=110ms pread_sum=419ms bytes=204MiB par=3.83 io=1859MiB/s readall=1754MiB calls=1361 realio=16016MiB/s span=1 pmgmt=714.0ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=158 avg_run=1.0 max_run=1 zerocopy=100%
+0.05.356.713 I srv    load_model: loading draft model '/home/nx/github/qwen38-kvmem/models/MiniCPM-V-4.7/dspark-Q4_K_M.gguf'
+0.06.456.310 W llama_context: n_ctx_seq (8192) < n_ctx_train (262144) -- the full capacity of the model will not be utilized
+0.06.513.305 I srv    load_model: initializing slots, n_slots = 1
+[moe-ssd] layer l=0 tok=2 used=8 unique=15 miss=2 hit=13 pack=1 nth=2 pread_wall=2.3ms pread_sum=4.2ms pread_max=2.2ms bytes=2.6MiB par=1.82
+[moe-ssd] layer l=1 tok=2 used=8 unique=16 miss=4 hit=12 pack=1 nth=4 pread_wall=3.0ms pread_sum=10.8ms pread_max=2.9ms bytes=5.2MiB par=3.57
+[moe-ssd] layer l=39 tok=2 used=8 unique=15 miss=2 hit=13 pack=1 nth=2 pread_wall=2.0ms pread_sum=3.7ms pread_max=1.9ms bytes=2.6MiB par=1.82
+[moe-ssd] prefill #2 tok=2 used=8 layers=40 unique/l=15 miss=53 hit=528 pack=40/40 nth=7 pread_wall=58ms pread_sum=118ms bytes=68MiB par=2.05 io=1186MiB/s readall=68MiB calls=53 realio=1186MiB/s span=1 pmgmt=58.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=53 avg_run=1.0 max_run=1 zerocopy=100%
+0.06.732.089 I common_context_can_seq_rm: the context supports bounded partial sequence removal
+0.06.748.138 I common_speculative_impl_draft_dflash: adding speculative implementation 'draft-dspark'
+0.06.748.144 I common_speculative_impl_draft_dflash: - n_max=7, n_min=0, p_min=0.00
+0.06.748.145 I common_speculative_impl_draft_dflash: - block_size=15, mask_token_id=248076, n_extract=5
+0.06.748.449 I srv    load_model: speculative decoding context initialized
+0.06.748.453 I slot   load_model: id  0 | task -1 | new slot, n_ctx = 8192
+0.06.748.583 I srv    load_model: prompt cache is enabled, size limit: 8192 MiB
+0.06.748.586 I srv    load_model: use `--cache-ram 0` to disable the prompt cache
+0.06.748.586 I srv    load_model: for more info see https://github.com/ggml-org/llama.cpp/pull/16391
+0.06.748.587 I srv    load_model: context checkpoints enabled, max = 32, min spacing = 256
+0.06.748.812 W srv          init: --cache-idle-slots requires --kv-unified, disabling
+0.08.690.958 I init: chat template, example_format: '<|im_start|>system
+You are a helpful assistant<|im_end|>
+<|im_start|>user
+Hello<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+Hi there<|im_end|>
+<|im_start|>user
+How are you?<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+'
+0.08.713.391 I srv          init: init: chat template, thinking = 1
+0.08.713.726 I srv  update_slots: all slots are idle
+0.08.759.852 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = -1
+0.08.759.858 I srv  get_availabl: updating prompt cache
+0.08.759.867 I srv          load:  - looking for better prompt, base f_keep = -1.000, sim = 0.000
+0.08.759.875 I srv        update:  - cache state: 0 prompts, 0.000 MiB (limits: 8192.000 MiB, 8192 tokens, 8589934592 est)
+0.08.759.877 I srv  get_availabl: prompt cache update took 0.02 ms
+0.08.759.935 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+[moe-ssd] prefill #3 tok=8 used=8 layers=40 unique/l=35 miss=689 hit=715 pack=40/40 nth=8 pread_wall=378ms pread_sum=2545ms bytes=888MiB par=6.73 io=2348MiB/s readall=888MiB calls=689 realio=2348MiB/s span=1 pmgmt=369.6ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=686 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] prefill #4 tok=8 used=8 layers=40 unique/l=28 miss=587 hit=550 pack=40/40 nth=8 pread_wall=332ms pread_sum=2128ms bytes=757MiB par=6.41 io=2279MiB/s readall=757MiB calls=587 realio=2279MiB/s span=1 pmgmt=336.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=586 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] prefill #5 tok=8 used=8 layers=40 unique/l=32 miss=598 hit=663 pack=40/40 nth=8 pread_wall=335ms pread_sum=2190ms bytes=771MiB par=6.54 io=2301MiB/s readall=771MiB calls=598 realio=2301MiB/s span=1 pmgmt=334.6ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=597 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] prefill #6 tok=8 used=8 layers=40 unique/l=34 miss=367 hit=989 pack=40/40 nth=8 pread_wall=212ms pread_sum=1255ms bytes=473MiB par=5.93 io=2236MiB/s readall=473MiB calls=367 realio=2236MiB/s span=1 pmgmt=214.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=367 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] prefill #7 tok=8 used=8 layers=40 unique/l=29 miss=276 hit=894 pack=40/40 nth=8 pread_wall=166ms pread_sum=883ms bytes=356MiB par=5.32 io=2142MiB/s readall=356MiB calls=276 realio=2142MiB/s span=1 pmgmt=170.4ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=275 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] prefill #8 tok=8 used=8 layers=40 unique/l=34 miss=180 hit=1173 pack=40/40 nth=8 pread_wall=120ms pread_sum=494ms bytes=232MiB par=4.11 io=1932MiB/s readall=232MiB calls=180 realio=1932MiB/s span=1 pmgmt=120.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=179 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] total[prefill]: miss=4111 bytes=5299.3 MiB pread=14717ms
+0.13.198.340 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =     96, progress = 0.89, t =   4.44 s / 21.63 tokens per second
+0.13.236.885 I slot create_check: id  0 | task 0 | created context checkpoint 1 of 32 (pos_min = 95, pos_max = 95, n_tokens = 96, size = 63.753 MiB)
+0.13.496.721 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    104, progress = 0.96, t =   4.74 s / 21.96 tokens per second
+[moe-ssd] prefill #16 tok=4 used=8 layers=40 unique/l=16 miss=56 hit=584 pack=40/40 nth=4 pread_wall=61ms pread_sum=123ms bytes=72MiB par=2.02 io=1182MiB/s readall=1128MiB calls=875 realio=18463MiB/s span=8 pmgmt=721.9ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=55 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] total[prefill]: miss=4986 bytes=6427.3 MiB pread=16905ms
+[moe-ssd] prefill #24 tok=8 used=8 layers=40 unique/l=35 miss=64 hit=1333 pack=40/40 nth=6 pread_wall=67ms pread_sum=140ms bytes=82MiB par=2.10 io=1240MiB/s readall=1742MiB calls=1351 realio=26173MiB/s span=8 pmgmt=950.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=94 pevforced=0 pfcached=0 usedpf=0 runs=64 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=6337 bytes=8168.8 MiB pread=20809ms
+0.19.039.028 I slot print_timing: id  0 | task 0 | n_decoded =    104, tg =  19.59 t/s
+[moe-ssd] prefill #32 tok=8 used=8 layers=40 unique/l=40 miss=105 hit=1476 pack=40/40 nth=8 pread_wall=91ms pread_sum=255ms bytes=135MiB par=2.79 io=1481MiB/s readall=1040MiB calls=807 realio=11383MiB/s span=8 pmgmt=663.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=223 pevforced=0 pfcached=0 usedpf=0 runs=104 avg_run=1.0 max_run=2 zerocopy=100%
+[moe-ssd] total[prefill]: miss=7144 bytes=9209.1 MiB pread=22843ms
+[moe-ssd] prefill #40 tok=8 used=8 layers=40 unique/l=35 miss=36 hit=1360 pack=40/40 nth=3 pread_wall=45ms pread_sum=69ms bytes=46MiB par=1.56 io=1042MiB/s readall=715MiB calls=555 realio=16062MiB/s span=8 pmgmt=526.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=373 pevforced=0 pfcached=0 usedpf=0 runs=36 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=7699 bytes=9924.5 MiB pread=24090ms
+0.22.178.289 I slot print_timing: id  0 | task 0 | n_decoded =    166, tg =  19.65 t/s
+[moe-ssd] prefill #48 tok=8 used=8 layers=40 unique/l=29 miss=27 hit=1134 pack=40/40 nth=3 pread_wall=37ms pread_sum=50ms bytes=35MiB par=1.33 io=929MiB/s readall=407MiB calls=316 realio=10872MiB/s span=8 pmgmt=360.2ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=496 pevforced=0 pfcached=0 usedpf=0 runs=27 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=8015 bytes=10331.8 MiB pread=24765ms
+0.25.417.476 I slot print_timing: id  0 | task 0 | n_decoded =    190, tg =  16.26 t/s
+[moe-ssd] prefill #56 tok=8 used=8 layers=40 unique/l=35 miss=32 hit=1354 pack=40/40 nth=4 pread_wall=43ms pread_sum=59ms bytes=41MiB par=1.37 io=954MiB/s readall=248MiB calls=192 realio=5725MiB/s span=8 pmgmt=245.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=590 pevforced=0 pfcached=0 usedpf=0 runs=32 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=8207 bytes=10579.3 MiB pread=25145ms
+[moe-ssd] prefill #64 tok=8 used=8 layers=40 unique/l=30 miss=24 hit=1175 pack=40/40 nth=8 pread_wall=22ms pread_sum=64ms bytes=31MiB par=2.86 io=1385MiB/s readall=389MiB calls=302 realio=17431MiB/s span=8 pmgmt=317.5ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=758 pevforced=0 pfcached=0 usedpf=0 runs=24 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=8509 bytes=10968.6 MiB pread=25840ms
+0.28.515.444 I slot print_timing: id  0 | task 0 | n_decoded =    239, tg =  16.16 t/s
+[moe-ssd] prefill #72 tok=8 used=8 layers=40 unique/l=35 miss=20 hit=1387 pack=40/40 nth=3 pread_wall=26ms pread_sum=36ms bytes=26MiB par=1.41 io=997MiB/s readall=276MiB calls=214 realio=10672MiB/s span=8 pmgmt=248.2ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=894 pevforced=0 pfcached=0 usedpf=0 runs=20 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=8723 bytes=11244.5 MiB pread=26260ms
+0.31.741.757 I slot print_timing: id  0 | task 0 | n_decoded =    272, tg =  15.10 t/s
+[moe-ssd] prefill #80 tok=8 used=8 layers=40 unique/l=39 miss=31 hit=1540 pack=40/40 nth=6 pread_wall=33ms pread_sum=63ms bytes=40MiB par=1.93 io=1224MiB/s readall=263MiB calls=204 realio=8054MiB/s span=8 pmgmt=255.2ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=1001 pevforced=0 pfcached=0 usedpf=0 runs=31 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=8927 bytes=11507.5 MiB pread=26660ms
+[moe-ssd] prefill #88 tok=8 used=8 layers=40 unique/l=23 miss=16 hit=904 pack=40/40 nth=3 pread_wall=17ms pread_sum=28ms bytes=21MiB par=1.63 io=1215MiB/s readall=224MiB calls=174 realio=13214MiB/s span=8 pmgmt=201.9ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=1131 pevforced=0 pfcached=0 usedpf=0 runs=16 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=9101 bytes=11731.8 MiB pread=27017ms
+0.34.951.550 I slot print_timing: id  0 | task 0 | n_decoded =    323, tg =  15.22 t/s
+[moe-ssd] prefill #96 tok=8 used=8 layers=40 unique/l=34 miss=26 hit=1346 pack=40/40 nth=6 pread_wall=34ms pread_sum=40ms bytes=34MiB par=1.20 io=999MiB/s readall=178MiB calls=138 realio=5303MiB/s span=8 pmgmt=175.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=1223 pevforced=0 pfcached=0 usedpf=0 runs=26 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=9239 bytes=11909.6 MiB pread=27245ms
+0.38.115.971 I slot print_timing: id  0 | task 0 | n_decoded =    390, tg =  15.99 t/s
+[moe-ssd] prefill #104 tok=8 used=8 layers=40 unique/l=34 miss=9 hit=1339 pack=40/40 nth=3 pread_wall=12ms pread_sum=13ms bytes=12MiB par=1.06 io=942MiB/s readall=183MiB calls=142 realio=14861MiB/s span=8 pmgmt=160.5ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=1334 pevforced=0 pfcached=0 usedpf=0 runs=9 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=9381 bytes=12092.7 MiB pread=27495ms
+[moe-ssd] prefill #112 tok=8 used=8 layers=40 unique/l=35 miss=13 hit=1375 pack=40/40 nth=3 pread_wall=13ms pread_sum=23ms bytes=17MiB par=1.73 io=1282MiB/s readall=146MiB calls=113 realio=11144MiB/s span=8 pmgmt=118.4ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=1424 pevforced=0 pfcached=0 usedpf=0 runs=13 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=9494 bytes=12238.4 MiB pread=27691ms
+0.41.195.968 I slot print_timing: id  0 | task 0 | n_decoded =    430, tg =  15.66 t/s
+[moe-ssd] prefill #120 tok=8 used=8 layers=40 unique/l=22 miss=17 hit=846 pack=40/40 nth=5 pread_wall=15ms pread_sum=28ms bytes=22MiB par=1.88 io=1454MiB/s readall=240MiB calls=186 realio=15906MiB/s span=8 pmgmt=194.7ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=1588 pevforced=0 pfcached=0 usedpf=0 runs=17 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=9680 bytes=12478.1 MiB pread=28013ms
+0.44.274.451 I slot print_timing: id  0 | task 0 | n_decoded =    489, tg =  16.01 t/s
+[moe-ssd] prefill #128 tok=8 used=8 layers=40 unique/l=24 miss=11 hit=964 pack=40/40 nth=3 pread_wall=15ms pread_sum=20ms bytes=14MiB par=1.34 io=963MiB/s readall=155MiB calls=120 realio=10508MiB/s span=8 pmgmt=128.5ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=1689 pevforced=0 pfcached=0 usedpf=0 runs=11 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=9800 bytes=12632.8 MiB pread=28222ms
+[moe-ssd] prefill #136 tok=8 used=8 layers=40 unique/l=31 miss=24 hit=1234 pack=40/40 nth=5 pread_wall=26ms pread_sum=39ms bytes=31MiB par=1.48 io=1172MiB/s readall=220MiB calls=171 realio=8350MiB/s span=8 pmgmt=195.9ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=1829 pevforced=0 pfcached=0 usedpf=0 runs=24 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=9971 bytes=12853.2 MiB pread=28524ms
+0.47.448.822 I slot print_timing: id  0 | task 0 | n_decoded =    568, tg =  16.84 t/s
+[moe-ssd] prefill #144 tok=8 used=8 layers=40 unique/l=40 miss=13 hit=1590 pack=40/40 nth=2 pread_wall=19ms pread_sum=22ms bytes=17MiB par=1.15 io=868MiB/s readall=153MiB calls=119 realio=7946MiB/s span=8 pmgmt=155.5ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=1924 pevforced=0 pfcached=0 usedpf=0 runs=13 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=10090 bytes=13006.6 MiB pread=28719ms
+0.50.665.068 I slot print_timing: id  0 | task 0 | n_decoded =    663, tg =  17.95 t/s
+[moe-ssd] prefill #152 tok=8 used=8 layers=40 unique/l=38 miss=8 hit=1515 pack=40/40 nth=2 pread_wall=12ms pread_sum=14ms bytes=10MiB par=1.14 io=839MiB/s readall=197MiB calls=153 realio=16046MiB/s span=8 pmgmt=210.0ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=2037 pevforced=0 pfcached=0 usedpf=0 runs=8 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=10243 bytes=13203.9 MiB pread=28991ms
+[moe-ssd] prefill #160 tok=8 used=8 layers=40 unique/l=35 miss=24 hit=1386 pack=40/40 nth=5 pread_wall=20ms pread_sum=44ms bytes=31MiB par=2.17 io=1511MiB/s readall=202MiB calls=157 realio=9886MiB/s span=8 pmgmt=149.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=2187 pevforced=0 pfcached=0 usedpf=0 runs=24 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=10400 bytes=13406.2 MiB pread=29319ms
+0.53.826.597 I slot print_timing: id  0 | task 0 | n_decoded =    745, tg =  18.58 t/s
+[moe-ssd] prefill #168 tok=8 used=8 layers=40 unique/l=35 miss=18 hit=1368 pack=40/40 nth=5 pread_wall=19ms pread_sum=35ms bytes=23MiB par=1.86 io=1245MiB/s readall=199MiB calls=154 realio=10650MiB/s span=8 pmgmt=137.8ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=2334 pevforced=0 pfcached=0 usedpf=0 runs=18 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=10554 bytes=13604.8 MiB pread=29619ms
+0.56.911.931 I slot print_timing: id  0 | task 0 | n_decoded =    798, tg =  18.48 t/s
+[moe-ssd] prefill #176 tok=8 used=8 layers=40 unique/l=29 miss=29 hit=1129 pack=40/40 nth=8 pread_wall=18ms pread_sum=56ms bytes=37MiB par=3.09 io=2049MiB/s readall=312MiB calls=242 realio=17096MiB/s span=8 pmgmt=194.1ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=2572 pevforced=0 pfcached=0 usedpf=0 runs=29 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=10796 bytes=13916.7 MiB pread=30052ms
+[moe-ssd] prefill #184 tok=8 used=8 layers=40 unique/l=27 miss=13 hit=1051 pack=40/40 nth=5 pread_wall=12ms pread_sum=22ms bytes=17MiB par=1.86 io=1413MiB/s readall=255MiB calls=198 realio=21528MiB/s span=8 pmgmt=175.4ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=2763 pevforced=0 pfcached=0 usedpf=0 runs=13 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=10994 bytes=14172.0 MiB pread=30406ms
+1.00.085.474 I slot print_timing: id  0 | task 0 | n_decoded =    857, tg =  18.49 t/s
+[moe-ssd] prefill #192 tok=8 used=8 layers=40 unique/l=31 miss=16 hit=1215 pack=40/40 nth=6 pread_wall=14ms pread_sum=34ms bytes=21MiB par=2.37 io=1432MiB/s readall=148MiB calls=115 realio=10295MiB/s span=8 pmgmt=124.5ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=2870 pevforced=0 pfcached=0 usedpf=0 runs=16 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=11109 bytes=14320.2 MiB pread=30604ms
+1.03.118.647 I slot print_timing: id  0 | task 0 | n_decoded =    908, tg =  18.38 t/s
+[moe-ssd] prefill #200 tok=8 used=8 layers=40 unique/l=34 miss=8 hit=1339 pack=40/40 nth=2 pread_wall=12ms pread_sum=14ms bytes=10MiB par=1.13 io=836MiB/s readall=133MiB calls=103 realio=10765MiB/s span=8 pmgmt=129.2ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=2966 pevforced=0 pfcached=0 usedpf=0 runs=8 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=11212 bytes=14453.0 MiB pread=30771ms
+[moe-ssd] prefill #208 tok=8 used=8 layers=40 unique/l=31 miss=21 hit=1228 pack=40/40 nth=3 pread_wall=25ms pread_sum=34ms bytes=27MiB par=1.39 io=1096MiB/s readall=129MiB calls=100 realio=5219MiB/s span=8 pmgmt=111.4ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=3063 pevforced=0 pfcached=0 usedpf=0 runs=21 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=11312 bytes=14581.9 MiB pread=30944ms
+1.06.160.869 I slot print_timing: id  0 | task 0 | n_decoded =    946, tg =  18.04 t/s
+[moe-ssd] prefill #216 tok=8 used=8 layers=40 unique/l=31 miss=6 hit=1244 pack=40/40 nth=1 pread_wall=11ms pread_sum=11ms bytes=8MiB par=1.00 io=732MiB/s readall=58MiB calls=45 realio=5487MiB/s span=8 pmgmt=65.9ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=3101 pevforced=0 pfcached=0 usedpf=0 runs=6 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=11357 bytes=14639.9 MiB pread=31014ms
+1.09.350.237 I slot print_timing: id  0 | task 0 | n_decoded =    994, tg =  17.87 t/s
+[moe-ssd] prefill #224 tok=8 used=8 layers=40 unique/l=28 miss=10 hit=1126 pack=40/40 nth=2 pread_wall=14ms pread_sum=17ms bytes=13MiB par=1.21 io=922MiB/s readall=130MiB calls=101 realio=9311MiB/s span=8 pmgmt=114.4ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=3197 pevforced=0 pfcached=0 usedpf=0 runs=10 avg_run=1.0 max_run=1 zerocopy=100%
+[moe-ssd] total[prefill]: miss=11458 bytes=14770.1 MiB pread=31193ms
+1.10.333.408 I slot print_timing: id  0 | task 0 | prompt eval time =    4969.05 ms /   108 tokens (   46.01 ms per token,    21.73 tokens per second)
+1.10.333.418 I slot print_timing: id  0 | task 0 |        eval time =   56603.75 ms /  1024 tokens (   55.28 ms per token,    18.09 tokens per second)
+1.10.333.419 I slot print_timing: id  0 | task 0 |       total time =   61572.80 ms /  1132 tokens
+1.10.333.683 I slot print_timing: id  0 | task 0 |    graphs reused =        215
+1.10.333.688 I slot print_timing: id  0 | task 0 | draft acceptance = 0.55715 (  814 accepted /  1461 generated)
+1.10.337.561 I statistics     draft-dspark: #calls(b,g,a) =    1    209    209, #gen drafts =    209, #acc drafts =   172, #gen tokens =   1461, #acc tokens =   814, dur(b,g,a) = 0.005, 11098.697, 0.125 ms
+1.10.338.177 I slot      release: id  0 | task 0 | stop processing: n_tokens = 1131, truncated = 0
+1.10.338.204 I srv  update_slots: all slots are idle
+[moe-ssd] park expert memory: 0 metal buffer(s)
+1.10.345.228 W ~llama_context:  CUDA_Host compute buffer size of   0.3125 MiB, does not match expectation of   0.1878 MiB
+[moe-ssd] total[final]: miss=11464 bytes=14777.8 MiB pread=31201ms
+[moe-ssd] merge-scan: experts=10261 runs=10231 avg_run=1.00 max_run=2 zerocopy=99.8% scatter_experts=20 syscalls=99.7% of current (avg read = 1.00 experts)

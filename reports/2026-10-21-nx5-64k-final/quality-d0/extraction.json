@@ -1,0 +1,8 @@
+{
+  "source": "../quality-8k-mapped-d0.out",
+  "raw_start": 2525,
+  "raw_end": 8002,
+  "sha256": "93688b157e4a92b21f3660561e59505cd5056c883b4013413bc60cfc51e933c6",
+  "bytes": 5477,
+  "edits": false
+}

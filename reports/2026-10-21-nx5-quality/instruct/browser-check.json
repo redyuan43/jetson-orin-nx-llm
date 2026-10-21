@@ -1,0 +1,45 @@
+{
+  "title": "鹈鹕骑自行车动画",
+  "svgCount": 1,
+  "smilCount": 0,
+  "animations": [
+    {
+      "name": "moveGround",
+      "state": "running",
+      "duration": 2000,
+      "iterations": "Infinity"
+    },
+    {
+      "name": "rotateWheel",
+      "state": "running",
+      "duration": 2000,
+      "iterations": "Infinity"
+    },
+    {
+      "name": "rotateWheel",
+      "state": "running",
+      "duration": 2000,
+      "iterations": "Infinity"
+    },
+    {
+      "name": "bounce",
+      "state": "running",
+      "duration": 500,
+      "iterations": "Infinity"
+    },
+    {
+      "name": "nodHead",
+      "state": "running",
+      "duration": 1000,
+      "iterations": "Infinity"
+    }
+  ],
+  "externalResources": [],
+  "exceptions": [],
+  "externalRequests": [],
+  "frameSha256": {
+    "frame-0.png": "2533e5f82a151cfa8ced2c36723d88ae20e16491876c65eaaaade6d0201610a2",
+    "frame-700.png": "ccd40b06c67a1bb294fed9e321cdea62cfd624d3ed4a8486a0f6667cb50e64a1"
+  },
+  "framesDiffer": true
+}

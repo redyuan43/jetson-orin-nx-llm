@@ -2,11 +2,11 @@
 # MiniCPM-V 4.7 35B-A3B on Jetson Orin NX 16GB — tuned environment.
 # Sourced by start.sh; safe to source from an interactive shell too.
 #
-# Two presets, both verified on-device. Pick with MCP_PRESET.
+# Historical presets. See docs/06-nx5-audit-20261021.md for corrected measurements.
+# Current pinned 64K entry point: scripts/minicpm/run-64k.py (docs/08-nx5-64k-fixed-20261021.md).
 #   fast (default) : 8K context,  window 224 -> 13.4-13.6 t/s on real HTML generation
 #   long           : 64K context, window 96  -> 11.2 t/s, peak RSS 10.3 GB
-# The trade is context length against cache hit rate: window 224 is what makes
-# long real outputs fast (13.6 vs 9.7 t/s at window 96 on the *same* task).
+# These defaults are retained for reproducibility; 64K is not restricted to window 96.
 
 export MCP_PRESET="${MCP_PRESET:-fast}"
 
@@ -20,10 +20,9 @@ export LD_LIBRARY_PATH="$MCP_BIN:${LD_LIBRARY_PATH:-}"
 # --moe-slot-bank is the *prefill* segment only, NOT the total cache. Layout:
 #     [0, prefill_cap)         capacity = --moe-slot-bank
 #     [prefill_cap, +widths)   capacity = DECODE_WINDOW x layers
-# With -ub 8 one ubatch carries <= 8 rows, so the expert union per ubatch is
-# <= 64 slots; 400 is generous and wastes almost nothing. Measured peak RSS:
-# bank 6400 + window 128 -> 8.0 GB, but bank 3200 + window 160 -> 15.6 GB.
-# bank is the dominant memory term, not the window.
+# With -ub 8 the worst-case expert union is 64 per layer. The audit also tests
+# bank=64. Expert memory grows with bank + the SUM of the layer windows;
+# old RSS tables are not a reliable measure of remaining physical memory.
 export MCP_SLOT_BANK=400
 
 # Parallel pread threads. 1 -> 10.2 t/s, 2 -> 12.9, 4 -> 14.4, 8 -> 14.5.
@@ -40,8 +39,8 @@ case "$MCP_PRESET" in
         export MCP_CTX=8192
         ;;
     long)
-        # 64K only costs +2.6 GB because just 10 of 40 layers hold KV
-        # (q8_0 KV at 64K is ~0.68 GB). But the window has to shrink to fit.
+        # Legacy conservative preset. q8_0 KV grows by ~595 MiB from 8K to 64K.
+        # The audit also successfully runs a 208-slot window at 64K capacity.
         export MCP_DECODE_WINDOW=96
         export MCP_CTX=65536
         ;;
@@ -51,13 +50,12 @@ case "$MCP_PRESET" in
         ;;
 esac
 
-# Must be >= max(SLOT_BANK/40, DECODE_WINDOW) or the model refuses to load:
-#   "MoE shared slot bank exceeds the bank=N-per-layer RAM budget".
+# Source checks SLOT_BANK <= BANK_CAP * 40. This is not a total RAM limit;
+# using the window value here is conservative, not a source requirement.
 export MCP_BANK_CAP="$MCP_DECODE_WINDOW"
 
-# Must stay 1 without speculation. Raising it lets speculative verification
-# batches (n_max+1 rows) use the window; measured 11.4 -> 5.8 t/s because each
-# verification step then reads ~8x the experts.
+# Historical default. The audit tests 8 so ubatch=8 prefill and speculative
+# verification both reuse the window. Rows=1 is not required without DSpark.
 export MCP_WINDOW_MAX_ROWS=1
 
 # --- batching --------------------------------------------------------------

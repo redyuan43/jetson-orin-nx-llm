@@ -1,0 +1,33 @@
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 15597 MiB):
+  Device 0: Orin, compute capability 8.7, VMM: yes, VRAM: 15597 MiB
+LES: using mapped CUDA expert storage on Orin
+ggml_backend_cuda_graph_compute: CUDA graph warmup complete
+ggml_backend_cuda_graph_compute: CUDA graph warmup complete
+ggml_backend_cuda_graph_compute: CUDA graph warmup reset
+ggml_backend_cuda_graph_compute: CUDA graph warmup complete
+ggml_backend_cuda_graph_compute: CUDA graph warmup reset
+ggml_backend_cuda_graph_compute: CUDA graph warmup complete
+ggml_backend_cuda_graph_compute: CUDA graph warmup reset
+ggml_backend_cuda_graph_compute: CUDA graph warmup complete
+ggml_backend_cuda_graph_compute: CUDA graph warmup reset
+ggml_backend_cuda_graph_compute: CUDA graph warmup complete
+ggml_backend_cuda_graph_compute: CUDA graph warmup reset
+ggml_backend_cuda_graph_compute: CUDA graph warmup complete
+ggml_backend_cuda_graph_compute: CUDA graph warmup reset
+ggml_backend_cuda_graph_compute: CUDA graph warmup complete
+ggml_backend_cuda_graph_compute: CUDA graph warmup reset
+ggml_backend_cuda_graph_compute: CUDA graph warmup complete
+ggml_backend_cuda_graph_compute: CUDA graph warmup reset
+ggml_backend_cuda_graph_compute: CUDA graph warmup complete
+ggml_backend_cuda_graph_compute: CUDA graph warmup reset
+ggml_backend_cuda_graph_compute: CUDA graph warmup complete
+ggml_backend_cuda_graph_compute: CUDA graph warmup reset
+ggml_backend_cuda_graph_compute: CUDA graph warmup complete
+PASS k=2048 m=512 batch=1 values=12288 max_abs=0 nrmse=0
+PASS k=512 m=2048 batch=1 values=49152 max_abs=0 nrmse=0
+PASS k=2048 m=512 batch=2 values=24576 max_abs=0 nrmse=0
+PASS k=512 m=2048 batch=2 values=98304 max_abs=0 nrmse=0
+PASS k=2048 m=512 batch=4 values=49152 max_abs=0 nrmse=0
+PASS k=512 m=2048 batch=4 values=196608 max_abs=0 nrmse=0
+PASS k=2048 m=512 batch=8 values=98304 max_abs=0 nrmse=0
+PASS k=512 m=2048 batch=8 values=393216 max_abs=0 nrmse=0

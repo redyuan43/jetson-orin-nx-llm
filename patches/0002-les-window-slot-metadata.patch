@@ -1,0 +1,17 @@
+--- a/src/llama-moe-slot.cpp
++++ b/src/llama-moe-slot.cpp
+@@ -1141,6 +1141,14 @@
+                 const int32_t w = c_il + prefetch_slots;
+                 layers[il].window_start = 0;
+                 layers[il].window_width = w;
++                // Prefill and decode views share these lookup tables, but a
++                // layer's decode window can be wider than the prefill bank.
++                // process() indexes them up to window_width in window mode.
++                if (layers[il].enabled) {
++                    const size_t capacity = std::max(layers[il].slot_to_expert.size(), (size_t) w);
++                    layers[il].slot_to_expert.resize(capacity, kSlotFree);
++                    layers[il].slot_age.resize(capacity, 0);
++                }
+                 layer_width[il] = w;
+             }
+             // 打印一下分布，确认按层生效

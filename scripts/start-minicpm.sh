@@ -20,9 +20,9 @@
 #   KV q8_0              KV cache 量化。8K 上下文下 f16 只占 0.156 GiB，不是瓶颈，
 #                        但 q8_0 能给解码窗口腾出空间。
 #
-# DSpark 默认关闭：本机瓶颈是 SSD 读盘，而 DSpark 是「用计算换 I/O」，
-# 在 I/O 受限的机器上是反方向（实测读取量反而增加 37%）。
-# 需要时用 USE_DSPARK=1 打开。
+# DSpark 默认关闭以保留历史行为。2026-10-21 已确认实际 CLI 支持投机，
+# 正确路径的接受率可达 82%；收益需按同任务实测，见 docs/06-nx5-audit-20261021.md。
+# USE_DSPARK=1 可启用，但注意本脚本旧默认窗口的内存预算未包含 draft。
 set -uo pipefail
 
 PROJ="${PROJ:-$HOME/github/qwen38-kvmem}"

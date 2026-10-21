@@ -1,0 +1,10 @@
+{
+  "configured_context": 131072,
+  "actual_prompt_tokens": 38,
+  "new_html_sha256": "d0e780fa6aa14dec43cc832e9c7ef95ee86960ae1026a1fc693426e7a7343bab",
+  "previous_64k_html_sha256": "d0e780fa6aa14dec43cc832e9c7ef95ee86960ae1026a1fc693426e7a7343bab",
+  "same_html_bytes_as_64k": true,
+  "raw_html_start": 1413,
+  "raw_html_end": 6989,
+  "actual_128k_history_tested": false
+}

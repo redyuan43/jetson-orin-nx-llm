@@ -1,0 +1,8 @@
+ffffa9df0000-ffffad22a000 r-xp 00000000 103:01 30541684                  /home/nx/github/qwen38-kvmem/minicpm-audit-20261021/optimization/cuda-mapped-v2/libggml-cuda.so.0.13.1
+ffffad22a000-ffffad23e000 ---p 0343a000 103:01 30541684                  /home/nx/github/qwen38-kvmem/minicpm-audit-20261021/optimization/cuda-mapped-v2/libggml-cuda.so.0.13.1
+ffffad23e000-ffffad240000 r--p 0343e000 103:01 30541684                  /home/nx/github/qwen38-kvmem/minicpm-audit-20261021/optimization/cuda-mapped-v2/libggml-cuda.so.0.13.1
+ffffad240000-ffffad245000 rw-p 03440000 103:01 30541684                  /home/nx/github/qwen38-kvmem/minicpm-audit-20261021/optimization/cuda-mapped-v2/libggml-cuda.so.0.13.1
+ffffad5b0000-ffffad8ac000 r-xp 00000000 103:01 30541534                  /home/nx/github/qwen38-kvmem/minicpm-audit-20261021/patched-lib/libllama.so.0.0.1
+ffffad8ac000-ffffad8b7000 ---p 002fc000 103:01 30541534                  /home/nx/github/qwen38-kvmem/minicpm-audit-20261021/patched-lib/libllama.so.0.0.1
+ffffad8b7000-ffffad8c0000 r--p 00307000 103:01 30541534                  /home/nx/github/qwen38-kvmem/minicpm-audit-20261021/patched-lib/libllama.so.0.0.1
+ffffad8c0000-ffffad8c5000 rw-p 00310000 103:01 30541534                  /home/nx/github/qwen38-kvmem/minicpm-audit-20261021/patched-lib/libllama.so.0.0.1

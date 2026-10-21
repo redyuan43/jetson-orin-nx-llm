@@ -5,3 +5,9 @@ build*/
 *.bin
 !scripts/prewarm_top128.txt
 logs/
+
+# Reproducible PDF build intermediates and rendered inspection pages.
+reports/2026-10-21-nx5-diagrams/pdf-build/
+reports/2026-10-21-nx5-diagrams/pdf-preview/
+__pycache__/
+*.pyc

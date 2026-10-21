@@ -1,0 +1,78 @@
+{
+  "pdf": "/Volumes/XDISK/ivan-data/github/nx5/minicpm-v47-orin-nx/docs/diagrams/nx5-minicpm-64k-architecture-and-capabilities.pdf",
+  "pages": 5,
+  "bytes": 5713193,
+  "bookmarks": 5,
+  "checks": [
+    {
+      "page": 1,
+      "title": "nx5 的模型，存在哪里？",
+      "text_characters": 1704,
+      "image_count": 0,
+      "size_points": [
+        1350.0,
+        1275.12
+      ],
+      "image_sizes": []
+    },
+    {
+      "page": 2,
+      "title": "它擅长什么，哪里要留余地？",
+      "text_characters": 1727,
+      "image_count": 0,
+      "size_points": [
+        1350.0,
+        1320.0
+      ],
+      "image_sizes": []
+    },
+    {
+      "page": 3,
+      "title": "官方对比：性能与推理效率",
+      "text_characters": 299,
+      "image_count": 1,
+      "size_points": [
+        1350.0,
+        1333.91992
+      ],
+      "image_sizes": [
+        [
+          10800,
+          8520
+        ]
+      ]
+    },
+    {
+      "page": 4,
+      "title": "官方对比：视觉、文档与视频能力",
+      "text_characters": 253,
+      "image_count": 1,
+      "size_points": [
+        1350.0,
+        2009.0399
+      ],
+      "image_sizes": [
+        [
+          6120,
+          8190
+        ]
+      ]
+    },
+    {
+      "page": 5,
+      "title": "官方对比：语言、代码与工具调用",
+      "text_characters": 293,
+      "image_count": 1,
+      "size_points": [
+        1350.0,
+        1092.95996
+      ],
+      "image_sizes": [
+        [
+          6120,
+          3630
+        ]
+      ]
+    }
+  ]
+}

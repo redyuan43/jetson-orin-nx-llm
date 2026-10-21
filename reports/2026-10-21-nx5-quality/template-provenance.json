@@ -1,0 +1,8 @@
+{
+  "url": "https://huggingface.co/openbmb/MiniCPM-V-4.7-35B-A3B-gguf/resolve/main/MiniCPM-V-4_7-35B-A3B-mix_q3gud_im.gguf",
+  "http_range": "bytes=10930954-10938999",
+  "template_bytes": 7249,
+  "official_gguf_template_equals_local": true,
+  "official_gguf_template_sha256": "5aaa30dc16b84d3e7bf950ea404be2bfa4a02224e38c2f6719e6917660b186ba",
+  "official_bf16_template_sha256": "49c37bcc86c7f7f20ed2ebf79e9f872be41ba2b5f9d0d51e6712cc038ef51d6c"
+}

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Run MiniCPM-V 4.7 (35B-A3B) with LES expert streaming on Jetson Orin NX.
+# Legacy launcher. For the tested, pinned 64K configuration use run-64k.py.
 #
 #   ./start.sh                          interactive chat
 #   ./start.sh -p "hello" -n 256        one-shot prompt

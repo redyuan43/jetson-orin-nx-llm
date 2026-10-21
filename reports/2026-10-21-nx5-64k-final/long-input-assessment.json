@@ -1,0 +1,43 @@
+{
+  "expected": {
+    "R0006": "ZVTKHB8T",
+    "R0045": "MPAS84ZS",
+    "R0090": "3PLVRBX2",
+    "R0135": "E48JQW2X",
+    "R0180": "EP2T9N3P",
+    "R0219": "Z7GHWYFC"
+  },
+  "actual": {
+    "R0006": "ZVTKHB8T",
+    "R0045": "MPAS84ZS",
+    "R0090": "3PLVRBX2",
+    "R0135": "E48JQW2X",
+    "R0180": "EP2T9N3P",
+    "R0219": "Z7GHWYFC"
+  },
+  "checks": {
+    "R0006": true,
+    "R0045": true,
+    "R0090": true,
+    "R0135": true,
+    "R0180": true,
+    "R0219": true
+  },
+  "correct": 6,
+  "total": 6,
+  "passed": true,
+  "metrics": [
+    "0.03.524.155 W llama_context: n_ctx_seq (65536) < n_ctx_train (262144) -- the full capacity of the model will not be utilized",
+    "0.05.897.850 W llama_context: n_ctx_seq (65536) < n_ctx_train (262144) -- the full capacity of the model will not be utilized",
+    "0.06.396.541 I common_speculative_impl_draft_dflash: adding speculative implementation 'draft-dspark'",
+    "0.06.396.855 I srv    load_model: speculative decoding context initialized",
+    "3.46.783.827 I slot print_timing: id  0 | task 0 | prompt eval time =  212698.89 ms /  8218 tokens (   25.88 ms per token,    38.64 tokens per second)",
+    "3.46.783.834 I slot print_timing: id  0 | task 0 |        eval time =    7596.71 ms /   108 tokens (   70.34 ms per token,    14.22 tokens per second)",
+    "3.46.783.835 I slot print_timing: id  0 | task 0 |       total time =  220295.60 ms /  8326 tokens",
+    "3.46.783.844 I slot print_timing: id  0 | task 0 | draft acceptance = 0.44505 (   81 accepted /   182 generated)",
+    "[moe-ssd] total[final]: miss=27186 bytes=35044.5 MiB pread=63988ms"
+  ],
+  "wall_s": 232.00466723900172,
+  "min_available_mib": 1129.52734375,
+  "new_oom_kills": 0
+}

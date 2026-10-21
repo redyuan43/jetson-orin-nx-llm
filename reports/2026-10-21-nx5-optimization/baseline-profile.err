@@ -1,0 +1,52 @@
+0.00.142.659 I srv    load_model: loading model '/home/nx/github/qwen38-kvmem/models/MiniCPM-V-4.7/stripped.gguf'
+[moe-ssd] init pack=on pack_layers=40/40 bank=64 shared=on experts=256 io_threads=8 stride0=1351680 preadv=on park_window=on
+[moe-ssd] lookahead-prefetch: off (LLAMA_MOE_LOOKAHEAD_PREFETCH=unset)
+[moe-ssd] decode-cache: 预读与缓存共用一个 LRU 窗口（窗口 208 slot，K=0）
+[moe-ssd] decode-cache: 按层宽度 off（均匀）（前几层 0:208 1:208 2:208 3:208 4:208 5:208 ）
+[moe-ssd] decode-cache: 窗口覆盖批宽 1..8（投机验证也走窗口）
+[moe-ssd] decode-cache: on cache=208 + prefetch=0 slots/layer × 40 层 = 8320 slots (10725 MiB，与 64-slot 的 prefill 共享 bank 同处一块 base)
+[moe-ssd] decode-cache: 40 层绑定 decode 张量（每层 208 = cache 208 + prefetch 0 slot，pack ok）
+[moe-ssd] prewarm: 表 /home/nx/github/qwen38-kvmem/minicpm/prewarm_top128.txt -> 40 层 / 1203 个专家, decode_window=208, enabled=on
+0.09.624.954 W llama_context: n_ctx_seq (65536) < n_ctx_train (262144) -- the full capacity of the model will not be utilized
+0.10.078.677 I common_init_from_params: warming up the model with an empty run - please wait ... (--no-warmup to disable)
+[moe-ssd] prewarm: 表 1203 专家 -> 认领 1203 / 读入 1203 / 发布 1203，1550.7 MiB，wall=624.5 ms (8 线程，缓存区)
+[moe-ssd] layer l=0 tok=2 used=8 unique=13 miss=4 hit=9 pack=1 nth=4 pread_wall=3.8ms pread_sum=11.4ms pread_max=3.0ms bytes=5.2MiB par=3.03
+[moe-ssd] layer l=1 tok=2 used=8 unique=13 miss=5 hit=8 pack=1 nth=5 pread_wall=3.3ms pread_sum=14.1ms pread_max=2.9ms bytes=6.4MiB par=4.31
+[moe-ssd] layer l=19 tok=2 used=8 unique=14 miss=6 hit=8 pack=1 nth=6 pread_wall=3.5ms pread_sum=16.6ms pread_max=2.9ms bytes=7.7MiB par=4.72
+[moe-ssd] layer l=39 tok=2 used=8 unique=14 miss=1 hit=13 pack=1 nth=1 pread_wall=1.8ms pread_sum=1.8ms pread_max=1.8ms bytes=1.3MiB par=1.00
+[moe-ssd] prefill #1 tok=2 used=8 layers=40 unique/l=13 miss=159 hit=344 pack=40/40 nth=8 pread_wall=123ms pread_sum=459ms bytes=205MiB par=3.72 io=1661MiB/s readall=1756MiB calls=1362 realio=14225MiB/s span=1 pmgmt=747.3ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=159 avg_run=1.0 max_run=1 zerocopy=100%
+0.11.109.432 I srv    load_model: initializing slots, n_slots = 1
+[moe-ssd] layer l=0 tok=2 used=8 unique=15 miss=2 hit=13 pack=1 nth=2 pread_wall=2.4ms pread_sum=4.3ms pread_max=2.2ms bytes=2.6MiB par=1.80
+[moe-ssd] layer l=1 tok=2 used=8 unique=16 miss=4 hit=12 pack=1 nth=4 pread_wall=3.0ms pread_sum=10.0ms pread_max=2.8ms bytes=5.2MiB par=3.34
+[moe-ssd] layer l=39 tok=2 used=8 unique=15 miss=2 hit=13 pack=1 nth=2 pread_wall=2.1ms pread_sum=3.7ms pread_max=1.9ms bytes=2.6MiB par=1.76
+[moe-ssd] prefill #2 tok=2 used=8 layers=40 unique/l=15 miss=52 hit=530 pack=40/40 nth=7 pread_wall=59ms pread_sum=121ms bytes=67MiB par=2.07 io=1143MiB/s readall=67MiB calls=52 realio=1143MiB/s span=1 pmgmt=59.2ms pfskip=0 pfwait=0/0.0ms pfread=0 pfpub=0 pfhit=0 pfpredict=0 pevsave=0 pevforced=0 pfcached=0 usedpf=0 runs=52 avg_run=1.0 max_run=1 zerocopy=100%
+0.11.368.323 W srv    load_model: speculative decoding will use checkpoints
+0.11.368.945 W common_speculative_init: no implementations specified for speculative decoding
+0.11.368.952 I slot   load_model: id  0 | task -1 | new slot, n_ctx = 65536
+0.11.369.518 I srv    load_model: prompt cache is enabled, size limit: 8192 MiB
+0.11.369.521 I srv    load_model: use `--cache-ram 0` to disable the prompt cache
+0.11.369.522 I srv    load_model: for more info see https://github.com/ggml-org/llama.cpp/pull/16391
+0.11.369.523 I srv    load_model: context checkpoints enabled, max = 32, min spacing = 256
+0.11.369.951 W srv          init: --cache-idle-slots requires --kv-unified, disabling
+0.11.408.587 I init: chat template, example_format: '<|im_start|>system
+You are a helpful assistant<|im_end|>
+<|im_start|>user
+Hello<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+Hi there<|im_end|>
+<|im_start|>user
+How are you?<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+'
+0.11.431.064 I srv          init: init: chat template, thinking = 1
+0.11.431.585 I srv  update_slots: all slots are idle
+[moe-ssd] total[final]: miss=1414 bytes=1822.7 MiB pread=5381ms
+[moe-ssd] merge-scan: experts=211 runs=211 avg_run=1.00 max_run=1 zerocopy=100.0% scatter_experts=0 syscalls=100.0% of current (avg read = 1.00 experts)

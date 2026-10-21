@@ -1,0 +1,131 @@
+
+Loading model... |-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/ 
+
+
+▄▄ ▄▄
+██ ██
+██ ██  ▀▀█▄ ███▄███▄  ▀▀█▄    ▄████ ████▄ ████▄
+██ ██ ▄█▀██ ██ ██ ██ ▄█▀██    ██    ██ ██ ██ ██
+██ ██ ▀█▄██ ██ ██ ██ ▀█▄██ ██ ▀████ ████▀ ████▀
+                                    ██    ██
+                                    ▀▀    ▀▀
+
+build      : b1-a64932e
+model      : stripped.gguf
+modalities : text
+
+available commands:
+  /exit or Ctrl+C     stop or exit
+  /regen              regenerate the last response
+  /clear              clear the chat history
+  /read <file>        add a text file
+  /glob <pattern>     add text files using globbing pattern
+
+
+> Create a single self-contained HTML file with an SVG 2D animation of a pelican riding a bicycle. Include: two spoked wheels that rotate, a bike frame, pedals that turn, handlebars; the pelican has a large beak with pouch, wings, and legs moving with the pedals; the pelican bobs slightly; a simple sky and ground background. Use pure inline SVG plus CSS keyframe animations, no external resources. Output ONLY the complete HTML.
+
+|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\ ```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pelican on a Bicycle</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            overflow: hidden;
+        }
+        svg {
+            width: 800px;
+            height: 600px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 100%);
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* Wheel Rotation */
+        .wheel {
+            transform-origin: center;
+            animation: rotateWheel 2s linear infinite;
+        }
+        @keyframes rotateWheel {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Pedal Rotation */
+        .pedal-crank {
+            transform-origin: 400px 450px;
+            animation: rotateCrank 2s linear infinite;
+        }
+        @keyframes rotateCrank {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Pelican Bobbing */
+        .pelican-body {
+            animation: bob 0.5s ease-in-out infinite alternate;
+        }
+        @keyframes bob {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
+        }
+
+        /* Pelican Leg Movement */
+        .leg-left {
+            transform-origin: 380px 350px;
+            animation: legMoveLeft 2s linear infinite;
+        }
+        .leg-right {
+            transform-origin: 420px 350px;
+            animation: legMoveRight 2s linear infinite;
+        }
+        @keyframes legMoveLeft {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-30deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(30deg); }
+            100% { transform: rotate(0deg); }
+        }
+        @keyframes legMoveRight {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(30deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-30deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* Wing Flap */
+        .wing {
+            transform-origin: 400px 300px;
+            animation: flapWing 1s ease-in-out infinite alternate;
+        }
+        @keyframes flapWing {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(-10deg); }
+        }
+    </style>
+</head>
+<body>
+    <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+        <!-- Ground -->
+        <rect x="0" y="500" width="800" height="100" fill="#8BC34A" />
+        <line x1="0" y1="500" x2="800" y2="500" stroke="#558B2F" stroke-width="2" />
+
+        <!-- Bicycle Frame -->
+        <g id="bike-frame">
+            <!-- Main Triangle -->
+            <line x1="400" y1="450" x2="500" y2="350" stroke="#333" stroke-width="4" /> <!-- Down tube -->
+            <line x1="500" y1="350" x2="450" y2="2
+
+[ Prompt: 21.5 t/s | Generation: 17.2 t/s ]
+
+Exiting...

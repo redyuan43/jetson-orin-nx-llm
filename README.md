@@ -2,7 +2,46 @@
 
 在 **Jetson Orin NX 16GB Super** 上用 llama.cpp 跑两个模型的完整过程：**坑、实测数据、以及为什么某些"优化"是负收益**。
 
-所有数字都是本机实测，不是论文引用。凡未亲自验证的都会标注来源。
+**当前固定配置为 64K：** window176 / bank64 / DSpark draft7 / GPU 映射专家缓存。
+容量短测 **17.16 token/s**；实际输入 **8218 token** 的检索测试六项全对，回答 **14.22 token/s**，
+最低可用内存约 1.10 GiB。固定入口的中文原题完整生成 **15.54 token/s、2 分 41 秒**，
+HTML 与前轮 8K/GPU/draft7 逐字节一致。已验证 64K 容量与约 8K 实际输入，尚未测满 64K。
+使用 [run-64k.py](scripts/minicpm/run-64k.py)，参数与验收见
+[64K 固定配置](docs/08-nx5-64k-fixed-20261021.md)。旧启动 preset 保留作历史记录。
+
+**[下载 5 页 PDF 图册](docs/diagrams/nx5-minicpm-64k-architecture-and-capabilities.pdf)**：
+两张本机图解，以及 OpenBMB 官方的性能效率、视觉能力、语言与代码能力三张高清原图。
+PDF 包含页面书签与官方来源链接，区分官方检查点成绩、本机实测和未验证能力。
+
+**存储部署与 64K 固定参数**（[SVG 原图](docs/diagrams/nx5-minicpm-64k-storage.svg)）：
+
+![nx5 的 SSD、CPU/GPU 共享内存、专家缓存与 64K 固定参数](docs/diagrams/nx5-minicpm-64k-storage.svg)
+
+**模型架构与能力范围**（[SVG 原图](docs/diagrams/nx5-minicpm-capabilities.svg)）：
+
+![MiniCPM-V 4.7 的模型架构、相对强弱与 nx5 本机实测](docs/diagrams/nx5-minicpm-capabilities.svg)
+
+两张 SVG 支持无损放大和编辑；同目录提供 PNG 预览。
+PDF 图表来源与校验记录位于 [图解归档](reports/2026-10-21-nx5-diagrams/sources.json)。
+
+前轮 8K 优化让原本落在 CPU 的流式专家矩阵乘法直接使用 GPU 映射内存，
+再配合 DSpark。1024-token 短测达到约 **18 token/s**；用户中文原题完整生成实测
+**16.55 token/s、端到端 2 分 32 秒**，最低可用内存约 1.13 GiB。
+补丁、独立运行入口和对照结果见 [8K CUDA / DSpark 实测](docs/07-nx5-cuda-optimization-20261021.md)。
+本次原始 HTML 仍有车轮旋转定位错误；性能提升不能当作视觉质量提升。
+
+本文保留部署过程和历史实验。**2026-10-21 的 SSH 复核推翻了部分旧结论**：当前 CLI 有投机循环，
+DSpark 正确路径的接受率可达 82%，`SKIP_READ` 不是正确推理的硬件上限，64K 也不必固定窗口 96。
+首轮修复了 bank 小于窗口时的数组越界，64K/window216/bank64 完整生成实测 **14.05 token/s**。
+请优先阅读 [nx5 源码与性能复核](docs/06-nx5-audit-20261021.md)。以下旧内存表不能作为可用余量的依据。
+
+用户原题“鹈鹕骑自行车”实测 **13.44 token/s，端到端 3 分 33 秒**。
+[原始 HTML](reports/2026-10-21-nx5-audit/pelican-user/pelican.html) 可以打开，但动画覆盖定位导致画面错位，
+本次视觉任务未通过；[浏览器截图](reports/2026-10-21-nx5-audit/pelican-user/frame-700.png) 保留真实结果。
+后续改用官方 instruct 采样，[新结果](reports/2026-10-21-nx5-quality/instruct/pelican.html) 解决了错位、实测 13.71 token/s，
+但仍缺完整蹬踏动作。已逐字节确认专家拆分未丢数据；量化能力损失尚无高精度对照，不能仅凭单张图判定。
+随后已跑通 **128K 容量、window200、bank64**：短输入完整输出 2529 token，12.45 token/s，
+最低可用内存 835 MiB；尚未填满 128K 历史。复现参数和适用范围见复核报告的“128K 上下文容量验证”。
 
 ---
 
@@ -61,8 +100,8 @@ GDN 是严格递归的，每 token 必须串行走完 64 层，无法并行摊�
 
 MTP 一次前向验证多个草稿 token，把固定延迟摊薄 —— 这才是对症的药。
 
-> 对比第二部分：**DSpark 在 I/O 受限的 MoE 模型上是负收益**。
-> 同一个"投机解码"思路，在两个模型上一个有效一个有害，原因是瓶颈不同。
+> MiniCPM 的正确 DSpark 路径已测到约 82% 接受率，但本轮 draft=3 的整体速度与关闭时接近。
+> 接受率和实际吞吐必须分别测量，不能仅凭架构判定收益。
 
 ---
 
@@ -93,12 +132,12 @@ MTP 一次前向验证多个草稿 token，把固定延迟摊薄 —— 这才�
 | **专家权重（`experts/`，40 层 × 256 专家）**| **12.89 GB** |
 | 统一内存池 | 15.6 GB |
 
-12.89 GB 装不进去，所以 LES 把专家放 NVMe，用 `preadv` 按需读进内存槽位，
+全部专家加上非专家权重、运行缓冲和系统开销无法同时装入，所以 LES 把专家放 NVMe，用 `preadv` 按需读进内存槽位，
 并维护一个每层的解码缓存窗口。
 
-**每 token 要读 40 层 × 8 专家 = 320 个专家 ≈ 420 MB。**
+**每 token 激活 40 层 × 8 专家 ≈ 412.5 MiB 权重；这是全部未命中时的读取需求。窗口命中不读，页缓存命中也不访问 SSD。**
 
-## 推荐配置（本机最优，已验证）
+## 历史基线配置（非当前最优的证明）
 
 ```bash
 LLAMA_MOE_DECODE_WINDOW=224      # 每层 224 槽（关键）
@@ -128,23 +167,17 @@ llama-cli --moe-slot-bank 400 \
 | 8 K | 224 | ~7.7 GB | **13.6 t/s** |
 | 64 K | 96 | 10.3 GB | 11.2 t/s |
 
-64K 只多花 2.6 GB（因为只有 10 层存 KV），代价是窗口必须缩到 96。
-用 `MCP_PRESET=long` 切换。
+上表的内存归因已撤回：64K 相比 8K 的 q8_0 KV 只增加约 595 MiB，其他差额必须另查。
+本轮已完成 64K 容量、窗口 208、bank 400 的 2048-token 测试；原 `MCP_PRESET=long` 仍保留旧参数。
+详见[复核](docs/06-nx5-audit-20261021.md)，尤其注意容量与实际历史长度的区别。
 
-### 结构上限
+### 跳读诊断的局限
 
-用源码内置的 `LLAMA_MOE_SKIP_READ=1`（完全不读盘）测得上限：
-**15.2–15.3 t/s**。也就是说读盘之外还有约 65 ms/token 的结构开销。
+历史 `SKIP_READ=1` 测到 15.2–15.3 t/s，但源码在该模式下没有填充专家权重，输出和路由都会改变。
+`DUMMY_READ=1` 同样不更新真实专家缓冲。这些数字只能辅助诊断，**不能作为正确推理的硬件上限**，
+也不能据此断言达到 15 t/s 必须让全部专家常驻。
 
-| 模式 | Generation |
-|---|---:|
-| 完全不读盘（`SKIP_READ=1`）| **15.3** |
-| 读盘但不写 GPU 缓冲（`DUMMY_READ=1`）| 13.5 |
-| 正常 | 13.6（window 224）|
-
-**13.6 已经达到结构上限的 89 %。**
-
-## 五个必须打的补丁
+## 历史补丁与参数说明
 
 全部在 `patches/0001-les-linux-support.patch`（5 文件，+188 / −6）。
 
@@ -165,15 +198,13 @@ Linux 下用 `posix_fadvise(POSIX_FADV_DONTNEED)`，而且**只在 fd 打开时�
 Metal 提供专用的 `alloc_only_buft`，CUDA/CPU 没有。
 回退到 `ggml_backend_dev_host_buffer_type()`（CUDA pinned 内存）。
 
-### 3. `llama-cli` 从不创建 draft context
+### 3. DSpark 的驱动接线
 
-DFlash/DSpark 草稿模型**没有自己的 token embedding 和 lm_head**，
-必须通过 `cparams.ctx_other` 借用目标模型的。
-上游只在 `tools/server/server-context.cpp` 实现，`llama-cli` 走
-`common_init_from_params` 完全没有这段。
-
-报错 `dflash requires ctx_other to be set` 出现在**内存估算阶段**，
-那条只是警告；真正的问题是后面没创建 draft context，DSpark 静默降级。
+DFlash/DSpark 草稿模型借用目标模型的 embedding 和 lm_head，需要 `ctx_other`。
+当前实际 CLI 使用 `tools/cli` 和 `server-context`，该路径已经完成初始化与特征注入。
+原来针对 `tools/main/main.cpp` 的判断不适用于这个二进制。
+`llama-speculative-simple` 的原有本地补丁只补初始化，没有补 DSpark 必需的
+`common_speculative_process()`；不要再用其低接受率判定模型能力。
 
 ### 4. `--moe-slot-bank` 不是总缓存大小（最容易误解）
 
@@ -195,51 +226,26 @@ DFlash/DSpark 草稿模型**没有自己的 token embedding 和 lm_head**，
 | 3200 | 160 | **15.6 GB（几乎占满）** |
 | **400** | **224** | **~7.7 GB** |
 
-**`bank` 是内存的主因，不是 window。** 把 bank 降下来，才有空间把 window 提到 224。
+上表来自不同历史实验，内存数值尚未统一口径。专家缓冲随
+`bank + 各层窗口之和` 增长，两者都重要。224 槽加 bank 400 本身就约 11.78 GiB。
 
-### 5. `LLAMA_MOE_BANK_CAP` 必须 ≥ max(bank/40, window)
+### 5. `LLAMA_MOE_BANK_CAP` 只检查 prefill bank
 
-否则加载直接失败：
-`MoE shared slot bank exceeds the bank=N-per-layer RAM budget`。
+源码条件是 `bank <= BANK_CAP × 40`，并不限制全部专家缓冲，也不要求 cap ≥ window。
+真正的内存约束还包括窗口、目标模型、draft、KV、计算缓冲和系统。
 
-## DSpark：在本机是**负收益**，默认关闭
-
-`dspark-Q4_K_M.gguf`（`general.architecture = dflash`，62 张量，5 层，
-`target_layers=[4,12,20,28,36]`，`block_size=15`）。
-
-实测接受率（`llama-speculative-simple`，本 fork 唯一有投机循环的驱动）：
-
-| 采样 | n_drafted | n_accept | 接受率 |
-|---|---:|---:|---:|
-| 默认 temp=0.8 | 616 | 33 | **5.36 %** |
-| 贪心 temp=0 | — | 4 | **0.83 %** |
-
-把验证批次放进解码窗口（`LLAMA_MOE_WINDOW_MAX_ROWS=8`）后：
-
-| 配置 | Generation |
-|---|---:|
-| 不用 DSpark | **11.4** |
-| DSpark draft=7 | **5.8** |
-
-原因很直接：**本机瓶颈是 SSD 读盘，而 DSpark 是用计算换 I/O。**
-验证批读的专家并集更大（8 行 × 8 = 64 个/层，而不是 8 个），
-读取量反而增加；接受率又只有个位数，完全补不回来。
-
-**规律输出**（数字列表、表格）时接受率高，DSpark 才可能正收益；
-**自由文本**（写代码、写 HTML）时接受率低，必然负收益。
-
-> 这解释了为什么它在 iPhone 上有效：那里闪存快、GPU 快，是计算受限。
-
-## 三个驱动的现状（想用 DSpark 必须看）
+## DSpark 与驱动现状（2026-10-21 复核）
 
 | 驱动 | 状态 |
 |---|---|
-| `llama-cli`（`tools/main/main.cpp`）| **完全没有投机循环** —— 零处调用 `common_speculative_begin/draft/accept` |
-| `llama-server` | `tools/server/server.cpp` 是**旧版 API**（用 `common_chat_syntax`、`speculative.n_max`，本分支已删），编不过，12+ 处错误 |
-| `llama-speculative-simple` | 能跑，补上 `ctx_other` + 清 MoE 参数后可用，但接受率如上 |
+| `llama-cli`（实际入口 `tools/cli`）| 复用 `server-context`，已实测启用 DSpark |
+| `llama-server` / 恢复的 `llama-les-server` | 旧 HTTP 外层仍有 API 漂移，本轮没有发布 HTTP 服务 |
+| `llama-speculative-simple` | 原接线缺少目标特征注入，其 0.8%–5.4% 接受率不代表正确 DSpark |
 
-**结论：这个 fork 里没有可用的投机解码驱动。** 真要用，得给 `main.cpp` 补循环，
-或者把 `server.cpp` 移植到新 API。
+现有 CLI、draft=3：256-token 短测接受率 **76.3%**；2048-token 长测接受率 **82.0%**，
+生成速度 **13.24 t/s**。接受率恢复并不等于一定提速，需同任务、同窗口的长输出对照。
+旧的“SSD 场景投机必然负收益”“代码/HTML 接受率必低”“CLI 没有投机循环”结论均撤回。
+完整测量与适用范围见[复核报告](docs/06-nx5-audit-20261021.md)。
 
 ## 真正有效的三个优化
 
@@ -303,7 +309,8 @@ SSD 必须并发才能打满带宽。
 现象：`free` 显示 `used 15044 MB, available 553 MB`，但 `ps` 里没有明显可疑项
 （父进程已退出，进程被 init 收养）。
 
-**所以 `prep-system.sh` 第一步就是 `pkill -9 -x llama-cli`。**
+历史 `prep-system.sh` 会全局 `pkill -9 -x llama-cli`，可能误杀活跃任务。
+本轮测量改用互斥锁、已有进程检查和只结束自身进程组的生命周期管理，见 `scripts/minicpm/bench-audit.py`。
 
 ## 3. page cache 是有用的，不要清
 
@@ -348,7 +355,7 @@ SSD 必须并发才能打满带宽。
 | 降到单线程读盘 | **更慢**（10.2 vs 14.5）|
 | 用普通 CPU 内存替 pinned | **CUDA 崩溃** |
 | 恢复 `llama-server` 目标 | 编不过（API 漂移）|
-| 开 DSpark | **负收益**（13.6 → 更慢，接受率个位数）|
+| 旧 DSpark 测试 | 驱动接线和入口判断有误；正确 CLI 已测到 82% 接受率，速度须重新对照 |
 
 ---
 
@@ -417,14 +424,11 @@ MCP_PRESET=long ./start.sh -p "hello" -n 256   # 64K 上下文
 
 ## 已知限制
 
-- **16 GiB 装不下 12.89 GiB 专家 + 1.55 GiB 模型 + KV + 计算缓冲**，必须流式读。
-- decode 结构上限 **15.3 t/s**（完全不读盘时）；实测 **13.4–13.6 t/s**，已达上限的 89 %。
-- 达到 15 t/s 需要全部专家常驻（12.9 GiB × 40 层槽位），16 GiB 机器做不到。
-  换 32 GiB 的 AGX Orin 理论上可以，按结构上限推算约 20 t/s。
-- 上下文与速度是取舍：8K + window 224 → 13.6 t/s；64K + window 96 → 11.2 t/s。
-- 没有可用的 HTTP server（`llama-server` 编不过，`llama-omni-server` 要求
-  omni 多模态模块且启动卡住）。
-- DSpark 在本机负收益，默认关闭。
+- 全部专家、目标模型、运行缓冲与操作系统难以共同放进 15.6 GiB，需要流式加载。
+- 15.3 t/s 是错误权重路径的诊断值，不是硬件极限。
+- 分配 64K 容量不等于已经验证接近 64K 实际历史时的速度。
+- 尚无经过本轮验收的 HTTP 服务；DSpark 可直接使用现有 CLI，无须先修 HTTP。
+- 单个 HTML 提示词的测量不代表多任务质量、长期稳定性或所有路由工作集。
 
 ---
 

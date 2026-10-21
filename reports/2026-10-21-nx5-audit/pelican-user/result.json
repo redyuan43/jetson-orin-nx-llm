@@ -1,0 +1,10 @@
+{
+  "prompt_file": "samples/pelican-user-prompt-20261021.txt",
+  "extraction": "First complete html code fence, no content edits",
+  "raw_start_offset": 1860,
+  "raw_end_offset": 7529,
+  "html_bytes": 5669,
+  "sha256": "470377b29351445a6e69f1855dbf35ca47b7c11d126c50fb094b43cb157ec42f",
+  "visual_task_pass": false,
+  "reason": "CSS transforms replace SVG positioning; wheels and pelican separate from bicycle; no pedaling animation"
+}

@@ -1,0 +1,8 @@
+{
+  "checked_on": "2026-10-21",
+  "sampling_guidance": "https://github.com/OpenBMB/MiniCPM-V/blob/main/docs/minicpm_v4dot7_zh.md",
+  "sampling_section": "推荐采样参数 / instruct mode",
+  "template": "https://huggingface.co/openbmb/MiniCPM-V-4.7-35B-A3B/blob/main/chat_template.jinja",
+  "generation_config_note": "The model generation_config.json has different defaults (temperature 1.0, top_k 20); this trial explicitly uses the documented instruct recommendation, not those defaults.",
+  "repeat_last_n_note": "llama.cpp repeat-last-n=-1 covers the context rather than its default last 64 tokens; penalty semantics are not claimed to be bitwise identical to Transformers."
+}

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鹈鹕骑自行车动画</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #87CEEB; /* 天空蓝背景 */
+            overflow: hidden;
+        }
+
+        svg {
+            width: 80vw;
+            height: 80vh;
+            max-width: 800px;
+            max-height: 600px;
+        }
+
+        /* 动画定义 */
+        
+        /* 车轮旋转 */
+        .wheel-back {
+            transform-origin: 150px 350px;
+            animation: rotateWheel 2s linear infinite;
+        }
+        
+        .wheel-front {
+            transform-origin: 450px 350px;
+            animation: rotateWheel 2s linear infinite;
+        }
+
+        @keyframes rotateWheel {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 鹈鹕身体上下颠簸 (模拟骑行震动) */
+        .pelican-body-group {
+            animation: bounce 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-5px); }
+        }
+
+        /* 鹈鹕头部点头 */
+        .pelican-head {
+            transform-origin: 280px 180px;
+            animation: nodHead 1s ease-in-out infinite;
+        }
+
+        @keyframes nodHead {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        /* 地面移动效果 */
+        .ground-line {
+            animation: moveGround 2s linear infinite;
+        }
+
+        @keyframes moveGround {
+            from { stroke-dashoffset: 0; }
+            to { stroke-dashoffset: -40; }
+        }
+    </style>
+</head>
+<body>
+
+<svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+    <!-- 背景云朵 -->
+    <circle cx="100" cy="80" r="30" fill="white" opacity="0.8"/>
+    <circle cx="130" cy="90" r="30" fill="white" opacity="0.8"/>
+    <circle cx="500" cy="60" r="40" fill="white" opacity="0.8"/>
+    <circle cx="540" cy="70" r="40" fill="white" opacity="0.8"/>
+
+    <!-- 地面 -->
+    <line x1="0" y1="380" x2="600" y2="380" stroke="#555" stroke-width="4" stroke-dasharray="20, 20" class="ground-line"/>
+
+    <!-- 自行车后轮 -->
+    <g class="wheel-back">
+        <circle cx="150" cy="350" r="50" fill="none" stroke="#333" stroke-width="4"/>
+        <circle cx="150" cy="350" r="40" fill="none" stroke="#666" stroke-width="2"/>
+        <!-- 辐条 -->
+        <line x1="150" y1="310" x2="150" y2="390" stroke="#666" stroke-width="2"/>
+        <line x1="110" y1="350" x2="190" y2="350" stroke="#666" stroke-width="2"/>
+        <line x1="120" y1="320" x2="180" y2="380" stroke="#666" stroke-width="2"/>
+        <line x1="120" y1="380" x2="180" y2="320" stroke="#666" stroke-width="2"/>
+    </g>
+
+    <!-- 自行车前轮 -->
+    <g class="wheel-front">
+        <circle cx="450" cy="350" r="50" fill="none" stroke="#333" stroke-width="4"/>
+        <circle cx="450" cy="350" r="40" fill="none" stroke="#666" stroke-width="2"/>
+        <!-- 辐条 -->
+        <line x1="450" y1="310" x2="450" y2="390" stroke="#666" stroke-width="2"/>
+        <line x1="410" y1="350" x2="490" y2="350" stroke="#666" stroke-width="2"/>
+        <line x1="420" y1="320" x2="480" y2="380" stroke="#666" stroke-width="2"/>
+        <line x1="420" y1="380" x2="480" y2="320" stroke="#666" stroke-width="2"/>
+    </g>
+
+    <!-- 自行车车架 (鹈鹕身体下方) -->
+    <g stroke="#333" stroke-width="4" fill="none">
+        <!-- 主框架 -->
+        <path d="M150 350 L250 250 L450 350 L250 250" />
+        <path d="M250 250 L220 200 L300 200" />
+        <!-- 座管 -->
+        <line x1="250" y1="250" x2="230" y2="220" />
+        <!-- 车把 -->
+        <path d="M300 200 L320 180 L350 180" />
+    </g>
+
+    <!-- 鹈鹕主体 (包含身体、头、翅膀) -->
+    <g class="pelican-body-group">
+        <!-- 身体 -->
+        <ellipse cx="280" cy="220" rx="60" ry="40" fill="#F5F5DC" stroke="#333" stroke-width="2"/>
+        
+        <!-- 脖子 -->
+        <path d="M320 200 Q350 150 330 120" fill="none" stroke="#F5F5DC" stroke-width="25" stroke-linecap="round"/>
+        
+        <!-- 头部 -->
+        <g class="pelican-head">
+            <circle cx="330" cy="110" r="25" fill="#F5F5DC" stroke="#333" stroke-width="2"/>
+            <!-- 眼睛 -->
+            <circle cx="340" cy="105" r="3" fill="black"/>
+            <circle cx="340" cy="105" r="1" fill="white"/>
+        </g>
+
+        <!-- 大嘴巴 (鹈鹕特征) -->
+        <path d="M330 110 Q380 130 360 160 Q330 150 330 110" fill="#FFA500" stroke="#333" stroke-width="2"/>
+        <path d="M330 110 Q360 140 350 155 Q330 150 330 110" fill="#FF8C00" opacity="0.8"/>
+
+        <!-- 翅膀 -->
+        <path d="M260 210 Q200 230 240 260 Q280 240 260 210" fill="#E0E0E0" stroke="#333" stroke-width="2"/>
+        
+        <!-- 腿 (简化) -->
+        <line x1="280" y1="250" x2="260" y2="300" stroke="#333" stroke-width="4"/>
+        <line x1="260" y1="300" x2="240" y2="300" stroke="#333" stroke-width="4"/> <!-- 脚踏板位置 -->
+    </g>
+
+    <!-- 遮挡关系：车轮在车架后面，但身体在车架上面 -->
+    <!-- 注意：SVG中后写的元素会覆盖先写的元素，所以上面的顺序已经调整好了基本层次 -->
+</svg>
+
+</body>
+</html>

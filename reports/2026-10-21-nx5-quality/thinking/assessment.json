@@ -1,0 +1,5 @@
+{
+  "verdict": "fail: all five SMIL animations target root SVG; controls only show alerts",
+  "model_html_unedited": true,
+  "full_task_pass": false
+}

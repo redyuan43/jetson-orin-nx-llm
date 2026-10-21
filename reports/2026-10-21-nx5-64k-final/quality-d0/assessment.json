@@ -1,0 +1,7 @@
+{
+  "full_task_pass": false,
+  "html_edited": false,
+  "observed": "At 700ms the wheels have rotated out of place. The CSS still uses transform-origin:center without per-wheel origins or transform-box:fill-box.",
+  "conclusion": "The wheel-placement failure also occurs with draft disabled; this failure cannot be attributed solely to DSpark.",
+  "scope": "Single stochastic sample, not a proof of quality equivalence between CPU, CUDA and speculative decoding."
+}

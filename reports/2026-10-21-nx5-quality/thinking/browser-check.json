@@ -1,0 +1,46 @@
+{
+  "title": "鹈鹕骑自行车动画",
+  "svgCount": 1,
+  "smilCount": 5,
+  "smilTargets": [
+    {
+      "tag": "animateTransform",
+      "attribute": "transform",
+      "target": "svg",
+      "parentId": ""
+    },
+    {
+      "tag": "animateTransform",
+      "attribute": "transform",
+      "target": "svg",
+      "parentId": ""
+    },
+    {
+      "tag": "animateTransform",
+      "attribute": "transform",
+      "target": "svg",
+      "parentId": ""
+    },
+    {
+      "tag": "animateTransform",
+      "attribute": "transform",
+      "target": "svg",
+      "parentId": ""
+    },
+    {
+      "tag": "animateTransform",
+      "attribute": "transform",
+      "target": "svg",
+      "parentId": ""
+    }
+  ],
+  "animations": [],
+  "externalResources": [],
+  "exceptions": [],
+  "externalRequests": [],
+  "frameSha256": {
+    "frame-0.png": "cb6448a3f44ca02957101ee7300d3f61169c0b1a5b086a33fdcc7322b48ac8a0",
+    "frame-700.png": "5e688e7950542ee3240f22a6286324a957a2fa5777db104184449becd21b75b0"
+  },
+  "framesDiffer": true
+}

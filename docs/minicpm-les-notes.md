@@ -1,5 +1,7 @@
 # MiniCPM-V 4.7 35B-A3B + LES 在 nx5 上的部署与调优笔记
 
+> 历史记录：关于 CLI 无投机循环、DSpark 个位数接受率、15.3 t/s 硬件上限和内存余量的结论已被复核纠正。请以 [2026-10-21 nx5 复核](06-nx5-audit-20261021.md) 为准。
+
 机器：Jetson Orin NX 16GB Super（16 GiB 统一内存，GPU 与 CPU 共享），Ubuntu 24.04，CUDA 13.2
 引擎：`github.com/tc-mb/llama.cpp-omni` @ `a64932e`（含 LES + DSpark）
 模型：`openbmb/MiniCPM-V-4.7-35B-A3B` 的 `mix_q3gud_im` 量化（14.44 GiB，混合精度 Q3_K 专家 + Q4_K_M 其余）

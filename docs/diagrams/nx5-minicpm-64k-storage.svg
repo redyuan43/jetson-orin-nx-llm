@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1700" viewBox="0 0 1800 1700" role="img" aria-labelledby="title desc">
+<title id="title">nx5 的模型，存在哪里？</title><desc id="desc">当前固定方案：SSD 保存全量专家，统一内存缓存一部分；CPU 负责调度与读盘，GPU 直接读取缓存参与计算。</desc>
+<metadata>{&quot;date&quot;: &quot;2026-10-21&quot;, &quot;profile&quot;: &quot;nx5-minicpm-v47-64k&quot;, &quot;sources&quot;: [&quot;https://github.com/OpenBMB/MiniCPM-V/blob/main/docs/minicpm_v4dot7_zh.md&quot;, &quot;https://huggingface.co/openbmb/MiniCPM-V-4.7-35B-A3B/blob/main/config.json&quot;, &quot;https://github.com/OpenBMB/MiniCPM-V/blob/main/assets/minicpmv4.7/overall_performance_35ba3b_instruct.png&quot;, &quot;https://github.com/OpenBMB/MiniCPM-V/blob/main/assets/minicpmv4.7/overall_performance_35ba3b_language.png&quot;, &quot;../08-nx5-64k-fixed-20261021.md&quot;]}</metadata>
+<style>text{font-family:'PingFang SC','Noto Sans CJK SC','Microsoft YaHei',Arial,sans-serif;font-variant-numeric:tabular-nums}a:hover text{text-decoration:underline}</style>
+<defs>
+<marker id="arrow-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#147D76"/></marker>
+<marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#A86718"/></marker>
+<marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#346FAA"/></marker>
+<marker id="arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6F55AA"/></marker>
+<marker id="arrow-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#536B7D"/></marker>
+</defs>
+<rect x="0" y="0" width="1800" height="1700" rx="0" fill="#F3F6F8"/>
+<rect x="60" y="56" width="42" height="7" rx="3" fill="#147D76"/>
+<text x="118" y="68" font-size="18" fill="#147D76" font-weight="700" text-anchor="start">NX5  /  MINICPM-V 4.7</text>
+<text x="1740" y="68" font-size="18" fill="#536B7D" font-weight="400" text-anchor="end">2026.10.21   ·   01 / 02</text>
+<text x="60" y="132" font-size="46" fill="#173149" font-weight="700" text-anchor="start">nx5 的模型，存在哪里？</text>
+<text x="60" y="178" font-size="22" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="1680">当前固定方案：SSD 保存全量专家，统一内存缓存一部分；CPU 负责调度与读盘，GPU 直接读取缓存参与计算。</text>
+<rect x="60" y="216" width="405" height="100" rx="16" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<text x="84" y="260" font-size="32" fill="#147D76" font-weight="700" text-anchor="start" data-max-width="357">Orin NX 16GB Super</text>
+<text x="84" y="292" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="357">ARM CPU + GPU · 共用一块 DRAM</text>
+<rect x="485" y="216" width="405" height="100" rx="16" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<text x="509" y="260" font-size="32" fill="#346FAA" font-weight="700" text-anchor="start" data-max-width="357">64K 上下文</text>
+<text x="509" y="292" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="357">65,536 token · 输入、历史、输出共用</text>
+<rect x="910" y="216" width="405" height="100" rx="16" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<text x="934" y="260" font-size="32" fill="#147D76" font-weight="700" text-anchor="start" data-max-width="357">176 / 256</text>
+<text x="934" y="292" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="357">每层专家缓存容量 · 不代表命中率</text>
+<rect x="1335" y="216" width="405" height="100" rx="16" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<text x="1359" y="260" font-size="32" fill="#6F55AA" font-weight="700" text-anchor="start" data-max-width="357">DSpark · 7 token</text>
+<text x="1359" y="292" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="357">最多预测 7 个，交给主模型验证</text>
+<rect x="60" y="346" width="390" height="794" rx="24" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<rect x="84" y="368" width="32" height="32" rx="9" fill="#A86718"/>
+<text x="100" y="391" font-size="17" fill="white" font-weight="700" text-anchor="middle">1</text>
+<text x="130" y="393" font-size="26" fill="#173149" font-weight="700" text-anchor="start">NVMe SSD</text>
+<text x="84" y="428" font-size="20" fill="#536B7D" font-weight="400" text-anchor="start">模型文件长期保存在这里</text>
+<rect x="84" y="456" width="342" height="214" rx="16" fill="#FFF4E3"/>
+<text x="106" y="496" font-size="25" fill="#A86718" font-weight="700" text-anchor="start">全量路由专家</text>
+<text x="106" y="547" font-size="40" fill="#173149" font-weight="700" text-anchor="start">12.89 GiB</text>
+<text x="106" y="587" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="300">experts/ · Q3_K</text>
+<text x="106" y="615" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="300">40 层 × 256 = 10,240 个专家</text>
+<text x="106" y="643" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="300">gate / up / down 按专家打包</text>
+<rect x="84" y="690" width="342" height="110" rx="16" fill="#EBF3FC"/>
+<text x="106" y="725" font-size="22" fill="#346FAA" font-weight="650" text-anchor="start">主模型非路由专家部分</text>
+<text x="106" y="757" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="300">stripped.gguf · 约 1.55 GiB</text>
+<text x="106" y="784" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start">启动时加载 / 映射</text>
+<rect x="84" y="818" width="342" height="110" rx="16" fill="#F1EDF9"/>
+<text x="106" y="854" font-size="22" fill="#6F55AA" font-weight="650" text-anchor="start">DSpark 草稿权重</text>
+<text x="106" y="886" font-size="20" fill="#173149" font-weight="400" text-anchor="start">dspark-Q4_K_M.gguf</text>
+<text x="106" y="913" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start">启动时加载 · 5 层草稿模型</text>
+<rect x="84" y="946" width="342" height="164" rx="16" fill="#F4F6F8" stroke="#DCE5EB" stroke-width="1.5" stroke-dasharray="5 5"/>
+<text x="106" y="981" font-size="22" fill="#173149" font-weight="650" text-anchor="start">其他模型资源</text>
+<text x="106" y="1014" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="302">预热表：1,203 个常用专家</text>
+<text x="106" y="1043" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="302">视觉编码器 / mmproj</text>
+<text x="106" y="1072" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="302">本轮文字推理未加载视觉部分</text>
+<rect x="620" y="346" width="1120" height="794" rx="24" fill="#F9FCFB" stroke="#A9CFC6" stroke-width="2"/>
+<rect x="648" y="368" width="32" height="32" rx="9" fill="#147D76"/>
+<text x="664" y="391" font-size="17" fill="white" font-weight="700" text-anchor="middle">2</text>
+<text x="694" y="393" font-size="26" fill="#173149" font-weight="700" text-anchor="start">CPU / GPU 共享的同一块物理内存</text>
+<text x="1712" y="428" font-size="20" fill="#536B7D" font-weight="400" text-anchor="end">系统可见 15,597.9 MiB ≈ 15.23 GiB</text>
+<rect x="648" y="451" width="510" height="87" rx="14" fill="#EAF0F5"/>
+<text x="672" y="486" font-size="23" fill="#173149" font-weight="650" text-anchor="start">CPU · 调度、路由管理、I/O</text>
+<text x="672" y="518" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="462">8 个读盘线程向共享专家缓存写入数据</text>
+<rect x="1178" y="451" width="534" height="87" rx="14" fill="#F1EDF9"/>
+<text x="1202" y="486" font-size="23" fill="#6F55AA" font-weight="650" text-anchor="start" data-max-width="486">GPU · 专家矩阵运算、主模型验证</text>
+<text x="1202" y="518" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="486">直接访问映射内存，无需再复制一整份专家缓存</text>
+<path d="M 844 538 V 561" fill="none" stroke="#147D76" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-teal)"/>
+<path d="M 1442 562 V 542" fill="none" stroke="#6F55AA" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-purple)"/>
+<rect x="648" y="565" width="1064" height="197" rx="18" fill="#E8F5F1" stroke="#A9CFC6" stroke-width="1.5"/>
+<text x="672" y="604" font-size="27" fill="#147D76" font-weight="700" text-anchor="start">动态专家缓存</text>
+<text x="672" y="657" font-size="42" fill="#147D76" font-weight="750" text-anchor="start">8.94 GiB</text>
+<text x="672" y="695" font-size="20" fill="#173149" font-weight="400" text-anchor="start">9,157.5 MiB · 7,104 个槽位</text>
+<text x="672" y="735" font-size="20" fill="#147D76" font-weight="600" text-anchor="start">CUDA 映射内存：CPU 写入，GPU 直读</text>
+<text x="1080" y="604" font-size="21" fill="#173149" font-weight="650" text-anchor="start" data-max-width="606">每层窗口：176 × 40 = 7,040 槽</text>
+<rect x="1080" y="625" width="606" height="24" rx="6" fill="#D9E3E1"/>
+<rect x="1080" y="625" width="416.625" height="24" rx="6" fill="#147D76"/>
+<text x="1080" y="678" font-size="20" fill="#147D76" font-weight="400" text-anchor="start" data-max-width="606">176 / 256 = 68.75% 的候选容量</text>
+<text x="1080" y="709" font-size="20" fill="#173149" font-weight="400" text-anchor="start" data-max-width="606">另有 64 槽 prefill bank，所有层共用</text>
+<text x="1080" y="739" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="606">未缓存的专家仍可按需读入，路由范围保持完整</text>
+<path d="M 430 578 H 638" fill="none" stroke="#A86718" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-amber)"/>
+<text x="534" y="535" font-size="19" fill="#A86718" font-weight="600" text-anchor="middle">缓存未命中</text>
+<text x="534" y="561" font-size="19" fill="#A86718" font-weight="600" text-anchor="middle">按需读取</text>
+<text x="534" y="611" font-size="18" fill="#147D76" font-weight="600" text-anchor="middle">命中时复用</text>
+<text x="534" y="641" font-size="17" fill="#536B7D" font-weight="400" text-anchor="middle">保留页缓存</text>
+<text x="478" y="966" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="126">专家缓冲比</text>
+<text x="478" y="994" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="126">全量常驻少占</text>
+<text x="478" y="1035" font-size="29" fill="#147D76" font-weight="700" text-anchor="start">≈3.95</text>
+<text x="478" y="1070" font-size="21" fill="#147D76" font-weight="650" text-anchor="start">GiB</text>
+<rect x="648" y="780" width="340" height="143" rx="14" fill="#EBF3FC"/>
+<text x="668" y="813" font-size="21" fill="#346FAA" font-weight="650" text-anchor="start">主模型其余权重</text>
+<text x="668" y="852" font-size="29" fill="#173149" font-weight="700" text-anchor="start">1,575.24 MiB</text>
+<text x="668" y="882" font-size="17" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="300">含嵌入、注意力、共享专家等</text>
+<text x="668" y="907" font-size="17" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="300">CPU 映射 272.62 + CUDA 1302.62</text>
+<rect x="1008" y="780" width="340" height="143" rx="14" fill="#F1EDF9"/>
+<text x="1028" y="813" font-size="21" fill="#6F55AA" font-weight="650" text-anchor="start">DSpark 草稿权重</text>
+<text x="1028" y="852" font-size="29" fill="#173149" font-weight="700" text-anchor="start">215.59 MiB</text>
+<text x="1028" y="882" font-size="17" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="300">5 层 · Q4_K_M</text>
+<text x="1028" y="907" font-size="17" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="300">CPU 映射 34.08 + CUDA 181.51</text>
+<rect x="1368" y="780" width="344" height="143" rx="14" fill="#E8F5F1"/>
+<text x="1388" y="813" font-size="21" fill="#147D76" font-weight="650" text-anchor="start">GDN 循环状态</text>
+<text x="1388" y="852" font-size="29" fill="#173149" font-weight="700" text-anchor="start">502.5 MiB</text>
+<text x="1388" y="882" font-size="17" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="304">30 个线性注意力层相关状态</text>
+<text x="1388" y="907" font-size="17" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="304">当前 draft7 路径分配值</text>
+<rect x="648" y="941" width="700" height="142" rx="14" fill="#EBF3FC"/>
+<text x="670" y="976" font-size="24" fill="#346FAA" font-weight="650" text-anchor="start" data-max-width="656">64K KV 缓存 · 合计 1,320 MiB ≈ 1.29 GiB</text>
+<rect x="670" y="994" width="336" height="23" rx="6" fill="#346FAA"/>
+<rect x="1012" y="994" width="314" height="23" rx="6" fill="#6F55AA"/>
+<text x="670" y="1054" font-size="21" fill="#346FAA" font-weight="400" text-anchor="start">主模型 q8_0：680 MiB</text>
+<text x="1012" y="1054" font-size="21" fill="#6F55AA" font-weight="400" text-anchor="start">草稿 f16：640 MiB</text>
+<rect x="1368" y="941" width="344" height="142" rx="14" fill="#EEF2F5"/>
+<text x="1388" y="976" font-size="22" fill="#173149" font-weight="650" text-anchor="start">其他动态占用</text>
+<text x="1388" y="1010" font-size="17" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="304">计算缓冲、CUDA、系统、页缓存</text>
+<text x="1388" y="1038" font-size="17" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="304">检查点 ≤ 2；提示词缓存 ≤ 256 MiB</text>
+<text x="648" y="1117" font-size="18" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="1064">各内存区均来自同一池；框图面积不表示容量比例，文件映射和动态占用不可直接当作 RSS 相加。</text>
+<rect x="60" y="1167" width="32" height="32" rx="9" fill="#147D76"/>
+<text x="76" y="1190" font-size="17" fill="white" font-weight="700" text-anchor="middle">3</text>
+<text x="106" y="1192" font-size="26" fill="#173149" font-weight="700" text-anchor="start">一轮生成怎样经过这些部件</text>
+<rect x="60" y="1218" width="348" height="103" rx="16" fill="#EBF3FC"/>
+<text x="82" y="1258" font-size="25" fill="#346FAA" font-weight="700" text-anchor="start" data-max-width="304">文字提示词</text>
+<text x="82" y="1296" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="304">固定入口 → llama-cli</text>
+<rect x="468" y="1218" width="348" height="103" rx="16" fill="#F1EDF9"/>
+<text x="490" y="1258" font-size="25" fill="#6F55AA" font-weight="700" text-anchor="start" data-max-width="304">DSpark 先预测</text>
+<text x="490" y="1296" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="304">最多 7 token，等待验证</text>
+<rect x="876" y="1218" width="408" height="103" rx="16" fill="#E8F5F1"/>
+<text x="898" y="1258" font-size="25" fill="#147D76" font-weight="700" text-anchor="start" data-max-width="364">主模型并行验证</text>
+<text x="898" y="1296" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="364">每层选 8 专家 → 缓存 / 读盘 → GPU</text>
+<rect x="1344" y="1218" width="396" height="103" rx="16" fill="#EBF3FC"/>
+<text x="1366" y="1258" font-size="25" fill="#346FAA" font-weight="700" text-anchor="start" data-max-width="352">接受正确前缀并输出</text>
+<text x="1366" y="1296" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="352">拒绝部分回退；同步更新 KV / 状态</text>
+<path d="M 416 1268 H 458" fill="none" stroke="#536B7D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-muted)"/>
+<path d="M 824 1268 H 866" fill="none" stroke="#536B7D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-muted)"/>
+<path d="M 1292 1268 H 1334" fill="none" stroke="#536B7D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-muted)"/>
+<rect x="60" y="1345" width="1680" height="90" rx="16" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<text x="84" y="1379" font-size="18" fill="#147D76" font-weight="700" text-anchor="start">批处理</text>
+<text x="84" y="1414" font-size="21" fill="#173149" font-weight="400" text-anchor="start">batch 2048 · ubatch 8 · window rows 8</text>
+<text x="659" y="1379" font-size="18" fill="#147D76" font-weight="700" text-anchor="start">计算与采样</text>
+<text x="659" y="1414" font-size="21" fill="#173149" font-weight="400" text-anchor="start">CUDA Graph 开 · Instruct · reasoning 关</text>
+<text x="1243" y="1379" font-size="18" fill="#147D76" font-weight="700" text-anchor="start">默认采样参数</text>
+<text x="1243" y="1414" font-size="21" fill="#173149" font-weight="400" text-anchor="start">T 0.7 · top_p 0.95 · top_k 100</text>
+<rect x="60" y="1457" width="540" height="110" rx="16" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<text x="84" y="1504" font-size="33" fill="#147D76" font-weight="700" text-anchor="start">15.54 token/s</text>
+<text x="84" y="1541" font-size="20" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="492">中文鹈鹕：38 输入 / 2,315 输出</text>
+<rect x="630" y="1457" width="540" height="110" rx="16" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<text x="654" y="1504" font-size="33" fill="#346FAA" font-weight="700" text-anchor="start">14.22 token/s</text>
+<text x="654" y="1541" font-size="20" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="492">8K 检索：8,218 输入 / 108 输出</text>
+<rect x="1200" y="1457" width="540" height="110" rx="16" fill="white" stroke="#DCE5EB" stroke-width="1.5"/>
+<text x="1224" y="1504" font-size="33" fill="#6F55AA" font-weight="700" text-anchor="start">≈1.10 GiB</text>
+<text x="1224" y="1541" font-size="20" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="492">验收最低可用内存；保护阈值 768 MiB</text>
+<text x="60" y="1607" font-size="19" fill="#536B7D" font-weight="400" text-anchor="start" data-max-width="1680">验收边界：已验证 64K 容量与约 8K 实际输入；尚未填满 64K。速率是特定任务实测，108-token 短回答不代表持续吞吐。</text>
+<a href="../../configs/minicpm-v47-64k.json" target="_blank">
+<text x="60" y="1650" font-size="18" fill="#346FAA" font-weight="500" text-anchor="start">配置：minicpm-v47-64k.json</text>
+</a>
+<a href="../08-nx5-64k-fixed-20261021.md" target="_blank">
+<text x="480" y="1650" font-size="18" fill="#346FAA" font-weight="500" text-anchor="start">来源：64K 验收报告与启动日志</text>
+</a>
+<text x="1740" y="1650" font-size="18" fill="#536B7D" font-weight="400" text-anchor="end">容量统一使用 MiB / GiB（二进制） · 当前为单请求 CLI</text>
+</svg>

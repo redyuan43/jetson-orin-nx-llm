@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鹈鹕骑自行车动画</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f8ff;
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            color: #555;
+            margin-bottom: 30px;
+        }
+        
+        svg {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background-color: #e6f7ff;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .info {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #777;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>鹈鹕骑自行车动画</h1>
+        <p>这是一个使用SVG绘制的2D动画，展示了一只鹈鹕骑自行车的场景。车轮会旋转，鹈鹕身体会有轻微摆动。</p>
+        
+        <svg width="800" height="500" viewBox="0 0 800 500">
+            <!-- 背景 -->
+            <rect width="800" height="500" fill="#e6f7ff"/>
+            
+            <!-- 地面 -->
+            <rect x="0" y="400" width="800" height="100" fill="#8bc34a"/>
+            
+            <!-- 自行车 -->
+            <!-- 后轮 -->
+            <circle id="backWheel" cx="200" cy="350" r="50" fill="none" stroke="#333" stroke-width="5"/>
+            <!-- 后轮辐条 -->
+            <g id="backWheelSpokes">
+                <line x1="200" y1="300" x2="200" y2="400" stroke="#555" stroke-width="2"/>
+                <line x1="150" y1="350" x2="250" y2="350" stroke="#555" stroke-width="2"/>
+                <line x1="170" y1="320" x2="230" y2="380" stroke="#555" stroke-width="2"/>
+                <line x1="170" y1="380" x2="230" y2="320" stroke="#555" stroke-width="2"/>
+            </g>
+            
+            <!-- 前轮 -->
+            <circle id="frontWheel" cx="400" cy="350" r="50" fill="none" stroke="#333" stroke-width="5"/>
+            <!-- 前轮辐条 -->
+            <g id="frontWheelSpokes">
+                <line x1="400" y1="300" x2="400" y2="400" stroke="#555" stroke-width="2"/>
+                <line x1="350" y1="350" x2="450" y2="350" stroke="#555" stroke-width="2"/>
+                <line x1="370" y1="320" x2="430" y2="380" stroke="#555" stroke-width="2"/>
+                <line x1="370" y1="380" x2="430" y2="320" stroke="#555" stroke-width="2"/>
+            </g>
+            
+            <!-- 自行车车架 -->
+            <path d="M200 350 L300 250 L400 350" fill="none" stroke="#c62828" stroke-width="8"/>
+            <path d="M300 250 L300 300 L200 350" fill="none" stroke="#c62828" stroke-width="8"/>
+            
+            <!-- 车把 -->
+            <path d="M400 350 L400 250 L420 230" fill="none" stroke="#333" stroke-width="5"/>
+            
+            <!-- 座位 -->
+            <path d="M280 250 L300 230 L320 250" fill="#333" stroke="none"/>
+            
+            <!-- 踏板 -->
+            <circle cx="300" cy="300" r="10" fill="#333"/>
+            
+            <!-- 鹈鹕 -->
+            <!-- 身体 -->
+            <ellipse id="pelicanBody" cx="300" cy="220" rx="60" ry="40" fill="#f5f5f5" stroke="#333" stroke-width="2"/>
+            
+            <!-- 头部 -->
+            <circle id="pelicanHead" cx="350" cy="180" r="30" fill="#f5f5f5" stroke="#333" stroke-width="2"/>
+            
+            <!-- 鹈鹕的喙 -->
+            <path id="pelicanBeak" d="M380 180 L430 200 L380 220 Z" fill="#ff9800" stroke="#333" stroke-width="2"/>
+            
+            <!-- 眼睛 -->
+            <circle cx="360" cy="175" r="5" fill="#333"/>
+            <circle cx="360" cy="175" r="2" fill="white"/>
+            
+            <!-- 翅膀 -->
+            <path id="pelicanWing" d="M280 220 L240 190 L280 170 L320 190 Z" fill="#e0e0e0" stroke="#333" stroke-width="2"/>
+            
+            <!-- 腿 -->
+            <path d="M300 260 L300 300" stroke="#ff9800" stroke-width="4"/>
+            <path d="M300 300 L310 310" stroke="#ff9800" stroke-width="4"/>
+            
+            <!-- 动画效果 -->
+            <!-- 后轮旋转 -->
+            <animateTransform 
+                attributeName="transform" 
+                type="rotate" 
+                from="0 200 350" 
+                to="360 200 350" 
+                dur="2s" 
+                repeatCount="indefinite"/>
+            
+            <!-- 前轮旋转 -->
+            <animateTransform 
+                attributeName="transform" 
+                type="rotate" 
+                from="0 400 350" 
+                to="360 400 350" 
+                dur="2s" 
+                repeatCount="indefinite"/>
+            
+            <!-- 鹈鹕身体轻微上下移动 -->
+            <animateTransform 
+                attributeName="transform" 
+                type="translate" 
+                values="0,0; 0,-5; 0,0" 
+                dur="1s" 
+                repeatCount="indefinite"/>
+            
+            <!-- 鹈鹕翅膀轻微摆动 -->
+            <animateTransform 
+                attributeName="transform" 
+                type="rotate" 
+                values="0 280 220; -10 280 220; 0 280 220" 
+                dur="1.5s" 
+                repeatCount="indefinite"/>
+            
+            <!-- 鹈鹕头部轻微摆动 -->
+            <animateTransform 
+                attributeName="transform" 
+                type="rotate" 
+                values="0 350 180; 5 350 180; 0 350 180" 
+                dur="2s" 
+                repeatCount="indefinite"/>
+        </svg>
+        
+        <div class="controls">
+            <button id="playBtn">播放动画</button>
+            <button id="pauseBtn">暂停动画</button>
+            <button id="resetBtn">重置动画</button>
+        </div>
+        
+        <div class="info">
+            <p>此动画完全使用SVG和SMIL（SVG内联动画）实现，无需任何外部库或JavaScript动画库。SMIL是SVG内置的动画标准，虽然现代浏览器支持有限，但在这个简单示例中仍然有效。</p>
+            <p>如果动画不播放，请尝试使用Chrome或Firefox浏览器，它们对SMIL动画的支持较好。</p>
+        </div>
+    </div>
+    
+    <script>
+        // 简单的JavaScript控制按钮功能
+        document.getElementById('playBtn').addEventListener('click', function() {
+            // 由于SMIL动画是持续运行的，这里主要是提示
+            alert('动画正在播放中。SMIL动画是自动持续的。');
+        });
+        
+        document.getElementById('pauseBtn').addEventListener('click', function() {
+            // 暂停动画需要更复杂的处理，这里只是提示
+            alert('要暂停SMIL动画，需要修改动画元素的animateTransform属性。此示例中动画是持续运行的。');
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            // 重置动画位置
+            alert('动画已重置。SMIL动画会自动继续运行。');
+        });
+    </script>
+</body>
+</html>

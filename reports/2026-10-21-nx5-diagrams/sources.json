@@ -1,0 +1,31 @@
+{
+  "retrieved_on": "2026-10-21",
+  "sources": [
+    {
+      "file": "sources/official-vision-benchmark.png",
+      "url": "https://raw.githubusercontent.com/OpenBMB/MiniCPM-V/main/assets/minicpmv4.7/overall_performance_35ba3b_instruct.png",
+      "sha256": "0d90331f7e81184d10fe527c3b9d9bf2e0d0d2dee567f980cd25d43447687b43"
+    },
+    {
+      "file": "sources/official-language-benchmark.png",
+      "url": "https://raw.githubusercontent.com/OpenBMB/MiniCPM-V/main/assets/minicpmv4.7/overall_performance_35ba3b_language.png",
+      "sha256": "0a04cb534173e07bfea9579975a82eebea0cd29a7ac0862aa9f8b365b983024e"
+    },
+    {
+      "file": "sources/official-config.json",
+      "url": "https://huggingface.co/openbmb/MiniCPM-V-4.7-35B-A3B/resolve/main/config.json",
+      "sha256": "3a47edeb5fdd3e0c7b95fee2b8a3d7dfcd3c193ca6c185ef54142134c53e0097"
+    },
+    {
+      "file": "sources/official-performance-efficiency.png",
+      "url": "https://raw.githubusercontent.com/OpenBMB/MiniCPM-V/main/assets/minicpmv4.7/performance_efficiency_frontier.png",
+      "sha256": "e2b7fc281ed6a4f3422bd7304f8ed02898bd7fa558d209fe9a399626f72ed2c8"
+    }
+  ],
+  "local_evidence": [
+    "configs/minicpm-v47-64k.json",
+    "docs/08-nx5-64k-fixed-20261021.md",
+    "reports/2026-10-21-nx5-64k-final/capacity-64k-w176-d7.err"
+  ],
+  "score_scope": "Official Instruct comparison; vision 4x, Video-MME without subtitles. Not scores measured on nx5."
+}

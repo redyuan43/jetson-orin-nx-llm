@@ -1,0 +1,18 @@
+{
+  "source": "/home/nx/github/qwen38-kvmem/models/MiniCPM-V-4.7/MiniCPM-V-4_7-35B-A3B-mix_q3gud_im.gguf",
+  "non_expert_tensors": 613,
+  "non_expert_bytes": 1651756800,
+  "expert_tensors": 120,
+  "expert_tensor_slices": 30720,
+  "expert_bytes": 13841203200,
+  "all_compared_bytes_equal": true,
+  "tensor_quantization_counts": {
+    "Q6_K": 41,
+    "F32": 301,
+    "Q4_K": 271,
+    "Q3_K": 120
+  },
+  "template_equal": true,
+  "wall_s": 73.04419920299551,
+  "limitation": "Checks repacking against the local quantized GGUF, not BF16 equivalence or runtime math"
+}

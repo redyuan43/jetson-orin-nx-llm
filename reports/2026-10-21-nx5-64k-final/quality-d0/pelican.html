@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鹈鹕骑自行车动画</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #87CEEB; /* 天空蓝 */
+            overflow: hidden;
+        }
+
+        .container {
+            width: 800px;
+            height: 400px;
+            position: relative;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 动画定义 */
+        
+        /* 轮子旋转 */
+        .wheel {
+            transform-origin: center;
+            animation: rotate 2s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 鹈鹕身体上下颠簸 */
+        .pelican-body {
+            animation: bounce 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-5px); }
+        }
+
+        /* 腿部踩踏动画 */
+        .leg-pedal {
+            transform-origin: 350px 250px; /* 曲柄中心 */
+            animation: pedal 1s linear infinite;
+        }
+
+        @keyframes pedal {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 云朵移动 */
+        .cloud {
+            animation: cloud-move 10s linear infinite;
+        }
+
+        .cloud-2 {
+            animation: cloud-move 15s linear infinite;
+            animation-delay: -5s;
+        }
+
+        @keyframes cloud-move {
+            from { transform: translateX(800px); }
+            to { transform: translateX(-200px); }
+        }
+
+        /* 地面线条移动 */
+        .ground-line {
+            stroke-dasharray: 20, 10;
+            animation: ground-move 1s linear infinite;
+        }
+
+        @keyframes ground-move {
+            from { stroke-dashoffset: 30; }
+            to { stroke-dashoffset: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- 背景云朵 -->
+        <g class="cloud" opacity="0.8">
+            <circle cx="100" cy="80" r="30" fill="white"/>
+            <circle cx="130" cy="90" r="40" fill="white"/>
+            <circle cx="160" cy="80" r="30" fill="white"/>
+        </g>
+        <g class="cloud-2" opacity="0.6">
+            <circle cx="500" cy="50" r="25" fill="white"/>
+            <circle cx="530" cy="60" r="35" fill="white"/>
+            <circle cx="560" cy="50" r="25" fill="white"/>
+        </g>
+
+        <!-- 地面 -->
+        <line x1="0" y1="350" x2="800" y2="350" stroke="#555" stroke-width="2" class="ground-line"/>
+
+        <!-- 自行车 -->
+        <g id="bicycle">
+            <!-- 后轮 -->
+            <g class="wheel" transform="translate(250, 300)">
+                <circle r="50" fill="none" stroke="#333" stroke-width="4"/>
+                <path d="M0,-50 L0,50 M-50,0 L50,0" stroke="#333" stroke-width="2"/>
+            </g>
+            <!-- 前轮 -->
+            <g class="wheel" transform="translate(550, 300)">
+                <circle r="50" fill="none" stroke="#333" stroke-width="4"/>
+                <path d="M0,-50 L0,50 M-50,0 L50,0" stroke="#333" stroke-width="2"/>
+            </g>
+            <!-- 车架 -->
+            <path d="M250,300 L350,200 L550,300 L350,200 L250,300" fill="none" stroke="#D32F2F" stroke-width="6" stroke-linejoin="round"/>
+            <path d="M350,200 L400,250 L550,300" fill="none" stroke="#D32F2F" stroke-width="6" stroke-linejoin="round"/>
+            <!-- 车座 -->
+            <path d="M320,200 L380,200" stroke="#333" stroke-width="8" stroke-linecap="round"/>
+            <!-- 车把 -->
+            <path d="M520,220 L550,200 L580,220" fill="none" stroke="#333" stroke-width="6" stroke-linecap="round"/>
+            <!-- 曲柄和踏板 -->
+            <g class="leg-pedal">
+                <line x1="350" y1="250" x2="350" y2="280" stroke="#555" stroke-width="6"/>
+                <circle cx="350" cy="280" r="8" fill="#222"/>
+            </g>
+        </g>
+
+        <!-- 鹈鹕 (位于自行车上方) -->
+        <g class="pelican-body" transform="translate(0, 0)">
+            <!-- 身体 -->
+            <ellipse cx="350" cy="180" rx="60" ry="40" fill="#FFF8DC"/>
+            <!-- 脖子 -->
+            <path d="M380,160 Q400,120 390,100" fill="none" stroke="#FFF8DC" stroke-width="25" stroke-linecap="round"/>
+            <!-- 头 -->
+            <circle cx="390" cy="90" r="20" fill="#FFF8DC"/>
+            <!-- 大嘴巴 (鹈鹕特征) -->
+            <path d="M390,90 Q450,100 420,130 Q390,140 390,90" fill="#FFA500"/>
+            <path d="M390,90 Q430,110 410,125 Q390,130 390,90" fill="#FF8C00"/>
+            <!-- 眼睛 -->
+            <circle cx="400" cy="85" r="3" fill="#000"/>
+            <!-- 翅膀 -->
+            <path d="M320,180 Q350,150 380,180 Q350,200 320,180" fill="#E0E0E0" stroke="#CCC" stroke-width="2"/>
+            <!-- 腿 (连接踏板) -->
+            <path d="M350,220 L350,280" stroke="#FFA500" stroke-width="8" stroke-linecap="round"/>
+        </g>
+    </svg>
+</div>
+
+</body>
+</html>
