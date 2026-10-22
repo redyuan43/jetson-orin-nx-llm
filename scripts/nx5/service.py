@@ -103,7 +103,8 @@ class Service:
         with self.lock:
             pending = [j for j in self.jobs.values() if j['status'] not in TERMINAL]
             blocked = (self.resident.blocked or any(j['status'] == 'unknown' for j in pending)
-                       or (self.mode and self.mode.intent.get('phase') == 'unknown'))
+                       or (self.mode and (self.mode.intent.get('phase') == 'unknown'
+                                          or self.mode.policy_state.get('phase') == 'unknown')))
             native = self.resident.health()
             return {'service_id': 'nx5-ssd-llm', **self.release, **native,
                     'state': 'unknown' if blocked else 'stopping' if self.closing else 'busy' if pending else 'ready',
@@ -117,6 +118,8 @@ class Service:
         with self.lock:
             if any(j['status'] not in TERMINAL for j in self.jobs.values()):
                 raise RuntimeError('device_job_busy')
+            if self.mode and self.mode.policy_state.get('phase') == 'loading':
+                raise RuntimeError('device_policy_loading')
             self.resident.close()
             if self.resident.blocked:
                 raise RuntimeError('resident_requires_reconciliation')

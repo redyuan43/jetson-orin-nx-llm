@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import queue
+import re
 import shlex
 import subprocess
 import threading
@@ -144,6 +145,7 @@ class ResidentModel:
         self.failure = None
         self.min_available_mib = None
         self.loaded_at = None
+        self.model_revision = None
         self.log = None
         self.manager = None
 
@@ -229,6 +231,7 @@ class ResidentModel:
             if event.get('type') != 'ready':
                 raise RuntimeError('resident_load_failed')
             self.ready = True
+            self.model_revision = cfg['revision']
             self.loaded_at = time.time()
             return True
         except Exception:
@@ -336,6 +339,7 @@ class ResidentModel:
                         child.kill()
                         child.wait(timeout=5)
             self.ready = False
+            self.model_revision = None
             if self.record.get('status') == 'held' and self.central is not None:
                 try:
                     self.central.release(self.record)
@@ -372,6 +376,24 @@ class ManagedComfy:
         if self.intent.get('phase') in {'dispatching', 'unknown'}:
             self.save(dict(self.intent, phase='unknown'))
         self.observed = {'mode': 'unknown', 'state': 'unknown', 'active': 1}
+        self.policy_profiles = service.config.get('policy_profiles', {})
+        if (not isinstance(self.policy_profiles, dict)
+                or set(self.policy_profiles) - {'llm', 'comfy'}):
+            raise ValueError('policy_profiles_invalid')
+        for mode, profile in self.policy_profiles.items():
+            if (not isinstance(profile, dict) or set(profile) != {'profile_id', 'version'}
+                    or any(not isinstance(v, str) or not re.fullmatch(r'[A-Za-z0-9_.:-]{1,160}', v)
+                           for v in profile.values())):
+                raise ValueError('policy_profile_invalid')
+            if mode == 'llm':
+                native = json.loads((service.repo/'configs/nx5-minicpm-service.json').read_text())
+                if profile['version'] != native['revision']:
+                    raise ValueError('policy_profile_version_mismatch')
+        self.policy_path = service.state.parent/'policy-demand.json'
+        self.policy_state = json.loads(self.policy_path.read_text()) if self.policy_path.exists() else {}
+        self.policy_worker = None
+        if self.policy_state.get('phase') in {'loading', 'yielding', 'unknown'}:
+            self.save_policy(dict(self.policy_state, phase='unknown'))
 
     def wire(self):
         if self.central is None:
@@ -383,7 +405,116 @@ class ManagedComfy:
         self.intent = intent
 
     def health(self):
-        return dict(self.observed, phase=self.intent.get('phase', 'idle'))
+        return dict(self.observed, phase=self.intent.get('phase', 'idle'),
+                    policy_state=self.policy_state.get('phase', 'idle'))
+
+    def save_policy(self, value):
+        write_atomic(self.policy_path, value)
+        self.policy_state = value
+
+    @staticmethod
+    def policy_identity(value):
+        return {key:value.get(key) for key in ('operation_id', 'profile_id', 'profile_version',
+            'mode', 'activation', 'policy_revision', 'executor_id')}
+
+    def policy_demand(self, row):
+        if not self.policy_profiles or row.get('fresh') is not True:
+            return None
+        value = row.get('policy_demand')
+        if value is None:
+            return None
+        if not isinstance(value, dict):
+            raise RuntimeError('policy_demand_invalid')
+        profile = self.policy_profiles.get(value.get('mode'))
+        if (not profile or value.get('profile_id') != profile['profile_id']
+                or value.get('profile_version') != profile['version']
+                or value.get('activation') != ('resident' if value['mode'] == 'llm' else 'controller')
+                or value.get('executor_id') != 'device-policy:' + self.GROUP
+                or not isinstance(value.get('operation_id'), str)
+                or not re.fullmatch(r'op_[a-f0-9]{32}', value['operation_id'])
+                or type(value.get('policy_revision')) is not int or value['policy_revision'] < 1
+                or value.get('state') not in {'requested', 'transitioning', 'unknown'}):
+            raise RuntimeError('policy_demand_not_approved')
+        previous = self.policy_state.get('demand', {})
+        same = self.policy_identity(value) == self.policy_identity(previous)
+        if value['state'] == 'unknown' and not same:
+            return None
+        if previous.get('operation_id') == value['operation_id'] and not same:
+            raise RuntimeError('policy_demand_identity_conflict')
+        if self.policy_state.get('phase') == 'loading' and not same:
+            raise RuntimeError('policy_demand_changed_during_load')
+        return value
+
+    def policy_comfy_transition(self, transition, policy):
+        return bool(policy and policy['mode'] == 'comfy'
+            and transition.get('executor_id') == 'device-policy:' + self.GROUP
+            and transition.get('operation_id') == policy['operation_id']
+            and transition.get('target_mode') == 'comfy'
+            and (policy['state'] in {'requested', 'transitioning'} or
+                 (self.intent.get('phase') == 'actions_complete'
+                  and self.intent.get('operation_id') == policy['operation_id'])))
+
+    def check_policy_barrier(self, transition, policy):
+        if policy:
+            current = self.policy_demand(self.checked_activity(require_ready=False))
+            if (not current or self.policy_identity(current) != self.policy_identity(policy)
+                    or not self.policy_comfy_transition(transition, current)):
+                raise RuntimeError('policy_demand_changed')
+        self.check_barrier(transition)
+
+    def start_policy_load(self, policy):
+        previous = self.policy_state.get('demand', {})
+        if (self.policy_identity(previous) == self.policy_identity(policy)
+                and self.policy_state.get('phase') in {'loading', 'applied', 'unknown'}):
+            return
+        self.save_policy({'demand':policy, 'phase':'loading'})
+        self.policy_worker = threading.Thread(target=self.load_policy, args=(dict(policy),), daemon=True)
+        self.policy_worker.start()
+
+    def load_policy(self, policy):
+        """The regular reservation loader must leave tick free to service its barrier."""
+        try:
+            with self.service.lock:
+                if (self.service.closing or self.stop.is_set() or self.service.resident.blocked
+                        or any(j['status'] not in {'succeeded','failed'} for j in self.service.jobs.values())):
+                    raise RuntimeError('policy_load_not_idle')
+                row = self.checked_activity(require_ready=False)
+                current = self.policy_demand(row)
+                if not current or self.policy_identity(current) != self.policy_identity(policy):
+                    self.save_policy({'demand':policy, 'phase':'cancelled'})
+                    return
+                if current['state'] == 'unknown':
+                    self.save_policy({'demand':policy, 'phase':'unknown'})
+                    return
+                if (row.get('state') != 'ready' or row.get('active') != 0
+                        or row['leases'] or row['pending']
+                        or (self.unit() == 'active' and self.queue())):
+                    self.save_policy({'demand':policy, 'phase':'deferred'})
+                    return
+            # ensure_loaded owns close_lock while waiting for its original nx5-text
+            # reservation. Never hold service.lock across that wait.
+            self.service.resident.ensure_loaded()
+            with self.service.lock:
+                resident = self.service.resident
+                if (not resident.health()['model_loaded']
+                        or resident.model_revision != policy['profile_version']):
+                    raise RuntimeError('policy_model_not_loaded')
+                self.save_policy({'demand':policy, 'phase':'applied',
+                                  'resident_operation_id':resident.record.get('operation_id')})
+        except Exception as exc:
+            with self.service.lock:
+                self.save_policy({'demand':policy, 'phase':'unknown', 'error':type(exc).__name__})
+
+    def profile_observation(self, observation):
+        profile = self.policy_profiles.get(observation['mode'])
+        if not profile:
+            return observation
+        loaded = None
+        if observation['mode'] == 'llm':
+            resident = self.service.resident
+            loaded = bool(resident.health()['model_loaded'] and resident.model_revision == profile['version'])
+        return dict(observation, profile_id=profile['profile_id'], profile_version=profile['version'],
+                    model_loaded=loaded)
 
     def activity(self):
         return self.wire().api('GET', self.wire().group+'/activity', controller=True)
@@ -402,6 +533,14 @@ class ManagedComfy:
                      and any(r.get('resource_id') == self.RESOURCE for r in p.get('resources', []))), None)
 
     def gate_text(self):
+        if self.policy_state.get('phase') == 'unknown':
+            raise RuntimeError('policy_requires_reconciliation')
+        if self.policy_state.get('phase') == 'loading':
+            raise RuntimeError('device_mode_waiting')
+        if self.policy_profiles:
+            policy = self.policy_demand(self.checked_activity(require_ready=False))
+            if policy and policy['mode'] == 'comfy' and policy['state'] != 'unknown':
+                raise RuntimeError('device_mode_waiting')
         if self.intent.get('phase') == 'unknown':
             raise RuntimeError('lifecycle_requires_reconciliation')
         if self.intent.get('phase') in {'yielding', 'dispatching', 'actions_complete'}:
@@ -449,6 +588,7 @@ class ManagedComfy:
         return len(row['queue_running']) + len(row['queue_pending'])
 
     def report(self, observation, transition=None):
+        observation = self.profile_observation(observation)
         result = self.wire().api('POST', self.wire().group+'/observation',
                                 dict(observation, operation_id=transition['operation_id'] if transition else None),
                                 controller=True)
@@ -458,11 +598,14 @@ class ManagedComfy:
     def tick(self):
         with self.service.lock:
             resident = self.service.resident
+            if self.policy_state.get('phase') == 'unknown':
+                raise RuntimeError('policy_requires_reconciliation')
             if self.intent.get('phase') == 'unknown':
                 raise RuntimeError('lifecycle_requires_reconciliation')
             if self.service.closing or resident.blocked or any(j['status'] == 'unknown' for j in self.service.jobs.values()):
                 raise RuntimeError('resident_requires_reconciliation')
             row = self.checked_activity(require_ready=False)
+            policy = self.policy_demand(row)
             transition = self.transition()
             native = resident.child is not None and resident.child.poll() is None
             unit = self.unit()
@@ -470,12 +613,31 @@ class ManagedComfy:
                 raise RuntimeError('mode_conflict')
             demand = self.demand(row) if row.get('fresh') is True and row.get('state') == 'ready' else None
             pending_text = any(j['status'] not in {'succeeded','failed'} for j in self.service.jobs.values())
-            if native and not pending_text and demand:
+            policy_loading = self.policy_state.get('phase') == 'loading'
+            policy_yield = bool(policy and policy['mode'] == 'comfy' and policy['state'] != 'unknown'
+                and row.get('state') == 'ready' and row.get('active') == 0
+                and resident.record.get('status') == 'held'
+                and row['leases'] and all(p.get('executor_id') == 'nx5-text'
+                    and p.get('operation_id') == resident.record.get('operation_id') for p in row['leases']))
+            if native and not pending_text and not resident.active and not policy_loading and (demand or policy_yield):
+                if policy_yield:
+                    self.save_policy({'demand':policy, 'phase':'yielding'})
                 self.save({'phase':'yielding', 'media_operation_id':demand['operation_id'],
+                           'resident_operation_id':resident.record['operation_id']} if demand else
+                          {'phase':'yielding', 'policy_operation_id':policy['operation_id'],
                            'resident_operation_id':resident.record['operation_id']})
-                resident.close()
+                try:
+                    resident.close()
+                except Exception:
+                    if policy_yield:
+                        self.save_policy({'demand':policy, 'phase':'unknown'})
+                    raise
                 if resident.blocked:
+                    if policy_yield:
+                        self.save_policy({'demand':policy, 'phase':'unknown'})
                     raise RuntimeError('resident_requires_reconciliation')
+                if policy_yield:
+                    self.save_policy({'demand':policy, 'phase':'yielded'})
                 return
             if self.intent.get('phase') == 'yielding' and not demand and not transition:
                 self.save(dict(self.intent, phase='completed'))
@@ -483,13 +645,18 @@ class ManagedComfy:
                 target = transition.get('target_mode')
                 own_text = (target == 'llm' and transition.get('executor_id') == 'nx5-text'
                             and transition.get('operation_id') == resident.record.get('operation_id'))
-                if not (target == 'comfy' and transition.get('executor_id') == self.MEDIA_EXECUTOR) and not own_text:
+                policy_transition = self.policy_comfy_transition(transition, policy)
+                if not (target == 'comfy' and transition.get('executor_id') == self.MEDIA_EXECUTOR) and not own_text and not policy_transition:
                     raise RuntimeError('unsupported_transition')
-                if native or row['leases']:
+                if native or row['leases'] or pending_text and not own_text:
                     return
                 if target == 'llm' and unit == 'active' and self.queue():
                     return
-                self.check_barrier(transition)
+                self.check_policy_barrier(transition, policy if policy_transition else None)
+                if policy_transition:
+                    # Retain the demand contract before a lifecycle effect, so a
+                    # later unknown central report can reconcile only this ID.
+                    self.save_policy({'demand':policy, 'phase':'transitioning'})
                 verb = 'start' if target == 'comfy' else 'stop'
                 needs_action = unit != ('active' if target == 'comfy' else 'inactive')
                 if needs_action:
@@ -497,7 +664,7 @@ class ManagedComfy:
                         raise RuntimeError('lifecycle_effect_unconfirmed')
                     if target == 'comfy':
                         require_idle()
-                    self.check_barrier(transition)
+                    self.check_policy_barrier(transition, policy if policy_transition else None)
                     self.save(dict(transition, phase='dispatching'))
                     try:
                         self.action(verb)
@@ -508,13 +675,20 @@ class ManagedComfy:
                     unit = self.unit()
                     if unit != ('active' if target == 'comfy' else 'inactive'):
                         raise RuntimeError('lifecycle_effect_unconfirmed')
-                self.check_barrier(transition)
+                self.check_policy_barrier(transition, policy if policy_transition else None)
                 if target == 'llm':
                     require_idle()
                 observation = {'mode':target, 'state':'ready', 'active':self.queue() if target == 'comfy' else 0}
                 self.report(observation, transition)
                 self.save(dict(transition, phase='completed'))
+                if policy_transition:
+                    self.save_policy({'demand':policy, 'phase':'applied'})
                 return
+            if (policy and policy['mode'] == 'llm' and policy['state'] != 'unknown'
+                    and row.get('fresh') is True and row.get('state') == 'ready' and row.get('active') == 0
+                    and not pending_text and not resident.active and not row['leases'] and not row['pending']
+                    and not demand and (unit != 'active' or not self.queue())):
+                self.start_policy_load(policy)
             if unit == 'active':
                 observation = {'mode':'comfy','state':'ready','active':self.queue()}
             elif native:
