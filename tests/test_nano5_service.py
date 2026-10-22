@@ -31,6 +31,34 @@ class NanoServiceTests(unittest.TestCase):
             self.service.switch(self.transition, {'mode': 'comfy', 'state': 'ready', 'active': 2})
             action.assert_not_called()
 
+    def test_policy_off_uses_original_barrier_and_stops_only_model_unit(self):
+        transition = dict(self.transition,target_mode='off',executor_id='device-policy:' + module.GROUP)
+        before = {'mode':'comfy','state':'ready','active':0}
+        with patch.object(self.service,'report'), patch.object(self.service,'transition',return_value=transition), \
+             patch.object(self.service,'local_observation',return_value=before), \
+             patch.object(self.service,'unit',return_value='inactive'),patch.object(module.subprocess,'run') as action:
+            self.service.switch(transition,before)
+            self.service.switch(transition,{'mode':'off','state':'ready','active':0})
+        action.assert_called_once_with(['systemctl','--user','stop','test-comfy'],check=True,timeout=60)
+        self.assertEqual(self.service.marker(),'off')
+
+    def test_uncertain_off_is_not_replayed_even_after_restart_or_with_new_id(self):
+        transition = dict(self.transition,target_mode='off',executor_id='device-policy:' + module.GROUP)
+        before = {'mode':'comfy','state':'ready','active':0}
+        with patch.object(self.service,'report'), patch.object(self.service,'transition',return_value=transition), \
+             patch.object(self.service,'local_observation',return_value=before), \
+             patch.object(module.subprocess,'run',side_effect=TimeoutError('uncertain stop')) as action:
+            with self.assertRaises(TimeoutError):self.service.switch(transition,before)
+            with self.assertRaisesRegex(RuntimeError,'lifecycle_requires_reconciliation'):
+                self.service.switch(transition,before)
+            action.assert_called_once()
+        restarted = module.Service(self.config)
+        self.assertEqual(restarted.local_observation(),{'mode':'unknown','state':'unknown','active':1})
+        with patch.object(module.subprocess,'run') as action:
+            with self.assertRaisesRegex(RuntimeError,'lifecycle_requires_reconciliation'):
+                restarted.switch(dict(transition,operation_id='op_'+'2'*32),before)
+            action.assert_not_called()
+
     def test_missing_queue_is_unknown(self):
         with patch.object(self.service, 'unit', return_value='active'), patch.object(self.service, 'request', return_value={'queue_running': []}):
             with self.assertRaisesRegex(ValueError, 'incomplete_comfy_activity'):

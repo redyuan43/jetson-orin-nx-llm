@@ -73,6 +73,14 @@ class Service:
         self.observed_at = None
         self.central_ok = False
         self.commit = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+        self.transition_path = self.state / 'last-transition.json'
+        self.intent = json.loads(self.transition_path.read_text()) if self.transition_path.exists() else {}
+        if self.intent.get('phase') == 'dispatching':
+            self.save_transition(dict(self.intent, phase='unknown'))
+
+    def save_transition(self, value):
+        atomic(self.transition_path, value)
+        self.intent = value
 
     def request(self, method, url, body=None, token=None, timeout=10):
         headers = {'Content-Type': 'application/json'}
@@ -97,7 +105,7 @@ class Service:
         return json.loads(p.read_text()).get('mode', 'off') if p.exists() else 'off'
 
     def local_observation(self):
-        if any(j['status'] == 'unknown' for j in self.jobs.values()):
+        if self.intent.get('phase') in {'dispatching', 'unknown'} or any(j['status'] == 'unknown' for j in self.jobs.values()):
             return {'mode': 'unknown', 'state': 'unknown', 'active': 1}
         state = self.unit()
         if state == 'active':
@@ -138,6 +146,16 @@ class Service:
         self.observed, self.observed_at, self.central_ok = observation, time.time(), True
 
     def switch(self, transition, before):
+        if self.intent.get('phase') in {'dispatching', 'unknown'}:
+            raise RuntimeError('lifecycle_requires_reconciliation')
+        if self.intent.get('operation_id') == transition.get('operation_id'):
+            if not self.same_barrier(self.intent, transition):
+                raise RuntimeError('transition_changed')
+            if self.intent.get('phase') == 'actions_complete':
+                if before['mode'] != transition['target_mode']:
+                    self.save_transition(dict(self.intent, phase='unknown'))
+                    raise RuntimeError('lifecycle_requires_reconciliation')
+                return
         target = transition['target_mode']
         if target not in {'comfy', 'minicpm', 'off'} or before['state'] != 'ready' or before['active']:
             return
@@ -152,7 +170,7 @@ class Service:
             now = self.local_observation()
             if now['state'] != 'ready' or now['active']:
                 raise RuntimeError('device_busy')
-            atomic(self.state / 'last-transition.json', dict(transition, phase='dispatching'))
+            self.save_transition(dict(transition, phase='dispatching'))
             if before['mode'] == 'comfy':
                 subprocess.run(['systemctl', '--user', 'stop', self.config['comfy_unit']], check=True, timeout=60)
                 if self.unit() not in {'inactive', 'failed'}:
@@ -162,7 +180,11 @@ class Service:
             atomic(self.state / 'mode.json', {'mode': 'minicpm' if target == 'minicpm' else 'off'})
             if target == 'comfy':
                 subprocess.run(['systemctl', '--user', 'start', self.config['comfy_unit']], check=True, timeout=60)
-            atomic(self.state / 'last-transition.json', dict(transition, phase='actions_complete'))
+            self.save_transition(dict(transition, phase='actions_complete'))
+        except Exception:
+            if self.intent.get('phase') == 'dispatching':
+                self.save_transition(dict(self.intent, phase='unknown'))
+            raise
         finally:
             with self.lock:
                 self.switching = False

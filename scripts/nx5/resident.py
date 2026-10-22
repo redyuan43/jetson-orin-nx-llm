@@ -426,6 +426,11 @@ class ManagedComfy:
         if not isinstance(value, dict):
             raise RuntimeError('policy_demand_invalid')
         profile = self.policy_profiles.get(value.get('mode'))
+        if value.get('mode') == 'off':
+            # Off retains the default profile's exact identity; it never loads it.
+            profile = next((p for p in self.policy_profiles.values()
+                if p['profile_id'] == value.get('profile_id')
+                and p['version'] == value.get('profile_version')), None)
         if (not profile or value.get('profile_id') != profile['profile_id']
                 or value.get('profile_version') != profile['version']
                 or value.get('activation') != ('resident' if value['mode'] == 'llm' else 'controller')
@@ -446,10 +451,10 @@ class ManagedComfy:
         return value
 
     def policy_comfy_transition(self, transition, policy):
-        return bool(policy and policy['mode'] == 'comfy'
+        return bool(policy and policy['mode'] in {'comfy', 'off'}
             and transition.get('executor_id') == 'device-policy:' + self.GROUP
             and transition.get('operation_id') == policy['operation_id']
-            and transition.get('target_mode') == 'comfy'
+            and transition.get('target_mode') == policy['mode']
             and (policy['state'] in {'requested', 'transitioning'} or
                  (self.intent.get('phase') in {'actions_complete', 'completed'}
                   and self.intent.get('operation_id') == policy['operation_id'])))
@@ -539,7 +544,7 @@ class ManagedComfy:
             raise RuntimeError('device_mode_waiting')
         if self.policy_profiles:
             policy = self.policy_demand(self.checked_activity(require_ready=False))
-            if policy and policy['mode'] == 'comfy' and policy['state'] != 'unknown':
+            if policy and policy['mode'] in {'comfy', 'off'} and policy['state'] != 'unknown':
                 raise RuntimeError('device_mode_waiting')
         if self.intent.get('phase') == 'unknown':
             raise RuntimeError('lifecycle_requires_reconciliation')
@@ -614,8 +619,9 @@ class ManagedComfy:
             demand = self.demand(row) if row.get('fresh') is True and row.get('state') == 'ready' else None
             pending_text = any(j['status'] not in {'succeeded','failed'} for j in self.service.jobs.values())
             policy_loading = self.policy_state.get('phase') == 'loading'
-            policy_yield = bool(policy and policy['mode'] == 'comfy' and policy['state'] != 'unknown'
+            policy_yield = bool(policy and policy['mode'] in {'comfy', 'off'} and policy['state'] != 'unknown'
                 and row.get('state') == 'ready' and row.get('active') == 0
+                and (policy['mode'] != 'off' or (not row['pending'] and not transition))
                 and resident.record.get('status') == 'held'
                 and row['leases'] and all(p.get('executor_id') == 'nx5-text'
                     and p.get('operation_id') == resident.record.get('operation_id') for p in row['leases']))
@@ -648,9 +654,26 @@ class ManagedComfy:
                 policy_transition = self.policy_comfy_transition(transition, policy)
                 if not (target == 'comfy' and transition.get('executor_id') == self.MEDIA_EXECUTOR) and not own_text and not policy_transition:
                     raise RuntimeError('unsupported_transition')
-                if native or row['leases'] or pending_text and not own_text:
+                # A text admission can race the central off barrier while its
+                # local job/loader is still waiting for the original reservation.
+                # The barrier prevents that reservation becoming held until off
+                # completes; no native child, held lease or running job is spared.
+                off_waiting_text = (target == 'off' and policy_transition and pending_text
+                    and not native and not resident.ready and not policy_loading
+                    and resident.record.get('status') in {None, 'released', 'reserving'}
+                    and all(j['status'] in {'waiting', 'succeeded', 'failed'} for j in self.service.jobs.values()))
+                if native or row['leases'] or (pending_text and not own_text and not off_waiting_text):
                     return
-                if target == 'llm' and unit == 'active' and self.queue():
+                # Once the original off barrier is granted, later waiting work
+                # must wait for its completion instead of deadlocking the owner.
+                if target == 'off' and any(p.get('status') != 'waiting' for p in row['pending']):
+                    return
+                recorded_off = (self.intent.get('operation_id') == transition['operation_id']
+                    and self.intent.get('phase') in {'actions_complete', 'completed'})
+                if target == 'off' and ((resident.active and not off_waiting_text) or (not recorded_off and
+                        (row.get('state') != 'ready' or type(row.get('active')) is not int or row['active'] != 0))):
+                    return
+                if target in {'llm', 'off'} and unit == 'active' and self.queue():
                     return
                 self.check_policy_barrier(transition, policy if policy_transition else None)
                 if policy_transition:

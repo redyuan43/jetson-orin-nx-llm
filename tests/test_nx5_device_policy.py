@@ -99,7 +99,7 @@ class DevicePolicyTests(unittest.TestCase):
 
     def test_invalid_profile_version_target_identity_or_state_never_yields(self):
         child = self.loaded()
-        invalid = [{'profile_version':'wrong'}, {'profile_id':'unapproved'}, {'mode':'off'},
+        invalid = [{'profile_version':'wrong'}, {'profile_id':'unapproved'}, {'mode':'unsupported'},
                    {'activation':'resident'}, {'executor_id':'device-policy:nx4-igpu-group'},
                    {'state':'anything'}, {'policy_revision':True}, {'operation_id':'unstable'}]
         for change in invalid:
@@ -109,6 +109,143 @@ class DevicePolicyTests(unittest.TestCase):
                     self.mode.tick()
         child.wait.assert_not_called()
         self.central.release.assert_not_called()
+
+    def test_off_yields_only_original_resident_then_acknowledges_original_barrier(self):
+        child = self.loaded()
+        policy = demand(mode='llm')
+        policy.update(mode='off',activation='controller')
+        self.mode.activity.return_value = self.policy_activity(policy=policy)
+        self.mode.tick()
+        child.wait.assert_called_once()
+        self.assertEqual(self.central.release.call_args.args[0]['operation_id'],TEXT)
+        child.poll.return_value = 0
+        original = barrier('off',POLICY,EXECUTOR)
+        self.mode.transition.return_value = original
+        self.mode.activity.return_value = dict(activity('off'),policy_demand=policy)
+        self.mode.tick()
+        self.mode.action.assert_not_called()
+        self.assertEqual(self.mode.report.call_args.args,({'mode':'off','state':'ready','active':0},original))
+        self.assertEqual(self.mode.policy_state['phase'],'applied')
+
+    def test_off_can_use_comfy_default_profile_and_stop_comfy_only_once(self):
+        policy = demand() | dict(mode='off')
+        original = barrier('off',POLICY,EXECUTOR)
+        self.mode.activity.return_value = dict(activity('comfy'),policy_demand=policy)
+        self.mode.transition.return_value = original
+        self.mode.unit.side_effect = ['active','inactive','inactive']
+        self.mode.tick()
+        self.mode.tick()
+        self.mode.action.assert_called_once_with('stop')
+        self.assertEqual(self.mode.policy_state['phase'],'applied')
+
+    def test_off_does_not_yield_for_stale_waiting_or_foreign_lease(self):
+        child = self.loaded()
+        policy = demand() | dict(mode='off')
+        for changes in [dict(fresh=False),dict(pending=[{'executor_id':'nx5-text','status':'waiting'}]),
+                dict(leases=[{'executor_id':'foreign','operation_id':TEXT}])]:
+            with self.subTest(changes=changes):
+                self.mode.activity.return_value = self.policy_activity(policy=policy,**changes)
+                self.mode.tick()
+        child.wait.assert_not_called()
+        self.central.release.assert_not_called()
+
+    def test_off_busy_comfy_and_unknown_stop_never_dispatch_or_replay(self):
+        policy = demand() | dict(mode='off')
+        self.mode.activity.return_value = dict(activity('comfy'),policy_demand=policy)
+        self.mode.transition.return_value = barrier('off',POLICY,EXECUTOR)
+        self.mode.unit.return_value = 'active'
+        self.mode.queue.return_value = 1
+        self.mode.tick()
+        self.mode.action.assert_not_called()
+        self.mode.queue.return_value = 0
+        self.mode.action.side_effect = TimeoutError('uncertain stop')
+        with self.assertRaises(TimeoutError):
+            self.mode.tick()
+        with self.assertRaisesRegex(RuntimeError,'lifecycle_requires_reconciliation'):
+            self.mode.tick()
+        self.mode.action.assert_called_once_with('stop')
+
+    def test_off_requires_exact_known_default_profile_and_closes_text_admission(self):
+        for changes in [dict(profile_id='foreign'), dict(profile_version='wrong'),
+                        dict(activation='resident')]:
+            self.mode.activity.return_value = dict(activity('off'),
+                policy_demand=demand() | dict(mode='off') | changes)
+            with self.assertRaisesRegex(RuntimeError,'policy_demand_not_approved'):
+                self.mode.tick()
+        self.mode.activity.return_value = dict(activity('off'),policy_demand=demand() | dict(mode='off'))
+        with self.assertRaisesRegex(RuntimeError,'device_mode_waiting'):
+            self.mode.gate_text()
+        self.mode.action.assert_not_called()
+
+    def test_original_off_barrier_completes_before_later_waiting_media(self):
+        policy=demand() | dict(mode='off')
+        original=barrier('off',POLICY,EXECUTOR)
+        row=dict(activity('comfy',media=True),policy_demand=policy)
+        self.mode.activity.return_value=row
+        self.mode.transition.return_value=original
+        self.mode.unit.side_effect=['active','inactive','inactive']
+        self.mode.tick()
+        self.mode.tick()
+        self.mode.action.assert_called_once_with('stop')
+        self.assertEqual(self.mode.report.call_args.args,({'mode':'off','state':'ready','active':0},original))
+        self.assertEqual(self.mode.policy_state['phase'],'applied')
+
+    def test_original_off_barrier_does_not_stop_for_already_preparing_media(self):
+        policy=demand() | dict(mode='off')
+        row=dict(activity('comfy',media=True),policy_demand=policy)
+        row['pending'][0]['status']='preparing'
+        self.mode.activity.return_value=row
+        self.mode.transition.return_value=barrier('off',POLICY,EXECUTOR)
+        self.mode.unit.return_value='active'
+        self.mode.tick()
+        self.mode.action.assert_not_called()
+        self.mode.report.assert_not_called()
+
+    def test_new_off_effect_waits_for_active_or_unknown_group_but_known_effect_can_report(self):
+        policy=demand() | dict(mode='off')
+        original=barrier('off',POLICY,EXECUTOR)
+        self.mode.transition.return_value=original
+        self.mode.unit.return_value='active'
+        for changes in [dict(active=1),dict(state='unknown',active=1)]:
+            self.mode.activity.return_value=dict(activity('comfy'),policy_demand=policy) | changes
+            self.mode.tick()
+        self.mode.action.assert_not_called()
+        self.mode.save(dict(original,phase='actions_complete'))
+        self.mode.save_policy({'demand':policy,'phase':'transitioning'})
+        self.mode.unit.return_value='inactive'
+        self.mode.tick()
+        self.assertEqual(self.mode.report.call_args.args,({'mode':'off','state':'ready','active':0},original))
+
+    def test_original_off_barrier_allows_local_waiting_including_its_reservation_loader(self):
+        policy=demand() | dict(mode='off')
+        original=barrier('off',POLICY,EXECUTOR)
+        self.mode.activity.return_value=dict(activity('comfy'),policy_demand=policy)
+        self.mode.transition.return_value=original
+        self.service.jobs['late']={'status':'waiting','id':TEXT}
+        for active in (False,True):
+            with self.subTest(reservation_loader_active=active):
+                self.mode.save({})
+                self.mode.save_policy({})
+                self.service.resident.active=active
+                self.service.resident.record={'operation_id':TEXT,'status':'reserving'}
+                self.mode.unit.side_effect=['active','inactive']
+                self.mode.tick()
+                self.assertEqual(self.mode.report.call_args.args,({'mode':'off','state':'ready','active':0},original))
+                self.assertEqual(self.service.jobs['late'],{'status':'waiting','id':TEXT})
+                self.assertEqual(self.service.resident.record,{'operation_id':TEXT,'status':'reserving'})
+        self.assertEqual(self.mode.action.call_args_list,[unittest.mock.call('stop')]*2)
+
+    def test_original_off_barrier_still_rejects_running_or_held_local_work(self):
+        policy=demand() | dict(mode='off')
+        self.mode.activity.return_value=dict(activity('comfy'),policy_demand=policy)
+        self.mode.transition.return_value=barrier('off',POLICY,EXECUTOR)
+        self.mode.unit.return_value='active'
+        self.service.resident.active=True
+        for status,lease in [('running','reserving'),('waiting','held')]:
+            self.service.jobs['late']={'status':status,'id':TEXT}
+            self.service.resident.record={'operation_id':TEXT,'status':lease}
+            self.mode.tick()
+        self.mode.action.assert_not_called()
 
     def test_unknown_central_demand_does_not_start_a_new_load_or_yield(self):
         child = self.loaded()
