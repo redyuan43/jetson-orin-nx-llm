@@ -15,7 +15,7 @@ import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from compat_api import InvalidRequest, normalize, error as chat_error, completion, collect_tool_calls
-from resident import ResidentModel
+from resident import ResidentModel, ManagedComfy
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PROFILES = {
@@ -90,6 +90,8 @@ class Service:
         self.release = {k: release[k] for k in ('release', 'commit', 'source_commit')}
         self.resident = ResidentModel(self.repo, config)
         self.closing = False
+        self.mode = ManagedComfy(self) if config.get('managed_comfy') is True else None
+        self.resident.manager = self.mode
 
     def save(self, job):
         atomic(self.state / (job['id'] + '.json'), job)
@@ -100,13 +102,16 @@ class Service:
     def health(self):
         with self.lock:
             pending = [j for j in self.jobs.values() if j['status'] not in TERMINAL]
-            blocked = self.resident.blocked or any(j['status'] == 'unknown' for j in pending)
+            blocked = (self.resident.blocked or any(j['status'] == 'unknown' for j in pending)
+                       or (self.mode and self.mode.intent.get('phase') == 'unknown'))
             native = self.resident.health()
             return {'service_id': 'nx5-ssd-llm', **self.release, **native,
                     'state': 'unknown' if blocked else 'stopping' if self.closing else 'busy' if pending else 'ready',
-                    'mode': 'minicpm-64k' if native['model_loaded'] or pending else 'off',
+                    'mode': ('comfy' if self.mode and self.mode.observed['mode'] == 'comfy' else
+                             'minicpm-64k' if native['model_loaded'] or pending else 'off'),
                     'active': len(pending), 'observed_at': time.time(), 'resource': 'nx5-igpu',
-                    'availability_scope': 'MiniCPM loads on first request and stays resident with one prefix-cache slot and a held central lease.'}
+                    'managed_comfy': self.mode.health() if self.mode else None,
+                    'availability_scope': 'MiniCPM retains one prefix-cache slot and its central lease; managed Comfy mode yields only while idle.' if self.mode else 'MiniCPM loads on first request and stays resident with one prefix-cache slot and a held central lease.'}
 
     def unload(self):
         with self.lock:
@@ -120,6 +125,8 @@ class Service:
     def shutdown(self):
         with self.lock:
             self.closing = True
+        if self.mode:
+            self.mode.stop.set()
         self.resident.close(permanent=True)
         with self.lock:
             for job in self.jobs.values():
@@ -146,6 +153,8 @@ class Service:
                 return self.public(old)
             if any(j['status'] not in TERMINAL for j in self.jobs.values()):
                 raise RuntimeError('device_job_busy')
+            if self.mode:
+                self.mode.gate_text()
             job = {'id': identifier, 'request_id': payload['request_id'], 'digest': fingerprint,
                    'profile': payload['profile'], 'status': 'waiting', 'created_at': time.time()}
             self.jobs[identifier] = job
@@ -351,8 +360,9 @@ def make_server(config, service=None):
                 return self.send(202, {'id': job['id'], 'status': job['status'], 'status_url': '/v1/jobs/' + job['id']})
             except RuntimeError as exc:
                 code = str(exc)
-                return self.send(429 if is_chat and code == 'device_job_busy' else 409,
-                                 chat_error(code, kind='rate_limit_error' if code == 'device_job_busy' else 'invalid_request_error') if is_chat else {'error': code})
+                busy = code in {'device_job_busy', 'device_mode_waiting'}
+                return self.send(429 if is_chat and busy else 409,
+                                 chat_error(code, kind='rate_limit_error' if busy else 'invalid_request_error') if is_chat else {'error': code})
             except InvalidRequest as exc:
                 return self.send(404 if str(exc) == 'model_not_found' else 400, chat_error(str(exc), exc.param))
             except (ValueError, TypeError, TimeoutError):
@@ -360,6 +370,8 @@ def make_server(config, service=None):
 
     server = ThreadingHTTPServer((config['bind'], config.get('port', 18347)), Handler)
     server.service = service
+    if service.mode:
+        threading.Thread(target=service.mode.run, daemon=True).start()
     return server
 
 

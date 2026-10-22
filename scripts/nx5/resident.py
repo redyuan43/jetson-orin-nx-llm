@@ -18,7 +18,10 @@ def digest(value):
 
 def write_atomic(path, value):
     temp = path.with_suffix('.tmp')
-    temp.write_text(json.dumps(value, indent=2) + '\n')
+    with temp.open('w') as stream:
+        stream.write(json.dumps(value, indent=2) + '\n')
+        stream.flush()
+        os.fsync(stream.fileno())
     temp.chmod(0o600)
     temp.replace(path)
 
@@ -142,6 +145,7 @@ class ResidentModel:
         self.min_available_mib = None
         self.loaded_at = None
         self.log = None
+        self.manager = None
 
     def save(self, record=None):
         if record is not None:
@@ -204,9 +208,10 @@ class ResidentModel:
         if self.child is not None and self.child.poll() is None and self.ready:
             return False
         command, env, cfg = self.launch_config()
-        self.central = CentralLease()
+        self.central = self.manager.wire() if self.manager else CentralLease()
         self.failure = None
-        self.record = self.central.acquire({'model': 'minicpm-64k', 'resident_session': uuid.uuid4().hex,
+        acquire = self.manager.acquire if self.manager else self.central.acquire
+        self.record = acquire({'model': 'minicpm-64k', 'resident_session': uuid.uuid4().hex,
             'release': json.loads((self.repo/'release.json').read_text())['source_commit']}, cfg['revision'], self.save)
         try:
             require_idle()
@@ -272,7 +277,8 @@ class ResidentModel:
                         lease = central.api('GET', '/internal/v1/leases/' + record['operation_id'])
                         if lease['status'] != 'held' or lease['request_digest'] != record['lease_digest']:
                             raise RuntimeError('resident_lease_lost')
-                        central.observe('llm', int(self.active))
+                        if not self.manager:
+                            central.observe('llm', int(self.active))
                         last_heartbeat = time.monotonic()
                 except Exception as exc:
                     self.failure = str(exc) if isinstance(exc, RuntimeError) else 'resident_heartbeat_failed'
@@ -284,13 +290,14 @@ class ResidentModel:
         self.active = True
         try:
             cold = self.ensure_loaded()
+            deadline = time.monotonic() + 2400
             self.min_available_mib = memory_available()
             on_ready(self.child.pid)
             self.child.stdin.write(json.dumps({**chat, 'max_tokens': max_tokens}, ensure_ascii=False) + '\n')
             self.child.stdin.flush()
             with output.open('w') as stream:
                 while True:
-                    event = self.next_event(started + 2400)
+                    event = self.next_event(deadline)
                     stream.write(json.dumps(event, ensure_ascii=False) + '\n')
                     stream.flush()
                     if event['type'] == 'error':
@@ -343,3 +350,239 @@ class ResidentModel:
             if self.log:
                 self.log.close()
                 self.log = None
+
+
+class ManagedComfy:
+    """NX5's opt-in lifecycle owner, sharing the SSD service's admission lock.
+
+    The legacy Ornith switch/controller must remain stopped. Central reservations
+    choose the next mode; this owner never manufactures a mode transition.
+    """
+    GROUP = 'nx5-igpu-group'
+    RESOURCE = 'nx5-igpu'
+    UNIT = 'siyuan-image-comfy.service'
+    MEDIA_EXECUTOR = 'nx6-image-executor'
+
+    def __init__(self, service):
+        self.service = service
+        self.central = None
+        self.stop = threading.Event()
+        self.path = service.state.parent/'managed-comfy.json'
+        self.intent = json.loads(self.path.read_text()) if self.path.exists() else {}
+        if self.intent.get('phase') in {'dispatching', 'unknown'}:
+            self.save(dict(self.intent, phase='unknown'))
+        self.observed = {'mode': 'unknown', 'state': 'unknown', 'active': 1}
+
+    def wire(self):
+        if self.central is None:
+            self.central = CentralLease()
+        return self.central
+
+    def save(self, intent):
+        write_atomic(self.path, intent)
+        self.intent = intent
+
+    def health(self):
+        return dict(self.observed, phase=self.intent.get('phase', 'idle'))
+
+    def activity(self):
+        return self.wire().api('GET', self.wire().group+'/activity', controller=True)
+
+    def checked_activity(self, require_ready=True):
+        row = self.activity()
+        if (row.get('group_id') != self.GROUP or row.get('resources') != [self.RESOURCE]
+                or (require_ready and (row.get('fresh') is not True or row.get('state') != 'ready'))
+                or any(type(row.get(k)) is not list for k in ('leases', 'pending'))):
+            raise RuntimeError('central_group_unknown')
+        return row
+
+    def demand(self, row):
+        return next((p for p in row['pending'] if p.get('executor_id') == self.MEDIA_EXECUTOR
+                     and p.get('status') == 'waiting'
+                     and any(r.get('resource_id') == self.RESOURCE for r in p.get('resources', []))), None)
+
+    def gate_text(self):
+        if self.intent.get('phase') == 'unknown':
+            raise RuntimeError('lifecycle_requires_reconciliation')
+        if self.intent.get('phase') in {'yielding', 'dispatching', 'actions_complete'}:
+            raise RuntimeError('device_mode_waiting')
+        if self.service.resident.health()['model_loaded']:
+            demand = self.demand(self.checked_activity())
+            if demand:
+                self.save({'phase': 'yielding', 'media_operation_id': demand['operation_id']})
+                raise RuntimeError('device_mode_waiting')
+
+    def transition(self):
+        rows = self.wire().api('GET', '/internal/v1/mode-transitions', controller=True)['transitions']
+        return next((t for t in rows if t.get('group_id') == self.GROUP), None)
+
+    def same_barrier(self, a, b):
+        return bool(a and b and a.get('lease_barrier') is True and b.get('lease_barrier') is True
+                    and a.get('group_id') == b.get('group_id') == self.GROUP
+                    and a.get('resources') == b.get('resources') == [self.RESOURCE]
+                    and all(a.get(k) == b.get(k) for k in ('executor_id','operation_id','target_mode')))
+
+    def check_barrier(self, original):
+        if not self.same_barrier(original, self.transition()):
+            raise RuntimeError('transition_changed')
+
+    def unit(self):
+        result = subprocess.run(['systemctl','--user','show',self.UNIT,'--property=ActiveState','--value'],
+                                capture_output=True, text=True, check=True, timeout=10)
+        state = result.stdout.strip()
+        if state not in {'active', 'inactive'}:
+            raise RuntimeError('comfy_state_unknown')
+        return state
+
+    def action(self, verb):
+        subprocess.run(['systemctl','--user',verb,self.UNIT], check=True, timeout=60)
+
+    def request(self, path):
+        request = urllib.request.Request('http://127.0.0.1:8188'+path)
+        with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(request, timeout=8) as response:
+            return json.load(response)
+
+    def queue(self):
+        row = self.request('/queue')
+        if not isinstance(row, dict) or any(type(row.get(k)) is not list for k in ('queue_running','queue_pending')):
+            raise RuntimeError('incomplete_comfy_activity')
+        return len(row['queue_running']) + len(row['queue_pending'])
+
+    def report(self, observation, transition=None):
+        result = self.wire().api('POST', self.wire().group+'/observation',
+                                dict(observation, operation_id=transition['operation_id'] if transition else None),
+                                controller=True)
+        self.observed = observation
+        return result
+
+    def tick(self):
+        with self.service.lock:
+            resident = self.service.resident
+            if self.intent.get('phase') == 'unknown':
+                raise RuntimeError('lifecycle_requires_reconciliation')
+            if self.service.closing or resident.blocked or any(j['status'] == 'unknown' for j in self.service.jobs.values()):
+                raise RuntimeError('resident_requires_reconciliation')
+            row = self.checked_activity(require_ready=False)
+            transition = self.transition()
+            native = resident.child is not None and resident.child.poll() is None
+            unit = self.unit()
+            if native and unit == 'active':
+                raise RuntimeError('mode_conflict')
+            demand = self.demand(row) if row.get('fresh') is True and row.get('state') == 'ready' else None
+            pending_text = any(j['status'] not in {'succeeded','failed'} for j in self.service.jobs.values())
+            if native and not pending_text and demand:
+                self.save({'phase':'yielding', 'media_operation_id':demand['operation_id'],
+                           'resident_operation_id':resident.record['operation_id']})
+                resident.close()
+                if resident.blocked:
+                    raise RuntimeError('resident_requires_reconciliation')
+                return
+            if self.intent.get('phase') == 'yielding' and not demand and not transition:
+                self.save(dict(self.intent, phase='completed'))
+            if transition:
+                target = transition.get('target_mode')
+                own_text = (target == 'llm' and transition.get('executor_id') == 'nx5-text'
+                            and transition.get('operation_id') == resident.record.get('operation_id'))
+                if not (target == 'comfy' and transition.get('executor_id') == self.MEDIA_EXECUTOR) and not own_text:
+                    raise RuntimeError('unsupported_transition')
+                if native or row['leases']:
+                    return
+                if target == 'llm' and unit == 'active' and self.queue():
+                    return
+                self.check_barrier(transition)
+                verb = 'start' if target == 'comfy' else 'stop'
+                needs_action = unit != ('active' if target == 'comfy' else 'inactive')
+                if needs_action:
+                    if self.intent.get('phase') == 'actions_complete' and self.intent.get('operation_id') == transition['operation_id']:
+                        raise RuntimeError('lifecycle_effect_unconfirmed')
+                    if target == 'comfy':
+                        require_idle()
+                    self.check_barrier(transition)
+                    self.save(dict(transition, phase='dispatching'))
+                    try:
+                        self.action(verb)
+                    except Exception:
+                        self.save(dict(self.intent, phase='unknown'))
+                        raise
+                    self.save(dict(transition, phase='actions_complete'))
+                    unit = self.unit()
+                    if unit != ('active' if target == 'comfy' else 'inactive'):
+                        raise RuntimeError('lifecycle_effect_unconfirmed')
+                self.check_barrier(transition)
+                if target == 'llm':
+                    require_idle()
+                observation = {'mode':target, 'state':'ready', 'active':self.queue() if target == 'comfy' else 0}
+                self.report(observation, transition)
+                self.save(dict(transition, phase='completed'))
+                return
+            if unit == 'active':
+                observation = {'mode':'comfy','state':'ready','active':self.queue()}
+            elif native:
+                observation = {'mode':'llm','state':'ready' if resident.ready else 'loading',
+                               'active':int(resident.active)}
+            else:
+                own_hold = any(p.get('operation_id') == resident.record.get('operation_id')
+                               and p.get('executor_id') == 'nx5-text' for p in row['leases'])
+                observation = {'mode':'llm' if own_hold else 'off','state':'ready','active':0}
+            self.report(observation)
+            # A ready report can be accepted while its response is lost. Reconcile
+            # its known lifecycle effect; never repeat the completed command.
+            if (self.intent.get('phase') == 'actions_complete'
+                    and self.intent.get('target_mode') == observation['mode']
+                    and row.get('mode') == observation['mode']
+                    and row.get('fresh') is True and row.get('state') == 'ready'):
+                self.save(dict(self.intent, phase='completed'))
+
+    def run(self):
+        while not self.stop.is_set():
+            try:
+                self.tick()
+            except Exception as exc:
+                self.observed = {'mode':'unknown','state':'unknown','active':1}
+                try:
+                    self.report(self.observed, self.transition())
+                except Exception:
+                    pass
+                print('managed_comfy:', type(exc).__name__, flush=True)
+            self.stop.wait(3)
+
+    def acquire(self, request, revision, save):
+        """Enqueue once; refresh only the proven original reservation thereafter."""
+        record = {'operation_id':'op_'+uuid.uuid4().hex, 'request_digest':digest(request),
+                  'status':'reserving', 'created_at':time.time(), 'request':request}
+        save(record)
+        body = {k:record[k] for k in ('operation_id','request_digest')}
+        body['candidates'] = [{'backend_id':'nx5-ssd-minicpm', 'mapping_version':revision,
+            'resources':[{'resource_id':self.RESOURCE,'units':1}], 'mode':'llm',
+            'probe_status':'ready', 'probed_at':time.time()}]
+        wire = self.wire()
+        path = '/internal/v1/reservations/'+record['operation_id']
+        try:
+            result = wire.api('POST', '/internal/v1/reservations', body)
+        except Exception:
+            result = wire.api('GET', path)  # a lost response never creates a second intent
+        def checked_reservation(value):
+            if (not isinstance(value, dict) or value.get('executor_id') != 'nx5-text'
+                    or value.get('operation_id') != record['operation_id']
+                    or value.get('request_digest') != record['request_digest']):
+                raise RuntimeError('reservation_identity_mismatch')
+            return value
+        deadline = time.monotonic()+2400
+        while not self.stop.is_set() and time.monotonic() < deadline:
+            checked_reservation(result)
+            if result['status'] == 'held':
+                lease = wire.api('GET', '/internal/v1/leases/'+record['operation_id'])
+                if lease['status'] != 'held' or lease['operation_id'] != record['operation_id']:
+                    raise RuntimeError('lease_mismatch')
+                record.update(status='held', held_at=time.time(), lease_digest=lease['request_digest'])
+                save(record)
+                return record
+            if result['status'] not in {'waiting','preparing'}:
+                raise RuntimeError('lease_not_granted')
+            if self.stop.wait(1):
+                break
+            # GET proves the identity still exists before claim updates its probe.
+            checked_reservation(wire.api('GET', path))
+            body['candidates'][0]['probed_at'] = time.time()
+            result = wire.api('POST', path+'/claim', body)
+        raise RuntimeError('lease_reservation_pending')

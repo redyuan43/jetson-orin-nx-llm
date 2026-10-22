@@ -1,7 +1,7 @@
 [Unit]
 Description=nx5 persistent MiniCPM SSD inference with prefix cache
 After=network-online.target
-Conflicts=siyuan-fleet-control.service siyuan-text-ingress.service siyuan-text-compat-bridge.service siyuan-image-comfy.service nx5-ornith-35b-a3b-iq2s.service qwen38-kvmem.service
+Conflicts=siyuan-fleet-control.service siyuan-text-ingress.service siyuan-text-compat-bridge.service nx5-ornith-35b-a3b-iq2s.service qwen38-kvmem.service
 
 [Service]
 Type=simple
