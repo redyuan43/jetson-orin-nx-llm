@@ -451,7 +451,7 @@ class ManagedComfy:
             and transition.get('operation_id') == policy['operation_id']
             and transition.get('target_mode') == 'comfy'
             and (policy['state'] in {'requested', 'transitioning'} or
-                 (self.intent.get('phase') == 'actions_complete'
+                 (self.intent.get('phase') in {'actions_complete', 'completed'}
                   and self.intent.get('operation_id') == policy['operation_id'])))
 
     def check_policy_barrier(self, transition, policy):
@@ -660,7 +660,7 @@ class ManagedComfy:
                 verb = 'start' if target == 'comfy' else 'stop'
                 needs_action = unit != ('active' if target == 'comfy' else 'inactive')
                 if needs_action:
-                    if self.intent.get('phase') == 'actions_complete' and self.intent.get('operation_id') == transition['operation_id']:
+                    if self.intent.get('phase') in {'actions_complete', 'completed'} and self.intent.get('operation_id') == transition['operation_id']:
                         raise RuntimeError('lifecycle_effect_unconfirmed')
                     if target == 'comfy':
                         require_idle()

@@ -321,6 +321,70 @@ class DevicePolicyTests(unittest.TestCase):
         self.mode.action.assert_called_once_with('start')
         self.assertEqual(self.mode.intent['phase'],'completed')
 
+    def test_completed_policy_keeps_reporting_until_slower_central_poll_observes_it(self):
+        original = barrier('comfy',POLICY,EXECUTOR)
+        self.mode.activity.return_value = dict(activity('off'),policy_demand=demand())
+        self.mode.transition.return_value = original
+        self.mode.unit.side_effect = ['inactive','active']
+        with patch('resident.require_idle'):
+            self.mode.tick()
+        self.mode.unit.side_effect = None
+        self.mode.unit.return_value = 'active'
+        self.mode.activity.return_value = dict(activity('unknown'),state='unknown',active=1,
+                                              policy_demand=demand(state='unknown'))
+        # The owner polls every 3 seconds; the central worker may need 15 seconds
+        # to consume an accepted observation and remove the original barrier.
+        for elapsed in range(3,19,3):
+            with self.subTest(elapsed=elapsed):
+                self.mode.tick()
+                self.assertEqual(self.mode.report.call_args.args,
+                    ({'mode':'comfy','state':'ready','active':0},original))
+                self.assertEqual(self.mode.intent['phase'],'completed')
+                self.assertEqual(self.mode.policy_state['phase'],'applied')
+        self.mode.action.assert_called_once_with('start')
+        self.assertEqual(self.mode.report.call_count,7)
+
+    def test_recorded_completed_effect_never_repeats_a_lifecycle_command(self):
+        original = barrier('comfy',POLICY,EXECUTOR)
+        self.mode.transition.return_value = original
+        for phase in ['actions_complete','completed']:
+            for state in ['requested','unknown']:
+                with self.subTest(phase=phase,state=state):
+                    self.mode.save(dict(original,phase=phase))
+                    self.mode.save_policy({'demand':demand(),'phase':'applied'})
+                    self.mode.activity.return_value = dict(activity('unknown'),state='unknown',active=1,
+                                                          policy_demand=demand(state=state))
+                    with patch('resident.require_idle'):
+                        with self.assertRaisesRegex(RuntimeError,'lifecycle_effect_unconfirmed'):
+                            self.mode.tick()
+        self.mode.action.assert_not_called()
+        self.mode.report.assert_not_called()
+
+    def test_completed_policy_cannot_adopt_an_unknown_new_operation(self):
+        original = barrier('comfy',POLICY,EXECUTOR)
+        self.mode.save(dict(original,phase='completed'))
+        self.mode.save_policy({'demand':demand(),'phase':'applied'})
+        other = 'op_' + 'e' * 32
+        self.mode.transition.return_value = barrier('comfy',other,EXECUTOR)
+        self.mode.activity.return_value = dict(activity('unknown'),state='unknown',active=1,
+                                              policy_demand=demand(state='unknown',operation_id=other))
+        with self.assertRaisesRegex(RuntimeError,'unsupported_transition'):
+            self.mode.tick()
+        self.mode.action.assert_not_called()
+        self.mode.report.assert_not_called()
+
+    def test_unknown_local_lifecycle_cannot_use_completed_policy_recovery(self):
+        original = barrier('comfy',POLICY,EXECUTOR)
+        self.mode.save(dict(original,phase='unknown'))
+        self.mode.save_policy({'demand':demand(),'phase':'applied'})
+        self.mode.transition.return_value = original
+        self.mode.activity.return_value = dict(activity('unknown'),state='unknown',active=1,
+                                              policy_demand=demand(state='unknown'))
+        with self.assertRaisesRegex(RuntimeError,'lifecycle_requires_reconciliation'):
+            self.mode.tick()
+        self.mode.action.assert_not_called()
+        self.mode.report.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()
