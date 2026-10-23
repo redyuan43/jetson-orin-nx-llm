@@ -1,0 +1,176 @@
+diff --git a/src/llama-moe-slot-state.h b/src/llama-moe-slot-state.h
+new file mode 100644
+index 0000000..ed52326
+--- /dev/null
++++ b/src/llama-moe-slot-state.h
+@@ -0,0 +1,28 @@
++#pragma once
++
++#include <algorithm>
++#include <cstddef>
++#include <cstdint>
++#include <vector>
++
++namespace llama_moe_slot_state {
++
++inline std::size_t tracking_capacity(int32_t bank_capacity, int32_t window_start, int32_t window_width) {
++    const int64_t bank_end = std::max<int64_t>(0, bank_capacity);
++    const int64_t window_end = std::max<int64_t>(0, (int64_t) window_start + window_width);
++    return (std::size_t) std::max(bank_end, window_end);
++}
++
++inline void resize_metadata(
++        std::vector<int32_t> & slot_to_expert,
++        std::vector<uint64_t> & slot_age,
++        int32_t bank_capacity,
++        int32_t window_start,
++        int32_t window_width,
++        int32_t free_slot) {
++    const std::size_t required = tracking_capacity(bank_capacity, window_start, window_width);
++    slot_to_expert.resize(required, free_slot);
++    slot_age.resize(required, 0);
++}
++
++} // namespace llama_moe_slot_state
+diff --git a/src/llama-moe-slot.cpp b/src/llama-moe-slot.cpp
+index 28c7666..7f0961e 100644
+--- a/src/llama-moe-slot.cpp
++++ b/src/llama-moe-slot.cpp
+@@ -1,4 +1,5 @@
+ #include "llama-moe-slot.h"
++#include "llama-moe-slot-state.h"
+ 
+ #include "ggml-backend.h"
+ #include "llama-impl.h"
+@@ -702,6 +703,18 @@ struct llama_moe_slot_runtime::impl {
+                 }
+             });
+         resolve_decode_window();
++        if (decode_window > 0) {
++            for (auto & state : layers) {
++                if (!state.enabled) {
++                    continue;
++                }
++                // Decode views are per-layer and may exceed the shared prefill bank.
++                // Keep the software slot map/ages sized to every address process() can use.
++                llama_moe_slot_state::resize_metadata(
++                    state.slot_to_expert, state.slot_age, n_slots,
++                    state.window_start, state.window_width, kSlotFree);
++            }
++        }
+         {
+             const char * e = std::getenv("LLAMA_MOE_MATMUL_SPLIT");
+             matmul_split = e ? std::atoi(e) : 0;
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 33ae3b3..391bee4 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -300,6 +300,7 @@ add_executable(${TEST_TARGET} test-c.c)
+ target_link_libraries(${TEST_TARGET} PRIVATE llama)
+ 
+ llama_build_and_test(test-alloc.cpp)
++llama_build_and_test(test-moe-slot-state.cpp)
+ target_include_directories(test-alloc PRIVATE ${PROJECT_SOURCE_DIR}/ggml/src)
+ 
+ llama_build(export-graph-ops.cpp)
+diff --git a/tests/test-moe-slot-state.cpp b/tests/test-moe-slot-state.cpp
+new file mode 100644
+index 0000000..38d83f4
+--- /dev/null
++++ b/tests/test-moe-slot-state.cpp
+@@ -0,0 +1,95 @@
++#include "../src/llama-moe-slot-state.h"
++
++#include <cstdint>
++#include <vector>
++
++int main() {
++    constexpr int32_t bank_capacity = 64;
++    constexpr int32_t window_start = 0;
++    constexpr int32_t window_width = 176;
++    constexpr int32_t n_experts = 256;
++    constexpr int32_t free_slot = -1;
++    constexpr int32_t pending_slot = -2;
++
++    std::vector<int32_t> slot_to_expert(bank_capacity, free_slot);
++    std::vector<uint64_t> slot_age(bank_capacity, 0);
++
++    llama_moe_slot_state::resize_metadata(
++        slot_to_expert, slot_age, bank_capacity, window_start, window_width, free_slot);
++
++    const size_t window_end = (size_t) (window_start + window_width);
++    if (slot_to_expert.size() != window_end || slot_age.size() != window_end) {
++        return 1;
++    }
++    for (size_t i = bank_capacity; i < window_end; ++i) {
++        if (slot_to_expert[i] != free_slot || slot_age[i] != 0) {
++            return 2;
++        }
++    }
++
++    // A cold cache must scan through candidate 68 even though the prefill bank is only 64.
++    for (int32_t expert = 0; expert <= 68; ++expert) {
++        int32_t slot = -1;
++        for (int32_t candidate = window_start; candidate < window_start + window_width; ++candidate) {
++            if (slot_to_expert[(size_t) candidate] == free_slot) {
++                slot = candidate;
++                break;
++            }
++        }
++        if (slot != expert) {
++            return 3;
++        }
++        slot_to_expert[(size_t) slot] = expert;
++        slot_age[(size_t) slot] = (uint64_t) expert + 1;
++    }
++    if (slot_to_expert[68] != 68) {
++        return 4;
++    }
++
++    // Fill the decode window, then exercise both eviction passes with expert 255.
++    for (int32_t expert = 69; expert < window_width; ++expert) {
++        slot_to_expert[(size_t) expert] = expert;
++        slot_age[(size_t) expert] = (uint64_t) expert + 1;
++    }
++    std::vector<uint8_t> requested(n_experts, 0);
++    requested[255] = 1;
++    int32_t selected = -1;
++    uint64_t oldest = UINT64_MAX;
++    for (int32_t candidate = window_start; candidate < window_start + window_width; ++candidate) {
++        const int32_t resident = slot_to_expert[(size_t) candidate];
++        if (resident == pending_slot) {
++            continue;
++        }
++        if (!requested[(size_t) resident] && slot_age[(size_t) candidate] < oldest) {
++            oldest = slot_age[(size_t) candidate];
++            selected = candidate;
++        }
++    }
++    if (selected != 0) {
++        return 5;
++    }
++    slot_to_expert[(size_t) selected] = 255;
++
++    // Transition to prefill clears all non-pending map entries, including decode-only slots.
++    slot_to_expert[70] = pending_slot;
++    for (auto & resident : slot_to_expert) {
++        if (resident != pending_slot) {
++            resident = free_slot;
++        }
++    }
++    for (int32_t candidate = 0; candidate < bank_capacity; ++candidate) {
++        if (slot_to_expert[(size_t) candidate] != free_slot) {
++            return 6;
++        }
++    }
++    for (size_t candidate = bank_capacity; candidate < window_end; ++candidate) {
++        if (candidate == 70) {
++            if (slot_to_expert[candidate] != pending_slot) {
++                return 7;
++            }
++        } else if (slot_to_expert[candidate] != free_slot) {
++            return 8;
++        }
++    }
++    return 0;
++}
