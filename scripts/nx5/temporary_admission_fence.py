@@ -48,8 +48,8 @@ class Root:
         return p.stdout
     def marked_request(self,config,mark,path='/healthz',method='GET',body=None,token_file=None):
         if path not in {'/healthz','/v1/model/unload'}:raise RuntimeError('probe_path_not_qualified')
-        source="""import json,socket,http.client,pathlib
-p=json.loads(input());s=socket.socket();s.settimeout(12);s.setsockopt(socket.SOL_SOCKET,socket.SO_MARK,p['mark']);s.connect((p['bind'],p['port']))
+        source="""import json,socket,http.client,pathlib,struct
+p=json.loads(input());s=socket.socket();s.settimeout(12);s.setsockopt(socket.SOL_SOCKET,socket.SO_MARK,struct.pack('=I',p['mark']));s.connect((p['bind'],p['port']))
 body=b'' if p['body'] is None else json.dumps(p['body']).encode()
 headers=p['method']+' '+p['path']+' HTTP/1.0\\r\\nHost: owner-release-probe\\r\\nConnection: close\\r\\n'
 if p['token_file']:headers+='Authorization: Bearer '+pathlib.Path(p['token_file']).read_text().strip()+'\\r\\n'

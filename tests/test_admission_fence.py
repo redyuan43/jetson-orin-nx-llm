@@ -77,3 +77,22 @@ def test_original_operation_cannot_be_reused_for_a_different_listener(tmp_path,c
     with pytest.raises(RuntimeError,match='fence_identity_conflict'):
         m.Fence(tmp_path/'fence.json',config|change,operation,fw)
     assert fw.lines==before and len(fw.calls)==calls
+
+
+def test_marked_probe_supports_full_unsigned_operation_mark(monkeypatch):
+    import subprocess
+    import sys
+    m=load();calls=[];original_run=subprocess.run
+    def run(args,**kwargs):
+        calls.append(args)
+        source=("import socket,sys\nclass FakeSocket:\n def settimeout(self,*a):pass\n"
+                " def setsockopt(self,level,key,value):\n"
+                "  assert isinstance(value,bytes) and int.from_bytes(value,sys.byteorder)==0xe4c523a8\n"
+                " def connect(self,*a):raise RuntimeError('unsigned_mark_set')\n"
+                "socket.socket=FakeSocket\n"+args[-1])
+        result=original_run([sys.executable,'-c',source],input=kwargs['input'],text=True,capture_output=True)
+        assert 'unsigned_mark_set' in result.stderr,result.stderr
+        return type('R',(),{'returncode':0,'stdout':'{}'})()
+    monkeypatch.setattr(m.subprocess,'run',run)
+    assert m.Root(prefix=()).marked_request({'bind':'100.1.2.3','port':18347},0xe4c523a8)=={}
+    assert len(calls)==1
