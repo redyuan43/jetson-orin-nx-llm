@@ -258,7 +258,14 @@ class ResidentModel:
         diagnostic = None
         diagnostic_bytes = 0
         diagnostic_limit = 64 * 1024
-        max_line_chars = diagnostic_limit
+        max_line_chars = 2 * 1024 * 1024
+        invalid_output_reported = False
+
+        def report_invalid_output():
+            nonlocal invalid_output_reported
+            if not invalid_output_reported:
+                events.put({'type': 'error', 'code': 'invalid_native_output'})
+                invalid_output_reported = True
 
         def bounded_lines(stream):
             """Read bounded chunks so a missing newline cannot grow memory without limit."""
@@ -320,7 +327,7 @@ class ResidentModel:
                             diagnostic.flush()
                             diagnostic_bytes += len(encoded)
                     if '[Inferior ' in line and ('detached' in line or 'exited' in line):
-                        events.put({'type': 'error', 'code': 'invalid_native_output'})
+                        report_invalid_output()
                         capturing_backtrace = False
                     continue
                 try:
@@ -342,8 +349,8 @@ class ResidentModel:
                             diagnostic.flush()
                             diagnostic_bytes = len(encoded)
                         continue
-                    events.put({'type': 'error', 'code': 'invalid_native_output'})
-                    return
+                    report_invalid_output()
+                    continue
                 events.put(event)
         except Exception:
             events.put({'type': 'error', 'code': 'invalid_native_output'})
