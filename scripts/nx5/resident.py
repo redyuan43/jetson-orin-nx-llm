@@ -260,6 +260,8 @@ class ResidentModel:
         diagnostic_limit = 64 * 1024
         max_line_chars = 2 * 1024 * 1024
         invalid_output_reported = False
+        invalid_output_seen = False
+        ansi_escape = re.compile(r'\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07]*(?:\x07|\x1b\\))')
 
         def report_invalid_output():
             nonlocal invalid_output_reported
@@ -317,16 +319,17 @@ class ResidentModel:
 
         try:
             for line, oversized, oversized_header in bounded_lines(child.stdout):
+                normalized_line = ansi_escape.sub('', line)
                 if capturing_backtrace:
                     if diagnostic_bytes < diagnostic_limit:
-                        safe_line = safe_diagnostic_line(line, oversized)
+                        safe_line = safe_diagnostic_line(normalized_line, oversized)
                         if safe_line:
                             encoded = safe_line.encode('utf-8', errors='replace')
                             encoded = encoded[:diagnostic_limit-diagnostic_bytes]
                             diagnostic.write(encoded.decode('utf-8', errors='ignore'))
                             diagnostic.flush()
                             diagnostic_bytes += len(encoded)
-                    if '[Inferior ' in line and ('detached' in line or 'exited' in line):
+                    if '[Inferior ' in normalized_line and ('detached' in normalized_line or 'exited' in normalized_line):
                         report_invalid_output()
                         capturing_backtrace = False
                     continue
@@ -335,26 +338,34 @@ class ResidentModel:
                         raise ValueError('native_line_too_long')
                     event = json.loads(line)
                 except (TypeError, ValueError):
-                    if diagnostic_path is not None and (line.startswith('Attaching to process ') or oversized_header):
+                    gdb_start = (re.match(r'^Attaching to process \d+\b', normalized_line)
+                                 or re.match(r'^Thread \d+ \(Thread ', normalized_line)
+                                 or re.match(r'^New LWP \d+\b', normalized_line)
+                                 or re.match(r'^\[New LWP \d+\]', normalized_line)
+                                 or re.match(r'^#0\s+', normalized_line))
+                    if diagnostic_path is not None and gdb_start:
+                        invalid_output_seen = True
                         diagnostic_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
                         fd = os.open(diagnostic_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC |
                             getattr(os, 'O_NOFOLLOW', 0), 0o600)
                         diagnostic = os.fdopen(fd, 'w', encoding='utf-8')
                         os.fchmod(fd, 0o600)
                         capturing_backtrace = True
-                        safe_line = safe_diagnostic_line(line, oversized)
+                        safe_line = safe_diagnostic_line(normalized_line, oversized)
                         if safe_line:
                             encoded = safe_line.encode('utf-8', errors='replace')[:diagnostic_limit]
                             diagnostic.write(encoded.decode('utf-8', errors='ignore'))
                             diagnostic.flush()
                             diagnostic_bytes = len(encoded)
                         continue
-                    report_invalid_output()
+                    invalid_output_seen = True
                     continue
                 events.put(event)
         except Exception:
-            events.put({'type': 'error', 'code': 'invalid_native_output'})
+            invalid_output_seen = True
         finally:
+            if invalid_output_seen:
+                report_invalid_output()
             if diagnostic is not None:
                 diagnostic.close()
             events.put(None)

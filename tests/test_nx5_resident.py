@@ -175,14 +175,22 @@ class ResidentTests(unittest.TestCase):
         self.assertLessEqual(diagnostic.stat().st_size, 64 * 1024)
 
     def test_non_json_preamble_does_not_hide_later_gdb_backtrace(self):
-        child = Mock(stdout=io.StringIO(
+        events = queue.Queue()
+        class InspectBeforeAttachment(io.StringIO):
+            def readline(self, size=-1):
+                line = super().readline(size)
+                if 'Attaching to process 789' in line:
+                    self.events_were_empty = self.events.empty()
+                return line
+        stream = InspectBeforeAttachment(
             'native diagnostic preamble\n'
-            'Attaching to process 789\n'
+            '\x1b[1;32mAttaching to process 789\x1b[0m\n'
             '#0  speculative_checkpoint () at server-context.cpp:2661\n'
             '[Inferior 1 (process 789) detached]\n'
             '{"type":"ready","mode":"off"}\n'
-        ))
-        events = queue.Queue()
+        )
+        stream.events = events
+        child = Mock(stdout=stream)
         diagnostic = self.root/'native.backtrace'
 
         ResidentModel.read_events(child, events, diagnostic)
@@ -190,6 +198,7 @@ class ResidentTests(unittest.TestCase):
         self.assertEqual(events.get_nowait(), {'type':'error','code':'invalid_native_output'})
         self.assertEqual(events.get_nowait(), {'type':'ready','mode':'off'})
         self.assertIsNone(events.get_nowait())
+        self.assertTrue(stream.events_were_empty)
         self.assertIn('speculative_checkpoint', diagnostic.read_text())
         self.assertNotIn('native diagnostic preamble', diagnostic.read_text())
 
