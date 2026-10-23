@@ -189,6 +189,11 @@ class ResidentModel:
         p = cfg['parameters']
         env = {k: v for k, v in os.environ.items()
                if not k.startswith(('LLAMA_MOE_', 'LLAMA_DRAFT_', 'LLAMA_ARG_', 'GGML_CUDA_', 'GGML_OP_'))}
+        if os.environ.get('NX5_NATIVE_BACKTRACE_DIRECT') == '1':
+            # ggml's gdb self-attach sees its parent blocked in waitpid; force its
+            # in-process fork fallback for this native child only.
+            env.pop('NX5_NATIVE_BACKTRACE_DIRECT', None)
+            env['PATH'] = '/nonexistent'
         env.update(LD_LIBRARY_PATH=str(root/cfg['library_dir']) + ':' + str(root/'minicpm-les/llama.cpp-omni/build-jetson/bin'),
                    LLAMA_MOE_BANK_CAP=str(max(p['window'], (p['bank'] + 39)//40)),
                    LLAMA_MOE_DECODE_WINDOW=str(p['window']), LLAMA_MOE_IO_THREADS=str(p['io_threads']),

@@ -1,8 +1,10 @@
 import io
 import hashlib
 import json
+import os
 from pathlib import Path
 import queue
+import shutil
 import tempfile
 import threading
 import unittest
@@ -60,7 +62,7 @@ class ResidentTests(unittest.TestCase):
         (self.root/'configs/nx5-chat-runtime.json').write_text(json.dumps(runtime))
         self.model.config = {'root':str(root), 'state':str(self.root/'jobs')}
 
-        command, _, _ = self.model.launch_config()
+        command, child_env, _ = self.model.launch_config()
 
         self.assertEqual(command[command.index('--cache-type-k')+1], 'q8_0')
         self.assertEqual(command[command.index('--cache-type-v')+1], 'q8_0')
@@ -68,6 +70,15 @@ class ResidentTests(unittest.TestCase):
         self.assertEqual(command[command.index('--cache-type-v-draft')+1], 'q8_0')
         self.assertEqual(command[command.index('-c')+1], '65536')
         self.assertEqual(command[command.index('--spec-draft-n-max')+1], '7')
+        original_path = os.environ.get('PATH')
+        with patch.dict(os.environ, {'NX5_NATIVE_BACKTRACE_DIRECT':'1'}):
+            _, diagnostic_env, _ = self.model.launch_config()
+            self.assertEqual(diagnostic_env['PATH'], '/nonexistent')
+            self.assertNotIn('NX5_NATIVE_BACKTRACE_DIRECT', diagnostic_env)
+            self.assertIsNone(shutil.which('gdb', path=diagnostic_env['PATH']))
+            self.assertIsNone(shutil.which('lldb', path=diagnostic_env['PATH']))
+        self.assertEqual(os.environ.get('PATH'), original_path)
+        self.assertEqual(child_env.get('PATH'), original_path)
 
         cfg['parameters']['draft_cache_k'] = 'f16'
         (self.root/'configs/nx5-minicpm-service.json').write_text(json.dumps(cfg))
