@@ -15,12 +15,12 @@ MEDIA = 'op_' + 'a' * 32
 TEXT = 'op_' + 'b' * 32
 
 
-def activity(mode='llm', *, media=False, transition=None, leases=None):
+def activity(mode='llm', *, media=False, transition=None, leases=None, pending=None):
     return {'group_id': 'nx5-igpu-group', 'resources': ['nx5-igpu'],
             'mode': mode, 'state': 'ready', 'active': 0, 'fresh': True,
             'leases': leases or [], 'pending': [{'executor_id': 'nx6-image-executor',
                 'operation_id': MEDIA, 'status': 'waiting',
-                'resources': [{'resource_id': 'nx5-igpu', 'units': 1}]}] if media else [],
+                'resources': [{'resource_id': 'nx5-igpu', 'units': 1}]}] if media else (pending or []),
             'transition': transition}
 
 
@@ -214,10 +214,12 @@ class ManagedComfyTests(unittest.TestCase):
 
     def test_waiting_flint_gate_work_is_confirmed_by_its_profile_identity(self):
         self.mode.flint_gate_unit.return_value = 'active'
+        self.mode.policy_profiles = {'flint': {'profile_id':'nx5-flint','version':'a' * 64}}
         self.mode.flint_gate_activity = Mock(return_value={
             'group_id':'nx5-igpu-group','resources':['nx5-igpu'],'mode':'flint',
             'profile_id':'nx5-flint','profile_digest':'a'*64,'active':0,'unknown':0,'waiting':1,
-            'ingress_closed':False,'enabled':False,'observed_at':time.time()})
+            'ingress_closed':True,'enabled':True,'public_enabled':False,'qualification_only':True,
+            'owner_admission':False,'observed_at':time.time()})
         pending = self.mode.demand_for_mode('flint')
         self.assertEqual(pending['profile_id'], 'nx5-flint')
         self.assertEqual(pending['waiting'], 1)
@@ -225,16 +227,22 @@ class ManagedComfyTests(unittest.TestCase):
 
     def test_unknown_or_stale_flint_gate_activity_never_yields_minicpm(self):
         self.mode.flint_gate_unit.return_value = 'active'
+        self.mode.policy_profiles = {'flint': {'profile_id':'nx5-flint','version':'a' * 64}}
         self.mode.flint_gate_activity = Mock()
         baseline = {'group_id':'nx5-igpu-group','resources':['nx5-igpu'],'mode':'flint',
             'profile_id':'nx5-flint','profile_digest':'a'*64,'active':0,'unknown':0,'waiting':1,
-            'ingress_closed':False,'enabled':False,'observed_at':time.time()}
+            'ingress_closed':True,'enabled':True,'public_enabled':False,'qualification_only':True,
+            'owner_admission':False,'observed_at':time.time()}
         for changes in ({'profile_id':'other'}, {'unknown':1}, {'active':1},
-                        {'observed_at':time.time()-61}, {'resources':['nx6-igpu']}):
+                        {'profile_digest':'b'*64}, {'observed_at':time.time()-61},
+                        {'resources':['nx6-igpu']}):
             with self.subTest(changes=changes):
                 self.mode.flint_gate_activity.return_value = baseline | changes
                 if changes in ({'unknown':1}, {'active':1}):
                     self.assertIsNone(self.mode.demand_for_mode('flint'))
+                elif changes == {'profile_digest':'b'*64}:
+                    with self.assertRaisesRegex(RuntimeError, 'flint_gate_profile_mismatch'):
+                        self.mode.demand_for_mode('flint')
                 else:
                     with self.assertRaisesRegex(RuntimeError, 'flint_gate_activity_unknown'):
                         self.mode.demand_for_mode('flint')
@@ -317,6 +325,32 @@ class ManagedComfyTests(unittest.TestCase):
         self.mode.flint_action = Mock()
         with patch('resident.require_idle'):
             self.mode.tick()
+        self.mode.flint_action.assert_called_once_with('start')
+        self.mode.action.assert_not_called()
+        self.assertEqual(self.mode.report.call_args.args[0], {'mode':'flint','state':'ready','active':0})
+
+    def test_initial_flint_gate_operation_is_admitted_with_new_operation_id(self):
+        operation = 'op_' + 'f' * 32
+        original = barrier('flint', operation, 'nx5-text')
+        self.service.resident.record = {'operation_id':TEXT,'backend_id':'nx5-ssd-minicpm',
+            'mode':'llm','status':'released'}
+        self.mode.policy_profiles = {'flint': {'profile_id':'nx5-flint','version':'a' * 64}}
+        self.mode.activity.return_value = activity('off', transition=original, pending=[{
+            'executor_id':'nx5-text','operation_id':operation,'status':'preparing',
+            'resources':[{'resource_id':'nx5-igpu','units':1}]}])
+        self.mode.transition.return_value = original
+        self.mode.flint_gate_unit.return_value = 'active'
+        self.mode.flint_gate_activity = Mock(return_value={
+            'group_id':'nx5-igpu-group','resources':['nx5-igpu'],'mode':'flint',
+            'profile_id':'nx5-flint','profile_digest':'a' * 64,'active':0,'unknown':0,'waiting':1,
+            'enabled':True,'public_enabled':False,'qualification_only':True,'owner_admission':False,
+            'ingress_closed':True,'observed_at':time.time()})
+        self.mode.unit.return_value = 'inactive'
+        self.mode.flint_unit = Mock(side_effect=['inactive','active'])
+
+        with patch('resident.require_idle'):
+            self.mode.tick()
+
         self.mode.flint_action.assert_called_once_with('start')
         self.mode.action.assert_not_called()
         self.assertEqual(self.mode.report.call_args.args[0], {'mode':'flint','state':'ready','active':0})

@@ -698,7 +698,34 @@ class ManagedComfy:
                 or not 0 <= time.time()-row['observed_at'] <= 60
                 or type(row.get('ingress_closed')) is not bool or type(row.get('enabled')) is not bool):
             raise RuntimeError('flint_gate_activity_unknown')
-        return row if row['waiting'] and not row['active'] and not row['unknown'] else None
+        expected = self.policy_profiles.get('flint')
+        if (not expected or row.get('profile_id') != expected.get('profile_id')
+                or row.get('profile_digest') != expected.get('version')):
+            raise RuntimeError('flint_gate_profile_mismatch')
+        if not row['waiting'] or row['active'] or row['unknown']:
+            return None
+        public = row.get('public_enabled')
+        qualification = row.get('qualification_only')
+        owner_admission = row.get('owner_admission')
+        if (type(public) is not bool or type(qualification) is not bool
+                or type(owner_admission) is not bool or row['enabled'] is not True
+                or not ((public and not qualification and owner_admission)
+                        or (qualification and not public and not owner_admission))):
+            raise RuntimeError('flint_gate_admission_unqualified')
+        return row
+
+    def own_flint_transition(self, transition, row, gate):
+        if (not transition or transition.get('target_mode') != 'flint'
+                or transition.get('executor_id') != 'nx5-text'
+                or not gate or gate.get('waiting') != 1
+                or gate.get('active') != 0 or gate.get('unknown') != 0):
+            return False
+        matches = [pending for pending in row['pending']
+            if pending.get('executor_id') == transition.get('executor_id')
+            and pending.get('operation_id') == transition.get('operation_id')
+            and pending.get('status') in {'waiting', 'preparing'}
+            and pending.get('resources') == [{'resource_id': self.RESOURCE, 'units': 1}]]
+        return len(matches) == 1
 
     def gate_text(self):
         if self.policy_state.get('phase') == 'unknown':
@@ -879,8 +906,9 @@ class ManagedComfy:
                 own_text = (target in {'llm', 'flint'} and transition.get('executor_id') == 'nx5-text'
                             and transition.get('operation_id') == resident.record.get('operation_id')
                             and resident.record.get('mode', 'llm') == target)
+                own_flint = self.own_flint_transition(transition, row, flint_demand)
                 policy_transition = self.policy_comfy_transition(transition, policy)
-                if not (target == 'comfy' and transition.get('executor_id') == self.MEDIA_EXECUTOR) and not own_text and not policy_transition:
+                if not (target == 'comfy' and transition.get('executor_id') == self.MEDIA_EXECUTOR) and not own_text and not own_flint and not policy_transition:
                     raise RuntimeError('unsupported_transition')
                 # A text admission can race the central off barrier while its
                 # local job/loader is still waiting for the original reservation.
@@ -890,7 +918,7 @@ class ManagedComfy:
                     and not native and not resident.ready and not policy_loading
                     and resident.record.get('status') in {None, 'released', 'reserving'}
                     and all(j['status'] in {'waiting', 'succeeded', 'failed'} for j in self.service.jobs.values()))
-                if native or row['leases'] or (pending_text and not own_text and not off_waiting_text):
+                if native or row['leases'] or (pending_text and not own_text and not own_flint and not off_waiting_text):
                     return
                 # Once the original off barrier is granted, later waiting work
                 # must wait for its completion instead of deadlocking the owner.
