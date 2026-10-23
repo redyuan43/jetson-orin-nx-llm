@@ -9,6 +9,7 @@ from unittest.mock import Mock, patch
 
 from test_nx5_service import module
 from test_nx5_managed_comfy import activity, barrier, TEXT
+import resident as resident_module
 
 
 POLICY = 'op_' + 'd' * 32
@@ -26,6 +27,9 @@ class DevicePolicyTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
+        scan = patch.object(resident_module, 'foreign_inference_count', return_value=0)
+        scan.start()
+        self.addCleanup(scan.stop)
         self.root = Path(temporary.name)
         (self.root/'release.json').write_text(json.dumps({'files': {}, 'release': 'cpu',
             'commit': 'cpu', 'source_commit': 'cpu'}))

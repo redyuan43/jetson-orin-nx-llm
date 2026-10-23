@@ -40,6 +40,53 @@ def memory_available():
     raise RuntimeError('memory_unavailable')
 
 
+CONTROLLED_INFERENCE_UNITS = {
+    'nx5-ssd-llm.service', 'nx5-flint.service', 'siyuan-image-comfy.service',
+}
+
+
+class ForeignInferenceProcess(RuntimeError):
+    pass
+
+
+def foreign_inference_count(proc_root=Path('/proc')):
+    """Count inference processes outside the three NX5 owner-managed units.
+
+    Only executable basenames and cgroup unit names are inspected; argv and
+    environment are never read or returned.
+    """
+    count = 0
+    for entry in proc_root.iterdir():
+        if not entry.name.isdigit():
+            continue
+        try:
+            executable = (entry/'exe').resolve(strict=True).name
+        except (FileNotFoundError, PermissionError, ProcessLookupError):
+            continue
+        try:
+            cgroups = (entry/'cgroup').read_text(errors='replace')
+        except (FileNotFoundError, PermissionError, ProcessLookupError):
+            if executable.startswith('llama-'):
+                count += 1
+            continue
+        inference = executable.startswith('llama-') or (
+            executable.startswith('python') and any(
+                'comfy' in part.lower() and part.endswith('.service')
+                for line in cgroups.splitlines() for part in line.split('/')))
+        if not inference:
+            continue
+        parts = {part for line in cgroups.splitlines() for part in line.split('/')}
+        if any(unit in parts for unit in CONTROLLED_INFERENCE_UNITS):
+            continue
+        # This owner is per-device; unrelated inference workers elsewhere on
+        # the host must not reserve the NX5 resource. The known external NX5
+        # service uses an nx5-* unit name; unknown unit ownership on this GPU
+        # remains fail-closed when that device association is visible.
+        if any(part.startswith('nx5-') for part in parts):
+            count += 1
+    return count
+
+
 def require_idle():
     for unit in ('siyuan-fleet-control.service', 'siyuan-image-comfy.service',
                  'nx5-ornith-35b-a3b-iq2s.service', 'nx5-flint.service'):
@@ -852,6 +899,8 @@ class ManagedComfy:
 
     def tick(self):
         with self.service.lock:
+            if foreign_inference_count():
+                raise ForeignInferenceProcess('foreign_inference_process')
             resident = self.service.resident
             if self.policy_state.get('phase') == 'unknown':
                 raise RuntimeError('policy_requires_reconciliation')
@@ -1033,12 +1082,20 @@ class ManagedComfy:
             try:
                 self.tick()
             except Exception as exc:
-                self.observed = {'mode':'unknown','state':'unknown','active':1}
+                if isinstance(exc, ForeignInferenceProcess):
+                    self.observed = {'mode':'unknown','state':'blocked','active':1,
+                                     'reason':'foreign_inference_process'}
+                    report = {'mode':'unknown','state':'unknown','active':1}
+                else:
+                    self.observed = {'mode':'unknown','state':'unknown','active':1,
+                                     'reason':'managed_lifecycle_error'}
+                    report = self.observed
                 try:
-                    self.report(self.observed, self.transition())
+                    self.report(report, self.transition())
                 except Exception:
                     pass
-                print('managed_comfy:', type(exc).__name__, flush=True)
+                print('managed_comfy:', 'foreign_inference_process' if isinstance(exc, ForeignInferenceProcess)
+                      else type(exc).__name__, flush=True)
             self.stop.wait(3)
 
     def acquire(self, request, revision, save, *, backend_id='nx5-ssd-minicpm', mode='llm'):

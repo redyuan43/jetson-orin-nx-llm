@@ -104,7 +104,8 @@ class Service:
             pending = [j for j in self.jobs.values() if j['status'] not in TERMINAL]
             blocked = (self.resident.blocked or any(j['status'] == 'unknown' for j in pending)
                        or (self.mode and (self.mode.intent.get('phase') == 'unknown'
-                                          or self.mode.policy_state.get('phase') == 'unknown')))
+                                          or self.mode.policy_state.get('phase') == 'unknown'
+                                          or self.mode.observed.get('state') == 'blocked')))
             native = self.resident.health()
             return {'service_id': 'nx5-ssd-llm', **self.release, **native,
                     'state': 'unknown' if blocked else 'stopping' if self.closing else 'busy' if pending else 'ready',

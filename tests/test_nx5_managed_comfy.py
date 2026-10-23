@@ -8,6 +8,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
+import resident as resident_module
 from test_nx5_service import module
 
 
@@ -34,6 +35,10 @@ class ManagedComfyTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
+        self.foreign_scan_actual = resident_module.foreign_inference_count
+        scan = patch.object(resident_module, 'foreign_inference_count', return_value=0)
+        scan.start()
+        self.addCleanup(scan.stop)
         self.root = Path(self.tmp.name)
         (self.root/'release.json').write_text(json.dumps({'files': {}, 'release': 'cpu',
             'commit': 'cpu', 'source_commit': 'cpu'}))
@@ -440,6 +445,33 @@ class ManagedComfyTests(unittest.TestCase):
     def test_unknown_lifecycle_is_not_published_as_ready(self):
         self.mode.save({'phase':'unknown','operation_id':MEDIA})
         self.assertEqual(self.service.health()['state'], 'unknown')
+
+    def test_foreign_inference_process_is_blocked_without_publishing_ready(self):
+        with patch.object(resident_module, 'foreign_inference_count', return_value=1), \
+             patch.object(self.mode.stop, 'wait', side_effect=lambda _: self.mode.stop.set()), \
+             patch('builtins.print'):
+            self.mode.run()
+        self.assertEqual(self.mode.health()['state'], 'blocked')
+        self.assertEqual(self.mode.health()['reason'], 'foreign_inference_process')
+        self.assertEqual(self.mode.report.call_args.args[0],
+                         {'mode':'unknown','state':'unknown','active':1})
+        health=self.service.health()
+        self.assertEqual(health['state'], 'unknown')
+        self.assertEqual(health['managed_comfy']['state'], 'blocked')
+
+    def test_foreign_inference_cgroup_is_distinguished_from_owned_units(self):
+        proc=self.root/'proc'
+        proc.mkdir()
+        executable=self.root/'llama-server'
+        executable.write_bytes(b'fixture')
+        for pid, unit in (("100", "nx5-flint-test128k.service"),
+                          ("101", "nx5-flint.service"),
+                          ("102", "other-device-llama.service")):
+            entry=proc/pid
+            entry.mkdir()
+            (entry/'exe').symlink_to(executable)
+            (entry/'cgroup').write_text(f"0::/user.slice/user@1000.service/app.slice/{unit}\n")
+        self.assertEqual(self.foreign_scan_actual(proc), 1)
 
     def test_reservation_identity_conflict_is_rejected_before_model_can_start(self):
         for changed in [{'operation_id':'op_'+'f'*32}, {'request_digest':'f'*64}, {'executor_id':'other'}]:
