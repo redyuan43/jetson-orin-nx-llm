@@ -131,7 +131,7 @@ class ResidentTests(unittest.TestCase):
         child = Mock(stdout=io.StringIO(
             'Attaching to process 123\n'
             'Thread 1 (Thread 0xffff):\n'
-            '#0  ggml_backend_buffer_get_type (buffer=0x0)\n'
+            '#0  ggml_backend_buffer_get_type (buffer=0x0 prompt=secret-user-text)\n'
             '#1  llama_decode () at llama-context.cpp:1\n'
             '[Inferior 1 (process 123) detached]\n'
         ))
@@ -145,7 +145,34 @@ class ResidentTests(unittest.TestCase):
         captured = diagnostic.read_text()
         self.assertIn('ggml_backend_buffer_get_type', captured)
         self.assertIn('llama-context.cpp:1', captured)
-        self.assertNotIn('plain generated answer', captured)
+        self.assertNotIn('secret-user-text', captured)
+        self.assertEqual(diagnostic.stat().st_mode & 0o777, 0o600)
+
+    def test_backtrace_capture_bounds_long_lines_and_file_total_then_delivers_json(self):
+        oversized_header = 'Attaching to process 123 ' + ('x' * (128 * 1024)) + '\n'
+        oversized_frame = '#0  function (arg=' + ('secret' * (16 * 1024)) + ')\n'
+        payload = (oversized_header + oversized_frame +
+                   '[Inferior 1 (process 123) detached]\n' +
+                   '{"type":"ready","model":"minicpm-64k"}\n')
+        child = Mock(stdout=io.StringIO(payload))
+        events = queue.Queue()
+        diagnostic = self.root/'native.backtrace'
+
+        ResidentModel.read_events(child, events, diagnostic)
+
+        self.assertEqual(events.get_nowait(), {'type':'error','code':'invalid_native_output'})
+        self.assertEqual(events.get_nowait(), {'type':'ready','model':'minicpm-64k'})
+        self.assertIsNone(events.get_nowait())
+        self.assertLessEqual(diagnostic.stat().st_size, 64 * 1024)
+        self.assertEqual(diagnostic.stat().st_mode & 0o777, 0o600)
+        self.assertNotIn('secret', diagnostic.read_text())
+
+        # A second capture for the same operation must not grow an O_APPEND file.
+        repeated = Mock(stdout=io.StringIO(
+            'Attaching to process 456\n' + ('#0  frame at file.cpp:1\n' * (5000)) +
+            '[Inferior 1 (process 456) detached]\n'))
+        ResidentModel.read_events(repeated, queue.Queue(), diagnostic)
+        self.assertLessEqual(diagnostic.stat().st_size, 64 * 1024)
 
     def test_native_text_lines_are_not_written_to_diagnostic_capture(self):
         child = Mock(stdout=io.StringIO('not-json plain generated answer\n'))

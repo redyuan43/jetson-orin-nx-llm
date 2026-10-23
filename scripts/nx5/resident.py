@@ -258,32 +258,89 @@ class ResidentModel:
         diagnostic = None
         diagnostic_bytes = 0
         diagnostic_limit = 64 * 1024
+        max_line_chars = diagnostic_limit
+
+        def bounded_lines(stream):
+            """Read bounded chunks so a missing newline cannot grow memory without limit."""
+            pending = ''
+            oversized = False
+            oversized_header = False
+            while True:
+                chunk = stream.readline(4096)
+                if not chunk:
+                    if pending or oversized:
+                        yield pending, oversized, oversized_header
+                    return
+                if not pending and not oversized and chunk.startswith('Attaching to process '):
+                    oversized_header = False
+                if not oversized:
+                    pending += chunk
+                    if len(pending) > max_line_chars:
+                        oversized = True
+                        oversized_header = pending.startswith('Attaching to process ')
+                        pending = pending[:128] if oversized_header else ''
+                if chunk.endswith('\n'):
+                    yield pending, oversized, oversized_header
+                    pending, oversized, oversized_header = '', False, False
+
+        def safe_diagnostic_line(line, oversized=False):
+            if oversized:
+                if line.startswith('Attaching to process '):
+                    match = re.match(r'^Attaching to process (\d+)\b', line)
+                    return f'Attaching to process {match.group(1)}\n' if match else None
+                return '[oversized line omitted]\n'
+            header = re.match(r'^Attaching to process (\d+)\s*$', line.rstrip('\r\n'))
+            if header:
+                return f'Attaching to process {header.group(1)}\n'
+            thread = re.match(r'^Thread (\d+) \(Thread (0x[0-9a-fA-F]+)\):\s*$', line.rstrip('\r\n'))
+            if thread:
+                return f'Thread {thread.group(1)} (Thread {thread.group(2)}):\n'
+            inferior = re.match(r'^\[Inferior (\d+) \(process (\d+)\) (detached|exited)\]\s*$', line.rstrip('\r\n'))
+            if inferior:
+                return f'[Inferior {inferior.group(1)} (process {inferior.group(2)}) {inferior.group(3)}]\n'
+            frame = re.match(r'^(#\d+)\s+(.+)$', line.rstrip('\r\n'))
+            if frame:
+                rest = frame.group(2)
+                symbol = rest.split(' (', 1)[0]
+                location = re.search(r'\) at ([\w./+\\ -]+:\d+(?::\d+)?)$', rest)
+                suffix = f' at {location.group(1)}' if location else ''
+                if symbol and re.fullmatch(r'[\w:~<>,*&. -]+', symbol):
+                    return f'{frame.group(1)} {symbol}{suffix}\n'
+            return None
+
         try:
-            for line in child.stdout:
+            for line, oversized, oversized_header in bounded_lines(child.stdout):
                 if capturing_backtrace:
                     if diagnostic_bytes < diagnostic_limit:
-                        encoded = line.encode('utf-8', errors='replace')
-                        diagnostic.write(encoded[:diagnostic_limit-diagnostic_bytes].decode(
-                            'utf-8', errors='replace'))
-                        diagnostic.flush()
-                        diagnostic_bytes += len(encoded)
+                        safe_line = safe_diagnostic_line(line, oversized)
+                        if safe_line:
+                            encoded = safe_line.encode('utf-8', errors='replace')
+                            encoded = encoded[:diagnostic_limit-diagnostic_bytes]
+                            diagnostic.write(encoded.decode('utf-8', errors='ignore'))
+                            diagnostic.flush()
+                            diagnostic_bytes += len(encoded)
                     if '[Inferior ' in line and ('detached' in line or 'exited' in line):
                         events.put({'type': 'error', 'code': 'invalid_native_output'})
                         capturing_backtrace = False
                     continue
                 try:
+                    if oversized:
+                        raise ValueError('native_line_too_long')
                     event = json.loads(line)
                 except (TypeError, ValueError):
-                    if diagnostic_path is not None and line.startswith('Attaching to process '):
+                    if diagnostic_path is not None and (line.startswith('Attaching to process ') or oversized_header):
                         diagnostic_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-                        fd = os.open(diagnostic_path, os.O_WRONLY | os.O_CREAT | os.O_APPEND |
+                        fd = os.open(diagnostic_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC |
                             getattr(os, 'O_NOFOLLOW', 0), 0o600)
-                        diagnostic = os.fdopen(fd, 'a', encoding='utf-8')
+                        diagnostic = os.fdopen(fd, 'w', encoding='utf-8')
                         os.fchmod(fd, 0o600)
                         capturing_backtrace = True
-                        diagnostic.write(line)
-                        diagnostic.flush()
-                        diagnostic_bytes += len(line.encode('utf-8', errors='replace'))
+                        safe_line = safe_diagnostic_line(line, oversized)
+                        if safe_line:
+                            encoded = safe_line.encode('utf-8', errors='replace')[:diagnostic_limit]
+                            diagnostic.write(encoded.decode('utf-8', errors='ignore'))
+                            diagnostic.flush()
+                            diagnostic_bytes = len(encoded)
                         continue
                     events.put({'type': 'error', 'code': 'invalid_native_output'})
                     return
