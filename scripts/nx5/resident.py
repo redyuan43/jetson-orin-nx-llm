@@ -236,7 +236,9 @@ class ResidentModel:
                 stderr=self.log, text=True, encoding='utf-8', bufsize=1, env=env)
             self.record.update(pid=self.child.pid, command=command)
             self.save()
-            threading.Thread(target=self.read_events, args=(self.child, self.events), daemon=True).start()
+            diagnostic_path = self.folder/(self.record['operation_id'] + '.backtrace')
+            threading.Thread(target=self.read_events,
+                args=(self.child, self.events, diagnostic_path), daemon=True).start()
             self.guard = threading.Thread(target=self.watch, args=(self.child, self.guard_stop, self.central, dict(self.record), cfg['parameters']['min_available_mib']), daemon=True)
             self.guard.start()
             event = self.next_event(time.monotonic() + 180)
@@ -251,13 +253,46 @@ class ResidentModel:
             raise
 
     @staticmethod
-    def read_events(child, events):
+    def read_events(child, events, diagnostic_path=None):
+        capturing_backtrace = False
+        diagnostic = None
+        diagnostic_bytes = 0
+        diagnostic_limit = 64 * 1024
         try:
             for line in child.stdout:
-                events.put(json.loads(line))
+                if capturing_backtrace:
+                    if diagnostic_bytes < diagnostic_limit:
+                        encoded = line.encode('utf-8', errors='replace')
+                        diagnostic.write(encoded[:diagnostic_limit-diagnostic_bytes].decode(
+                            'utf-8', errors='replace'))
+                        diagnostic.flush()
+                        diagnostic_bytes += len(encoded)
+                    if '[Inferior ' in line and ('detached' in line or 'exited' in line):
+                        events.put({'type': 'error', 'code': 'invalid_native_output'})
+                        capturing_backtrace = False
+                    continue
+                try:
+                    event = json.loads(line)
+                except (TypeError, ValueError):
+                    if diagnostic_path is not None and line.startswith('Attaching to process '):
+                        diagnostic_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                        fd = os.open(diagnostic_path, os.O_WRONLY | os.O_CREAT | os.O_APPEND |
+                            getattr(os, 'O_NOFOLLOW', 0), 0o600)
+                        diagnostic = os.fdopen(fd, 'a', encoding='utf-8')
+                        os.fchmod(fd, 0o600)
+                        capturing_backtrace = True
+                        diagnostic.write(line)
+                        diagnostic.flush()
+                        diagnostic_bytes += len(line.encode('utf-8', errors='replace'))
+                        continue
+                    events.put({'type': 'error', 'code': 'invalid_native_output'})
+                    return
+                events.put(event)
         except Exception:
             events.put({'type': 'error', 'code': 'invalid_native_output'})
         finally:
+            if diagnostic is not None:
+                diagnostic.close()
             events.put(None)
 
     def next_event(self, deadline):

@@ -127,6 +127,37 @@ class ResidentTests(unittest.TestCase):
         current.terminate.assert_not_called()
         self.assertTrue(self.model.ready)
 
+    def test_native_abort_backtrace_is_captured_without_recording_plain_output(self):
+        child = Mock(stdout=io.StringIO(
+            'Attaching to process 123\n'
+            'Thread 1 (Thread 0xffff):\n'
+            '#0  ggml_backend_buffer_get_type (buffer=0x0)\n'
+            '#1  llama_decode () at llama-context.cpp:1\n'
+            '[Inferior 1 (process 123) detached]\n'
+        ))
+        events = queue.Queue()
+        diagnostic = self.root/'native.backtrace'
+
+        ResidentModel.read_events(child, events, diagnostic)
+
+        self.assertEqual(events.get_nowait(), {'type':'error','code':'invalid_native_output'})
+        self.assertIsNone(events.get_nowait())
+        captured = diagnostic.read_text()
+        self.assertIn('ggml_backend_buffer_get_type', captured)
+        self.assertIn('llama-context.cpp:1', captured)
+        self.assertNotIn('plain generated answer', captured)
+
+    def test_native_text_lines_are_not_written_to_diagnostic_capture(self):
+        child = Mock(stdout=io.StringIO('not-json plain generated answer\n'))
+        events = queue.Queue()
+        diagnostic = self.root/'native.backtrace'
+
+        ResidentModel.read_events(child, events, diagnostic)
+
+        self.assertEqual(events.get_nowait(), {'type':'error','code':'invalid_native_output'})
+        self.assertIsNone(events.get_nowait())
+        self.assertFalse(diagnostic.exists())
+
     def test_release_follows_process_exit_and_is_idempotent(self):
         child, central = Mock(), Mock()
         child.poll.return_value = None
