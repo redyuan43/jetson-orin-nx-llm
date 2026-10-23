@@ -14,6 +14,42 @@ spec.loader.exec_module(module)
 
 
 class DeploymentConfigurationTests(unittest.TestCase):
+    def test_flint_recovery_remote_can_inspect_barrier_after_owner_stop(self):
+        source = module.REMOTE_FLINT_RECOVERY.replace('PAYLOAD', '{}', 1)
+        compile(inspect.getsource(module.validate_flint_recovery_snapshot) + '\n' + source,
+                '<flint-recovery-publisher>', 'exec')
+        self.assertIn('def snapshot(owner_required=True):', source)
+        self.assertIn('after=snapshot(owner_required=False)', source)
+        self.assertIn("owner_required else None", source)
+        self.assertIn("expected_config_sha256", source)
+        self.assertIn("expected_unit_sha256", source)
+
+    def test_flint_recovery_requires_exact_live_gate_request_and_central_transition(self):
+        operation = 'op_' + 'a' * 32
+        source = 'b' * 40
+        profile = 'c' * 64
+        snapshot = {'host':'nx5','tailnet_ipv4':'100.118.44.27','current_source_sha':source,
+            'owner_health':{'source_commit':source,'state':'ready','mode':'off','active':0,
+                'model_loaded':False,'resident_pid':None,'lease_status':'released','resident_error':None},
+            'owner_unit':{'active':'active'},'native_unit':{'active':'inactive'},
+            'comfy_unit':{'active':'inactive'},'gate_activity':{'profile_id':'nx5-flint',
+                'profile_digest':profile,'mode':'flint','enabled':True,'public_enabled':False,
+                'qualification_only':True,'owner_admission':False,'active':0,'unknown':0,'waiting':1},
+            'models':[],'gate_request':{'operation_id':operation,'state':'preparing'},
+            'central_activity':{'group_id':'nx5-igpu-group','resources':['nx5-igpu'],'fresh':True,
+                'leases':[],'transition':{'executor_id':'nx5-text','operation_id':operation,
+                    'target_mode':'flint'},'pending':[{'executor_id':'nx5-text','operation_id':operation,
+                    'status':'preparing','resources':[{'resource_id':'nx5-igpu','units':1}]}]}}
+        self.assertTrue(module.validate_flint_recovery_snapshot(snapshot,operation,source,profile))
+        changed = json.loads(json.dumps(snapshot))
+        changed['central_activity']['transition']['operation_id'] = 'op_' + 'd' * 32
+        with self.assertRaisesRegex(RuntimeError,'original_flint_transition_changed'):
+            module.validate_flint_recovery_snapshot(changed,operation,source,profile)
+        changed = json.loads(json.dumps(snapshot))
+        changed['owner_health']['model_loaded'] = True
+        with self.assertRaisesRegex(RuntimeError,'owner_not_fresh_off'):
+            module.validate_flint_recovery_snapshot(changed,operation,source,profile)
+
     def test_publisher_uses_bounded_approved_nx5_ssh_alias(self):
         self.assertEqual(module.remote_ssh_command(['python3', '-']),
                          ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=8',
