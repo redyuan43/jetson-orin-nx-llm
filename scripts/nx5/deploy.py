@@ -74,7 +74,8 @@ def validate_flint_recovery_snapshot(snapshot, operation_id, current_source_sha,
             or gate.get('mode') != 'flint' or gate.get('enabled') is not True
             or gate.get('public_enabled') is not False or gate.get('qualification_only') is not True
             or gate.get('owner_admission') is not False or gate.get('active') != 0
-            or gate.get('unknown') != 0 or gate.get('waiting') != 1):
+            or gate.get('unknown') != 0 or gate.get('waiting') != 1
+            or gate.get('ingress_closed') is not True):
         raise RuntimeError('flint_gate_not_single_qualification_waiting')
     if snapshot.get('models') != []:
         raise RuntimeError('flint_gate_models_not_closed')
@@ -321,7 +322,7 @@ def snapshot(owner_required=True):
   'owner_unit':unit('nx5-ssd-llm.service'),'native_unit':unit('nx5-flint.service'),
   'comfy_unit':unit('siyuan-image-comfy.service'),
   'owner_health':{k:owner.get(k) for k in ('source_commit','state','mode','active','model_loaded','resident_pid','lease_status','resident_error')} if owner else {},
-  'gate_activity':{k:gate.get(k) for k in ('profile_id','profile_digest','mode','enabled','public_enabled','qualification_only','owner_admission','active','unknown','waiting')},
+  'gate_activity':{k:gate.get(k) for k in ('profile_id','profile_digest','mode','enabled','public_enabled','qualification_only','owner_admission','active','unknown','waiting','ingress_closed')},
   'models':models.get('data'),'gate_request':{k:gate_request.get(k) for k in ('operation_id','state','reason','request_digest','response_digest')},
   'central_activity':{k:group.get(k) for k in ('group_id','resources','fresh','mode','state','active','leases','pending','transition')}}
 def atomic(path,raw,mode=0o600):
