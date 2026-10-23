@@ -17,6 +17,12 @@ def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
+def profile_digest(model_profile, runtime_profile):
+    model_profile = {key: value for key, value in model_profile.items()
+                     if key not in {'revision', 'profile_digest'}}
+    return digest({'model_profile': model_profile, 'runtime_profile': runtime_profile})
+
+
 def write_atomic(path, value):
     temp = path.with_suffix('.tmp')
     with temp.open('w') as stream:
@@ -165,6 +171,10 @@ class ResidentModel:
         root = Path(self.config['root'])
         cfg = json.loads((self.repo/'configs/nx5-minicpm-service.json').read_text())
         runtime = json.loads((self.repo/'configs/nx5-chat-runtime.json').read_text())
+        expected_profile_digest = profile_digest(cfg, runtime)
+        if (cfg.get('profile_digest') != expected_profile_digest
+                or cfg.get('revision') != expected_profile_digest):
+            raise RuntimeError('profile_digest_mismatch')
         model = root/cfg['model_dir']
         template = self.repo/cfg['chat_template']
         checks = {root/runtime['binary']: runtime['binary_sha256'], template: cfg['chat_template_sha256']}
@@ -188,6 +198,8 @@ class ResidentModel:
         command = [str(root/runtime['binary']), '--resident', '-m', str(model/'stripped.gguf'),
             '--moe-experts', str(model/'experts'), '--moe-slot-bank', str(p['bank']),
             '--cache-type-k', 'q8_0', '--cache-type-v', 'q8_0', '-ngl', '99', '-fa', 'on',
+            '--cache-type-k-draft', p['draft_cache_k'],
+            '--cache-type-v-draft', p['draft_cache_v'],
             '-c', str(p['ctx']), '-b', '2048', '-ub', str(p['ubatch']), '-n', '2048',
             '--seed', str(p['seed']), '-fit', 'off', '--perf', '-lv', '3', '--no-escape',
             '--ctx-checkpoints', str(p['ctx_checkpoints']), '--cache-ram', '0',

@@ -1,7 +1,7 @@
 {
   "family": "minicpm",
   "model": "MiniCPM-V4.7 35B-A3B 64K SSD",
-  "revision": "a64932ec615e1463158129feaf2f0752d0c07a2e",
+  "revision": "abeb9e9c7a44b3af7841b07a69b8de170d5d4c78e08cb35e808f2c0424f3540f",
   "model_dir": "models/MiniCPM-V-4.7",
   "library_dir": "minicpm-audit-20261021/optimization/cuda-mapped-v2",
   "library_sha256": {
@@ -35,6 +35,10 @@
     "timeout": 2400,
     "ubatch": 8,
     "spec_type": "draft-dspark",
-    "reasoning_budget": 0
-  }
+    "reasoning_budget": 0,
+    "draft_cache_k": "q8_0",
+    "draft_cache_v": "q8_0"
+  },
+  "model_revision": "a64932ec615e1463158129feaf2f0752d0c07a2e",
+  "profile_digest": "abeb9e9c7a44b3af7841b07a69b8de170d5d4c78e08cb35e808f2c0424f3540f"
 }
