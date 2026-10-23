@@ -11,6 +11,11 @@ spec.loader.exec_module(module)
 
 
 class DeploymentConfigurationTests(unittest.TestCase):
+    def test_publisher_uses_bounded_approved_nx5_ssh_alias(self):
+        self.assertEqual(module.remote_ssh_command(['python3', '-']),
+                         ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=8',
+                          'nx5', 'python3', '-'])
+
     def test_enabling_comfy_preserves_owned_configuration(self):
         defaults = {'bind': '127.0.0.1', 'port': 18347, 'client_token_file': '/private/key'}
         existing = dict(defaults, custom_limit=7)
@@ -82,7 +87,7 @@ class RemoteActivationTests(unittest.TestCase):
             'files':{n:base64.b64encode(b).decode() for n,b in contents.items()}}
         self.commands=[]
 
-    def execute(self, on_command, on_health=None):
+    def execute(self, on_command, on_health=None, identity=('nx5', '100.118.44.27')):
         import io
         import json
         import subprocess
@@ -96,6 +101,8 @@ class RemoteActivationTests(unittest.TestCase):
             self.commands.append(list(args));on_command(args)
             return subprocess.CompletedProcess(args,0,'','')
         def output(args,**kwargs):
+            if args[:2]==['hostname','-s']:return identity[0]+'\n'
+            if args[:3]==['tailscale','ip','-4']:return identity[1]+'\n'
             prop=next((a for a in args if a.startswith('--property=')),'')
             return ('disabled' if prop=='--property=UnitFileState' else 'inactive')+'\n'
         class Opener:
@@ -116,6 +123,14 @@ class RemoteActivationTests(unittest.TestCase):
     def journal(self):
         import json
         return json.loads((self.state/('deployment-'+self.sha+'.json')).read_text())
+
+    def test_wrong_remote_identity_stops_before_any_deployment_write(self):
+        with self.assertRaisesRegex(RuntimeError, 'wrong_target_identity'):
+            self.execute(lambda args: None, identity=('other-device', '100.118.44.27'))
+        self.assertEqual(self.config.read_bytes(), self.old_config)
+        self.assertEqual(self.unit.read_bytes(), self.old_unit)
+        self.assertEqual(self.current.resolve(), self.old)
+        self.assertEqual(self.commands, [])
 
     def test_disable_failure_after_config_install_restores_original_owned_controls(self):
         def fail(args):

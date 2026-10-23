@@ -26,6 +26,10 @@ def check_config_baseline(raw, expected, *, required=False):
         raise RuntimeError('config_baseline_changed')
 
 
+def remote_ssh_command(command):
+    return ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=8', 'nx5', *command]
+
+
 FILES = ['scripts/nx5/resident.py', 'scripts/nx5/compat_api.py', 'configs/nx5-chat-runtime.json', 'scripts/nx5/chat-runner.cpp', 'scripts/nx5/service.py', 'scripts/nx5/run-model.py', 'scripts/minicpm/bench-audit.py',
          'configs/qwen36-iq4xs-128k.json', 'configs/nx5-minicpm-service.json',
          'configs/minicpm-v47-instruct.jinja', 'docs/nx5-service/API.md',
@@ -35,6 +39,10 @@ FILES = ['scripts/nx5/resident.py', 'scripts/nx5/compat_api.py', 'configs/nx5-ch
 REMOTE = r'''
 import base64,hashlib,json,os,secrets,shlex,subprocess,time,urllib.request,tempfile,uuid
 from pathlib import Path
+host_identity=subprocess.check_output(['hostname','-s'],text=True).strip()
+tailnet_addresses=subprocess.check_output(['tailscale','ip','-4'],text=True).split()
+if host_identity!='nx5' or '100.118.44.27' not in tailnet_addresses:
+    raise RuntimeError('wrong_target_identity')
 p=PAYLOAD
 home=Path.home(); base=home/'.local/share/nx5-ssd-llm'; private=home/'.config/nx5-ssd-llm'
 state=home/'.local/state/nx5-ssd-llm'; unit_dir=home/'.config/systemd/user'
@@ -223,7 +231,7 @@ def main():
                'expected_config_sha256':args.expected_config_sha256,
                'files': {name: base64.b64encode(data).decode() for name, data in contents.items()}}
     helpers='\n'.join(inspect.getsource(f) for f in (upgrade_config,check_config_baseline))+'\n'
-    subprocess.run(['ssh', '-o', 'Hostname=192.168.100.154', '-o', 'BatchMode=yes', 'nx5', 'python3', '-'],
+    subprocess.run(remote_ssh_command(['python3', '-']),
                    input=helpers+REMOTE.replace('PAYLOAD', repr(payload), 1), text=True, check=True)
 
 
