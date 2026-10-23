@@ -46,12 +46,34 @@ def require_baseline(expected,actual):
     if any(expected.get(k)!=actual.get(k) for k in keys):raise RuntimeError('owner_baseline_changed')
 
 
-def require_idle(health,activity,jobs,intent):
+def require_idle(health,activity,jobs,intent,maintenance_hold=None):
     if (health.get('state')!='ready' or health.get('active')!=0
             or health.get('inference_or_switch_request_active') is not False
             or health.get('coordinator_reachable') is not True):raise RuntimeError('owner_not_idle')
+    expected_leases=[]
+    if maintenance_hold is not None:
+        hold=maintenance_hold
+        if (not re.fullmatch('op_[a-f0-9]{32}',hold.get('operation_id',''))
+                or hold.get('resources')!=[{'resource_id':'nano5-igpu','units':1}]
+                or not hold.get('executor_id') or not hold.get('lease_id') or not hold.get('backend_id')
+                or any(not re.fullmatch('[a-f0-9]{64}',hold.get(k,''))
+                       for k in ('lease_request_digest','reservation_request_digest'))):
+            raise RuntimeError('maintenance_hold_identity_invalid')
+        # Root verified the original lease/reservation full snapshots while
+        # acquiring this hold. Digests above are audit fields; /activity exposes
+        # only the immutable executor/operation/resource identity and status.
+        # This publisher never creates or releases the root-owned hold.
+        expected_leases=[{k:hold[k] for k in ('operation_id','executor_id','resources')}|{'status':'held'}]
+        if (activity.get('group_id')!=GROUP or activity.get('resources')!=['nano5-igpu']
+                or activity.get('fresh') is not True or activity.get('state')!='ready'
+                or activity.get('active')!=0 or activity.get('mode')!=hold.get('mode')
+                or health.get('mode')!=hold.get('mode')):
+            raise RuntimeError('maintenance_group_not_ready')
     if (any(type(activity.get(k)) is not list for k in ('leases','pending'))
-            or 'transition' not in activity or activity['leases'] or activity['pending'] or activity['transition']):
+            or 'transition' not in activity or activity['leases']!=expected_leases or activity['transition']):
+        raise RuntimeError('central_group_not_idle')
+    if (activity['pending'] and (maintenance_hold is None
+            or any(p.get('status')!='waiting' for p in activity['pending']))):
         raise RuntimeError('central_group_not_idle')
     if any(j.get('status') not in {'succeeded','failed','cancelled'} for j in jobs):
         raise RuntimeError('local_job_not_terminal')
@@ -99,13 +121,13 @@ def api(config,path):
     with opener.open(req,timeout=8) as response:return json.load(response)
 
 
-def idle(config,root,mark,fence_module):
+def idle(config,root,mark,fence_module,maintenance_hold=None):
     health=root.marked_request(config,mark)
     state=Path(config['state'])
     jobs=[json.loads(p.read_text()) for p in state.glob('op_*.json')]
     intent=json.loads((state/'last-transition.json').read_text()) if (state/'last-transition.json').exists() else {}
     activity=api(config,'/internal/v1/resource-groups/'+GROUP+'/activity')
-    require_idle(health,activity,jobs,intent)
+    require_idle(health,activity,jobs,intent,maintenance_hold)
     fence_module.connections_drained(command(['ss','-Htan','sport = :'+str(config['port'])]))
     snapshot()
     return health
@@ -127,19 +149,22 @@ def remote(payload,stage_module,fence_module):
     journal=folder/'publication.json'
     old=previous(journal,operation,payload['source_commit'])
     if old:return receipt(old)
+    hold=payload.get('maintenance_hold')
+    if payload.get('apply') and not hold:raise RuntimeError('held_maintenance_barrier_required')
     current=snapshot()
     root=fence_module.Root(prefix=())
     firewall=root(['-S','INPUT'])
     baseline_sha=sha(firewall.encode())
     mark=int(operation[3:11],16) or 1
-    idle(config,root,mark,fence_module)
+    idle(config,root,mark,fence_module,hold)
     if not payload.get('apply'):
         stage_module.stage(HOME/'minicpm-v47/releases',CONFIG.read_bytes(),payload,apply=False)
         return {'phase':'preflight','operation_id':operation,'source_commit':payload['source_commit'],
-            'expected':current,'firewall_sha256':baseline_sha}
+            'expected':current,'firewall_sha256':baseline_sha,'maintenance_hold':hold}
     plan=payload['plan']
     if plan.get('operation_id')!=operation or plan.get('source_commit')!=payload['source_commit']:
         raise RuntimeError('plan_identity_conflict')
+    if plan.get('maintenance_hold')!=hold:raise RuntimeError('maintenance_plan_identity_changed')
     require_baseline(plan['expected'],current)
     if plan['firewall_sha256']!=baseline_sha:raise RuntimeError('firewall_baseline_changed')
     target=HOME/'minicpm-v47/releases'/payload['source_commit']
@@ -153,7 +178,7 @@ def remote(payload,stage_module,fence_module):
         fence.shield(plan['firewall_sha256'])
         record['phase']='shielded';atomic(journal,record)
         require_baseline(plan['expected'],snapshot())
-        idle(config,root,mark,fence_module)
+        idle(config,root,mark,fence_module,hold)
         unit_raw=UNIT.read_bytes();config_raw=CONFIG.read_bytes()
         for name,raw in [('unit.before',unit_raw),('config.before.json',config_raw),
                 ('owner.log',command(['journalctl','_UID=2002','_SYSTEMD_USER_UNIT='+SERVICE,'-n','100','--no-pager']).encode())]:
@@ -161,7 +186,7 @@ def remote(payload,stage_module,fence_module):
         unit_after=next_unit(unit_raw.decode(),current['cwd'],str(target)).encode()
         after_config=dict(config,deployment=str(target))
         config_after=(json.dumps(after_config,indent=2)+'\n').encode()
-        require_baseline(plan['expected'],snapshot());idle(config,root,mark,fence_module)
+        require_baseline(plan['expected'],snapshot());idle(config,root,mark,fence_module,hold)
         record['phase']='restarting';atomic(journal,record)
         for path,raw in [(UNIT,unit_after),(CONFIG,config_after)]:
             temp=path.with_name(path.name+'.owner-release-pending')
@@ -177,7 +202,7 @@ def remote(payload,stage_module,fence_module):
                         or now['source_sha256']!=expected_source or now['unit_sha256']!=sha(unit_after)
                         or now['config_sha256']!=sha(config_after)):
                     raise RuntimeError('new_owner_identity_not_ready')
-                health=idle(after_config,root,mark,fence_module)
+                health=idle(after_config,root,mark,fence_module,hold)
                 if health.get('commit')!=expected_source:raise RuntimeError('new_owner_health_identity_changed')
                 break
             except Exception:time.sleep(1)
@@ -196,9 +221,11 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--commit',required=True);p.add_argument('--operation',required=True)
     p.add_argument('--expected-config-sha256',required=True);p.add_argument('--plan',type=Path)
+    p.add_argument('--maintenance-hold',type=Path)
     p.add_argument('--apply',action='store_true');args=p.parse_args()
     if not re.fullmatch('[a-f0-9]{40}',args.commit):raise RuntimeError('full_git_commit_required')
     if args.apply and not args.plan:raise RuntimeError('reviewed_plan_required')
+    if args.apply and not args.maintenance_hold:raise RuntimeError('held_maintenance_barrier_required')
     repo=Path(__file__).resolve().parents[2]
     read=lambda name:subprocess.check_output(['git','show',args.commit+':'+name],cwd=repo)
     scope={'__name__':'committed_stage'}
@@ -207,7 +234,8 @@ def main():
     payload={'source_commit':args.commit,'operation_id':args.operation,'expected_config_sha256':args.expected_config_sha256,
         'manifest':{'source_commit':args.commit,'files':{n:sha(v) for n,v in raw.items()}},
         'files':{n:base64.b64encode(v).decode() for n,v in raw.items()},'apply':args.apply,
-        'plan':json.loads(args.plan.read_text()) if args.plan else None}
+        'plan':json.loads(args.plan.read_text()) if args.plan else None,
+        'maintenance_hold':json.loads(args.maintenance_hold.read_text()) if args.maintenance_hold else None}
     source='import types,json\n'
     for var,path in [('stage_module','scripts/minicpm/stage-nano5.py'),
             ('fence_module','scripts/nx5/temporary_admission_fence.py'),('publisher','scripts/minicpm/publish-nano5.py')]:
