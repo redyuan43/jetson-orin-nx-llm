@@ -1,6 +1,8 @@
 import hashlib
 import importlib.util
+import json
 from pathlib import Path
+import tempfile
 import unittest
 
 
@@ -27,6 +29,53 @@ class DeploymentConfigurationTests(unittest.TestCase):
         defaults = {'port': 18347}
         existing = dict(defaults, managed_comfy=True)
         self.assertEqual(module.upgrade_config(existing, defaults), existing)
+
+    def test_managed_llm_profile_version_tracks_published_model_revision(self):
+        defaults = {'port': 18347}
+        existing = dict(defaults, managed_comfy=True, custom_limit=7,
+            policy_profiles={'llm': {'profile_id': 'nx5-ssd-minicpm', 'version': 'old-revision'},
+                             'comfy': {'profile_id': 'nx5-qwen21', 'version': 'comfy-revision'}})
+
+        result = module.upgrade_config(existing, defaults, llm_profile_version='new-revision')
+
+        self.assertEqual(result['policy_profiles']['llm'],
+                         {'profile_id': 'nx5-ssd-minicpm', 'version': 'new-revision'})
+        self.assertEqual(result['policy_profiles']['comfy'], existing['policy_profiles']['comfy'])
+        self.assertEqual(result['custom_limit'], 7)
+        self.assertEqual(existing['policy_profiles']['llm']['version'], 'old-revision')
+
+    def test_unmanaged_configuration_does_not_gain_managed_profile(self):
+        existing = {'port': 18347, 'managed_comfy': False}
+
+        result = module.upgrade_config(existing, {'port': 18347}, llm_profile_version='new-revision')
+
+        self.assertEqual(result, existing)
+
+    def test_published_version_is_accepted_by_actual_managed_comfy_owner(self):
+        resident_path = Path(__file__).resolve().parents[1] / 'scripts/nx5/resident.py'
+        resident_spec = importlib.util.spec_from_file_location('nx5_candidate_resident', resident_path)
+        resident_module = importlib.util.module_from_spec(resident_spec)
+        resident_spec.loader.exec_module(resident_module)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root/'configs').mkdir()
+            (root/'configs/nx5-minicpm-service.json').write_text(json.dumps({'revision': 'new-revision'}))
+            config = {'managed_comfy': True,
+                      'policy_profiles': {'llm': {'profile_id': 'nx5-ssd-minicpm',
+                                                  'version': 'old-revision'}}}
+            upgraded = module.upgrade_config(config, {}, llm_profile_version='new-revision')
+
+            class Service:
+                repo = root
+                state = root/'jobs'
+
+                def __init__(self):
+                    self.config = upgraded
+
+            owner = resident_module.ManagedComfy(Service())
+
+            self.assertEqual(owner.policy_profiles['llm']['version'], 'new-revision')
 
     def test_existing_endpoint_or_credentials_cannot_be_replaced_by_defaults(self):
         with self.assertRaisesRegex(RuntimeError, 'service_config_changed'):
@@ -68,7 +117,9 @@ class RemoteActivationTests(unittest.TestCase):
         self.unit.write_bytes(self.old_unit)
         self.old_config=json.dumps({'root':str(self.home/'github/qwen38-kvmem'),
             'state':str(self.jobs),'client_token_file':str(self.private/'client.key'),
-            'bind':'100.118.44.27','port':18347,'custom_limit':7}).encode()
+            'bind':'100.118.44.27','port':18347,'custom_limit':7,'managed_comfy':True,
+            'policy_profiles':{'llm':{'profile_id':'nx5-ssd-minicpm','version':'old-revision'},
+                               'comfy':{'profile_id':'nx5-qwen21','version':'comfy-revision'}}}).encode()
         self.config.write_bytes(self.old_config)
         (self.private/'client.key').write_text('cpu-fixture-not-a-real-secret')
         credentials=self.home/'.config/siyuan-text-ingress';credentials.mkdir(parents=True)
@@ -80,7 +131,7 @@ class RemoteActivationTests(unittest.TestCase):
         contents={'configs/nx5-chat-runtime.json':json.dumps({'binary':'cpu-binary',
             'binary_sha256':hashlib.sha256(b'cpu-fixture').hexdigest(),'libraries':{}}).encode(),
             'deploy/nx5/nx5-ssd-llm.service':b'[Unit]\nDescription=candidate SSD unit\n'}
-        self.payload={'apply':True,'managed_comfy':True,
+        self.payload={'apply':True,'managed_comfy':False,'llm_profile_version':'new-revision',
             'expected_config_sha256':hashlib.sha256(self.old_config).hexdigest(),
             'manifest':{'source_commit':self.sha,'commit':'cpu-fingerprint',
                 'files':{n:hashlib.sha256(b).hexdigest() for n,b in contents.items()}},
@@ -131,6 +182,19 @@ class RemoteActivationTests(unittest.TestCase):
         self.assertEqual(self.unit.read_bytes(), self.old_unit)
         self.assertEqual(self.current.resolve(), self.old)
         self.assertEqual(self.commands, [])
+
+    def test_successful_activation_updates_only_llm_profile_version(self):
+        self.execute(lambda args: None)
+
+        import json
+        config = json.loads(self.config.read_text())
+        self.assertEqual(config['policy_profiles']['llm'],
+                         {'profile_id': 'nx5-ssd-minicpm', 'version': 'new-revision'})
+        self.assertEqual(config['policy_profiles']['comfy'],
+                         {'profile_id': 'nx5-qwen21', 'version': 'comfy-revision'})
+        self.assertEqual(config['custom_limit'], 7)
+        self.assertEqual(self.journal()['phase'], 'activated')
+        self.assertEqual(self.current.readlink(), self.base/'releases'/self.sha)
 
     def test_disable_failure_after_config_install_restores_original_owned_controls(self):
         def fail(args):

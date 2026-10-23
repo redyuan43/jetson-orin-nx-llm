@@ -2,6 +2,7 @@
 """Publish an immutable committed nx5 service bundle; preflight unless --apply."""
 import argparse
 import base64
+import copy
 import hashlib
 import inspect
 import json
@@ -9,12 +10,19 @@ from pathlib import Path
 import subprocess
 
 
-def upgrade_config(existing, defaults, *, managed_comfy=False):
+def upgrade_config(existing, defaults, *, managed_comfy=False, llm_profile_version=None):
     if existing is not None and any(existing.get(k) != v for k, v in defaults.items()):
         raise RuntimeError('service_config_changed')
-    result = dict(defaults if existing is None else existing)
+    result = copy.deepcopy(defaults if existing is None else existing)
     if managed_comfy:
         result['managed_comfy'] = True
+    if result.get('managed_comfy') is True and llm_profile_version is not None:
+        profiles = result.get('policy_profiles')
+        if isinstance(profiles, dict) and 'llm' in profiles:
+            profile = profiles['llm']
+            if not isinstance(profile, dict) or set(profile) != {'profile_id', 'version'}:
+                raise RuntimeError('llm_policy_profile_invalid')
+            profile['version'] = llm_profile_version
     return result
 
 
@@ -52,7 +60,8 @@ check_config_baseline(config_raw, p.get('expected_config_sha256'), required=p.ge
 defaults={'root':str(home/'github/qwen38-kvmem'),'state':str(state/'jobs'),
           'client_token_file':str(private/'client.key'),'bind':'100.118.44.27','port':18347}
 desired=upgrade_config(json.loads(config_raw) if config_raw is not None else None, defaults,
-                       managed_comfy=p.get('managed_comfy',False))
+                       managed_comfy=p.get('managed_comfy',False),
+                       llm_profile_version=p.get('llm_profile_version'))
 legacy=['siyuan-fleet-control.service','siyuan-text-ingress.service','siyuan-text-compat-bridge.service',
         'siyuan-image-comfy.service','nx5-ornith-35b-a3b-iq2s.service','qwen38-kvmem.service']
 def state_of(unit,prop):
@@ -227,8 +236,10 @@ def main():
     fingerprint = hashlib.sha256(json.dumps(hashes, sort_keys=True).encode()).hexdigest()
     manifest = {'release': 'nx5-ssd-llm-' + revision[:12], 'source_commit': revision,
                 'commit': fingerprint, 'files': hashes}
+    llm_profile_version = json.loads(contents['configs/nx5-minicpm-service.json'])['revision']
     payload = {'apply': args.apply, 'manifest': manifest, 'managed_comfy':args.managed_comfy,
                'expected_config_sha256':args.expected_config_sha256,
+               'llm_profile_version':llm_profile_version,
                'files': {name: base64.b64encode(data).decode() for name, data in contents.items()}}
     helpers='\n'.join(inspect.getsource(f) for f in (upgrade_config,check_config_baseline))+'\n'
     subprocess.run(remote_ssh_command(['python3', '-']),
