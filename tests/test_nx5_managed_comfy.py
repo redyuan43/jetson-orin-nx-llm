@@ -3,6 +3,7 @@ import json
 import io
 import configparser
 import threading
+import time
 from pathlib import Path
 import tempfile
 import unittest
@@ -49,8 +50,12 @@ class ManagedComfyTests(unittest.TestCase):
         self.mode.activity = Mock(return_value=activity())
         self.mode.transition = Mock(return_value=None)
         self.mode.unit = Mock(return_value='inactive')
+        self.mode.flint_unit = Mock(return_value='inactive')
+        self.mode.flint_gate_unit = Mock(return_value='inactive')
         self.mode.queue = Mock(return_value=0)
         self.mode.action = Mock()
+        self.mode.flint_action = Mock()
+        self.mode.wait_flint_ready = Mock(return_value={'ready':True,'active':0,'slots':1})
         self.mode.report = Mock()
 
     def load_resident(self):
@@ -187,6 +192,99 @@ class ManagedComfyTests(unittest.TestCase):
         self.assertEqual(self.central.api.call_args.args[2],
                          {'mode':'llm','state':'loading','active':1,'operation_id':None})
 
+    def test_flint_reservation_uses_flint_backend_and_mode(self):
+        sent = []
+        def api(method, path, body=None, controller=False):
+            sent.append((method, path, body))
+            if method == 'POST':
+                return {'status':'held','operation_id':body['operation_id'],
+                        'executor_id':'nx5-text','request_digest':body['request_digest']}
+            return {'status':'held','operation_id':path.rsplit('/', 1)[-1],
+                    'request_digest':sent[0][2]['request_digest']}
+        self.central.api.side_effect = api
+        save = Mock()
+        self.mode.acquire({'model':'flint','resident_session':'session'}, 'profile-v1', save,
+                          backend_id='nx5-flint', mode='flint')
+        reservation = next(body for method, path, body in sent if method == 'POST')
+        self.assertEqual({k:v for k,v in reservation['candidates'][0].items() if k != 'probed_at'}, {
+            'backend_id':'nx5-flint','mapping_version':'profile-v1',
+            'resources':[{'resource_id':'nx5-igpu','units':1}], 'mode':'flint',
+            'probe_status':'ready'
+        })
+
+    def test_waiting_flint_gate_work_is_confirmed_by_its_profile_identity(self):
+        self.mode.flint_gate_unit.return_value = 'active'
+        self.mode.flint_gate_activity = Mock(return_value={
+            'group_id':'nx5-igpu-group','resources':['nx5-igpu'],'mode':'flint',
+            'profile_id':'nx5-flint','profile_digest':'a'*64,'active':0,'unknown':0,'waiting':1,
+            'ingress_closed':False,'enabled':False,'observed_at':time.time()})
+        pending = self.mode.demand_for_mode('flint')
+        self.assertEqual(pending['profile_id'], 'nx5-flint')
+        self.assertEqual(pending['waiting'], 1)
+        self.mode.flint_gate_activity.assert_called_once_with()
+
+    def test_unknown_or_stale_flint_gate_activity_never_yields_minicpm(self):
+        self.mode.flint_gate_unit.return_value = 'active'
+        self.mode.flint_gate_activity = Mock()
+        baseline = {'group_id':'nx5-igpu-group','resources':['nx5-igpu'],'mode':'flint',
+            'profile_id':'nx5-flint','profile_digest':'a'*64,'active':0,'unknown':0,'waiting':1,
+            'ingress_closed':False,'enabled':False,'observed_at':time.time()}
+        for changes in ({'profile_id':'other'}, {'unknown':1}, {'active':1},
+                        {'observed_at':time.time()-61}, {'resources':['nx6-igpu']}):
+            with self.subTest(changes=changes):
+                self.mode.flint_gate_activity.return_value = baseline | changes
+                if changes in ({'unknown':1}, {'active':1}):
+                    self.assertIsNone(self.mode.demand_for_mode('flint'))
+                else:
+                    with self.assertRaisesRegex(RuntimeError, 'flint_gate_activity_unknown'):
+                        self.mode.demand_for_mode('flint')
+
+    def test_busy_flint_slot_prevents_comfy_switch(self):
+        original = barrier('comfy')
+        self.mode.activity.return_value = activity('flint', transition=original)
+        self.mode.transition.return_value = original
+        self.mode.unit.return_value = 'inactive'
+        self.mode.flint_unit.return_value = 'active'
+        self.mode.flint_runtime = Mock(return_value={'ready':True,'active':1,'slots':1})
+        self.mode.tick()
+        self.mode.flint_action.assert_not_called()
+
+    def test_flint_to_llm_switch_stops_idle_flint_before_reporting_target(self):
+        original = barrier('llm', TEXT, 'nx5-text')
+        self.service.resident.record = {'operation_id':TEXT,'backend_id':'nx5-ssd-minicpm',
+            'mode':'llm','status':'reserving'}
+        self.mode.activity.return_value = activity('flint', transition=original)
+        self.mode.transition.return_value = original
+        self.mode.unit.return_value = 'inactive'
+        self.mode.flint_unit = Mock(side_effect=['active','inactive'])
+        self.mode.flint_runtime = Mock(return_value={'ready':True,'active':0,'slots':1})
+        self.mode.flint_action = Mock()
+
+        with patch('resident.require_idle'):
+            self.mode.tick()
+
+        self.mode.flint_action.assert_called_once_with('stop')
+        self.assertEqual(self.mode.report.call_args.args[0], {'mode':'llm','state':'ready','active':0})
+
+    def test_busy_flint_blocks_off_transition_without_stopping_or_reporting(self):
+        original = barrier('off', 'device-policy:nx5-igpu-group', 'device-policy:nx5-igpu-group')
+        self.mode.activity.return_value = activity('flint', transition=original)
+        self.mode.transition.return_value = original
+        self.mode.policy_demand = Mock(return_value={
+            'mode':'off','state':'requested','operation_id':original['operation_id'],
+            'profile_id':'nx5-flint','profile_version':'flint-v1','activation':'resident',
+            'policy_revision':2,'executor_id':'device-policy:nx5-igpu-group'})
+        self.mode.policy_comfy_transition = Mock(return_value=True)
+        self.mode.flint_unit.return_value = 'active'
+        self.mode.flint_runtime = Mock(return_value={'ready':True,'active':1,'slots':1})
+        self.mode.flint_action = Mock()
+
+        self.mode.tick()
+
+        self.mode.flint_action.assert_not_called()
+        self.mode.report.assert_not_called()
+        self.mode.action.assert_not_called()
+
     def test_text_transition_waits_for_foreign_lease_even_with_idle_comfy(self):
         original = barrier('llm', TEXT, 'nx5-text')
         self.service.resident.record = {'operation_id':TEXT,'status':'reserving'}
@@ -207,6 +305,47 @@ class ManagedComfyTests(unittest.TestCase):
             self.mode.tick()
         self.mode.action.assert_called_once_with('stop')
         self.assertEqual(self.mode.report.call_args.args[0], {'mode':'llm','state':'ready','active':0})
+
+    def test_matching_flint_transition_starts_only_the_flint_owner(self):
+        original = barrier('flint', TEXT, 'nx5-text')
+        self.service.resident.record = {'operation_id':TEXT,'backend_id':'nx5-flint',
+            'mode':'flint','status':'reserving'}
+        self.mode.activity.return_value = activity('off', transition=original)
+        self.mode.transition.return_value = original
+        self.mode.unit.return_value = 'inactive'
+        self.mode.flint_unit = Mock(side_effect=['inactive', 'active'])
+        self.mode.flint_action = Mock()
+        with patch('resident.require_idle'):
+            self.mode.tick()
+        self.mode.flint_action.assert_called_once_with('start')
+        self.mode.action.assert_not_called()
+        self.assertEqual(self.mode.report.call_args.args[0], {'mode':'flint','state':'ready','active':0})
+
+    def test_flint_transition_drains_comfy_before_starting_flint(self):
+        original = barrier('flint', TEXT, 'nx5-text')
+        self.service.resident.record = {'operation_id':TEXT,'backend_id':'nx5-flint',
+            'mode':'flint','status':'reserving'}
+        self.mode.activity.return_value = activity('comfy', transition=original)
+        self.mode.transition.return_value = original
+        self.mode.unit.side_effect = ['active', 'inactive']
+        self.mode.flint_unit.side_effect = ['inactive', 'active']
+        self.mode.wait_flint_ready = Mock(return_value={'ready':True,'active':0,'slots':1})
+        with patch('resident.require_idle'):
+            self.mode.tick()
+        self.mode.action.assert_called_once_with('stop')
+        self.mode.flint_action.assert_called_once_with('start')
+
+    def test_comfy_transition_stops_idle_flint_before_start(self):
+        original = barrier('comfy')
+        self.mode.activity.return_value = activity('flint', transition=original)
+        self.mode.transition.return_value = original
+        self.mode.unit.side_effect = ['inactive', 'active']
+        self.mode.flint_unit.side_effect = ['active', 'inactive', 'inactive']
+        self.mode.flint_runtime = Mock(return_value={'ready':True,'active':0,'slots':1})
+        with patch('resident.require_idle'):
+            self.mode.tick()
+        self.mode.flint_action.assert_called_once_with('stop')
+        self.mode.action.assert_called_once_with('start')
 
     def test_lost_reservation_response_queries_original_without_another_submit(self):
         saved = {}

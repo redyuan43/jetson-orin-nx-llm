@@ -50,6 +50,8 @@ class DevicePolicyTests(unittest.TestCase):
         self.mode.activity = Mock(return_value=dict(activity('off'), policy_demand=None))
         self.mode.transition = Mock(return_value=None)
         self.mode.unit = Mock(return_value='inactive')
+        self.mode.flint_unit = Mock(return_value='inactive')
+        self.mode.flint_gate_unit = Mock(return_value='inactive')
         self.mode.queue = Mock(return_value=0)
         self.mode.action = Mock()
         self.mode.report = Mock()
@@ -109,6 +111,13 @@ class DevicePolicyTests(unittest.TestCase):
                     self.mode.tick()
         child.wait.assert_not_called()
         self.central.release.assert_not_called()
+
+    def test_flint_policy_uses_resident_activation_and_exact_profile_identity(self):
+        version = 'f'*64
+        self.mode.policy_profiles['flint'] = {'profile_id':'nx5-flint','version':version}
+        policy = demand(mode='flint', profile_id='nx5-flint', profile_version=version,
+                        activation='resident')
+        self.assertEqual(self.mode.policy_demand(dict(activity('off'),policy_demand=policy)), policy)
 
     def test_off_yields_only_original_resident_then_acknowledges_original_barrier(self):
         child = self.loaded()

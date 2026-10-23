@@ -45,6 +45,23 @@ class DeploymentConfigurationTests(unittest.TestCase):
         self.assertEqual(result['custom_limit'], 7)
         self.assertEqual(existing['policy_profiles']['llm']['version'], 'old-revision')
 
+    def test_managed_flint_profile_version_tracks_exact_runtime_identity(self):
+        existing = {'managed_comfy': True, 'policy_profiles': {
+            'llm': {'profile_id': 'nx5-ssd-minicpm', 'version': 'llm-revision'},
+            'flint': {'profile_id': 'nx5-flint', 'version': 'old-revision'}}}
+        result = module.upgrade_config(existing, {}, flint_profile_version='new-flint')
+        self.assertEqual(result['policy_profiles']['flint'],
+                         {'profile_id': 'nx5-flint', 'version': 'new-flint'})
+        self.assertEqual(existing['policy_profiles']['flint']['version'], 'old-revision')
+
+    def test_managed_flint_profile_is_added_without_changing_other_profiles(self):
+        existing = {'managed_comfy': True, 'policy_profiles': {
+            'llm': {'profile_id': 'nx5-ssd-minicpm', 'version': 'llm-revision'}}}
+        result = module.upgrade_config(existing, {}, flint_profile_version='flint-revision')
+        self.assertEqual(result['policy_profiles']['flint'],
+                         {'profile_id': 'nx5-flint', 'version': 'flint-revision'})
+        self.assertEqual(result['policy_profiles']['llm'], existing['policy_profiles']['llm'])
+
     def test_unmanaged_configuration_does_not_gain_managed_profile(self):
         existing = {'port': 18347, 'managed_comfy': False}
 

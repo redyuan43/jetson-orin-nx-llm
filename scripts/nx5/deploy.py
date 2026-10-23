@@ -9,7 +9,8 @@ from pathlib import Path
 import subprocess
 
 
-def upgrade_config(existing, defaults, *, managed_comfy=False, llm_profile_version=None):
+def upgrade_config(existing, defaults, *, managed_comfy=False, llm_profile_version=None,
+                   flint_profile_version=None):
     import copy
 
     if existing is not None and any(existing.get(k) != v for k, v in defaults.items()):
@@ -24,6 +25,17 @@ def upgrade_config(existing, defaults, *, managed_comfy=False, llm_profile_versi
             if not isinstance(profile, dict) or set(profile) != {'profile_id', 'version'}:
                 raise RuntimeError('llm_policy_profile_invalid')
             profile['version'] = llm_profile_version
+    if result.get('managed_comfy') is True and flint_profile_version is not None:
+        profiles = result.get('policy_profiles')
+        if isinstance(profiles, dict):
+            profile = profiles.get('flint')
+            if profile is None:
+                profiles['flint'] = {'profile_id': 'nx5-flint', 'version': flint_profile_version}
+            elif (not isinstance(profile, dict) or set(profile) != {'profile_id', 'version'}
+                  or profile.get('profile_id') != 'nx5-flint'):
+                raise RuntimeError('flint_policy_profile_invalid')
+            else:
+                profile['version'] = flint_profile_version
     return result
 
 
@@ -62,7 +74,8 @@ defaults={'root':str(home/'github/qwen38-kvmem'),'state':str(state/'jobs'),
           'client_token_file':str(private/'client.key'),'bind':'100.118.44.27','port':18347}
 desired=upgrade_config(json.loads(config_raw) if config_raw is not None else None, defaults,
                        managed_comfy=p.get('managed_comfy',False),
-                       llm_profile_version=p.get('llm_profile_version'))
+                       llm_profile_version=p.get('llm_profile_version'),
+                       flint_profile_version=p.get('flint_profile_version'))
 legacy=['siyuan-fleet-control.service','siyuan-text-ingress.service','siyuan-text-compat-bridge.service',
         'siyuan-image-comfy.service','nx5-ornith-35b-a3b-iq2s.service','qwen38-kvmem.service']
 def state_of(unit,prop):
@@ -229,6 +242,7 @@ def main():
     parser.add_argument('--apply', action='store_true')
     parser.add_argument('--managed-comfy', action='store_true', help='enable the reviewed NX5 managed mode owner')
     parser.add_argument('--expected-config-sha256', help='required CAS baseline when enabling an existing configuration')
+    parser.add_argument('--flint-profile-version', help='bind the managed Flint policy profile to its fixed runtime identity')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     revision = subprocess.check_output(['git', 'rev-parse', args.commit + '^{commit}'], cwd=root, text=True).strip()
@@ -238,9 +252,11 @@ def main():
     manifest = {'release': 'nx5-ssd-llm-' + revision[:12], 'source_commit': revision,
                 'commit': fingerprint, 'files': hashes}
     llm_profile_version = json.loads(contents['configs/nx5-minicpm-service.json'])['revision']
+    flint_profile_version = args.flint_profile_version
     payload = {'apply': args.apply, 'manifest': manifest, 'managed_comfy':args.managed_comfy,
                'expected_config_sha256':args.expected_config_sha256,
                'llm_profile_version':llm_profile_version,
+               'flint_profile_version':flint_profile_version,
                'files': {name: base64.b64encode(data).decode() for name, data in contents.items()}}
     helpers='\n'.join(inspect.getsource(f) for f in (upgrade_config,check_config_baseline))+'\n'
     subprocess.run(remote_ssh_command(['python3', '-']),

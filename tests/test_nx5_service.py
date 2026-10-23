@@ -77,6 +77,16 @@ class AdmissionTests(unittest.TestCase):
                 self.service.submit({**self.payload(), **change})
         self.assertFalse(self.service.jobs)
 
+    def test_flint_keeps_its_original_openai_model_alias(self):
+        payload, stream, usage = module.normalize({
+            'model': 'flint',
+            'messages': [{'role': 'user', 'content': 'hello'}],
+            'max_tokens': 32,
+        })
+        self.assertEqual(payload['profile'], 'flint')
+        self.assertEqual(payload['chat']['messages'], [{'role': 'user', 'content': 'hello'}])
+        self.assertEqual((stream, usage), (False, False))
+
 
 if __name__ == '__main__':
     unittest.main()

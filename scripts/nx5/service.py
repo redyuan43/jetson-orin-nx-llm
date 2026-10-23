@@ -109,10 +109,11 @@ class Service:
             return {'service_id': 'nx5-ssd-llm', **self.release, **native,
                     'state': 'unknown' if blocked else 'stopping' if self.closing else 'busy' if pending else 'ready',
                     'mode': ('comfy' if self.mode and self.mode.observed['mode'] == 'comfy' else
+                             'flint' if self.mode and self.mode.observed['mode'] == 'flint' else
                              'minicpm-64k' if native['model_loaded'] or pending else 'off'),
                     'active': len(pending), 'observed_at': time.time(), 'resource': 'nx5-igpu',
                     'managed_comfy': self.mode.health() if self.mode else None,
-                    'availability_scope': 'MiniCPM retains one prefix-cache slot and its central lease; managed Comfy mode yields only while idle.' if self.mode else 'MiniCPM loads on first request and stays resident with one prefix-cache slot and a held central lease.'}
+                    'availability_scope': 'NX5 resident owner serializes MiniCPM, Flint and Comfy modes; text leases remain with their original executor.' if self.mode else 'MiniCPM loads on first request and stays resident with one prefix-cache slot and a held central lease.'}
 
     def unload(self):
         with self.lock:

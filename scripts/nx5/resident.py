@@ -42,7 +42,7 @@ def memory_available():
 
 def require_idle():
     for unit in ('siyuan-fleet-control.service', 'siyuan-image-comfy.service',
-                 'nx5-ornith-35b-a3b-iq2s.service'):
+                 'nx5-ornith-35b-a3b-iq2s.service', 'nx5-flint.service'):
         state = subprocess.check_output(['systemctl', '--user', 'show', unit,
                                         '--property=ActiveState,MainPID'], text=True)
         if 'ActiveState=inactive' not in state or 'MainPID=0' not in state:
@@ -492,6 +492,8 @@ class ManagedComfy:
     GROUP = 'nx5-igpu-group'
     RESOURCE = 'nx5-igpu'
     UNIT = 'siyuan-image-comfy.service'
+    FLINT_UNIT = 'nx5-flint.service'
+    FLINT_GATE_UNIT = 'nx5-flint-ingress.service'
     MEDIA_EXECUTOR = 'nx6-image-executor'
 
     def __init__(self, service):
@@ -505,7 +507,7 @@ class ManagedComfy:
         self.observed = {'mode': 'unknown', 'state': 'unknown', 'active': 1}
         self.policy_profiles = service.config.get('policy_profiles', {})
         if (not isinstance(self.policy_profiles, dict)
-                or set(self.policy_profiles) - {'llm', 'comfy'}):
+                or set(self.policy_profiles) - {'llm', 'flint', 'comfy'}):
             raise ValueError('policy_profiles_invalid')
         for mode, profile in self.policy_profiles.items():
             if (not isinstance(profile, dict) or set(profile) != {'profile_id', 'version'}
@@ -560,7 +562,7 @@ class ManagedComfy:
                 and p['version'] == value.get('profile_version')), None)
         if (not profile or value.get('profile_id') != profile['profile_id']
                 or value.get('profile_version') != profile['version']
-                or value.get('activation') != ('resident' if value['mode'] == 'llm' else 'controller')
+                or value.get('activation') != ('resident' if value['mode'] in {'llm','flint'} else 'controller')
                 or value.get('executor_id') != 'device-policy:' + self.GROUP
                 or not isinstance(value.get('operation_id'), str)
                 or not re.fullmatch(r'op_[a-f0-9]{32}', value['operation_id'])
@@ -578,7 +580,7 @@ class ManagedComfy:
         return value
 
     def policy_comfy_transition(self, transition, policy):
-        return bool(policy and policy['mode'] in {'comfy', 'off'}
+        return bool(policy and policy['mode'] in {'comfy', 'flint', 'off'}
             and transition.get('executor_id') == 'device-policy:' + self.GROUP
             and transition.get('operation_id') == policy['operation_id']
             and transition.get('target_mode') == policy['mode']
@@ -645,6 +647,8 @@ class ManagedComfy:
         if observation['mode'] == 'llm':
             resident = self.service.resident
             loaded = bool(resident.health()['model_loaded'] and resident.model_revision == profile['version'])
+        elif observation['mode'] == 'flint':
+            loaded = bool(self.flint_runtime()['ready'])
         return dict(observation, profile_id=profile['profile_id'], profile_version=profile['version'],
                     model_loaded=loaded)
 
@@ -664,6 +668,38 @@ class ManagedComfy:
                      and p.get('status') == 'waiting'
                      and any(r.get('resource_id') == self.RESOURCE for r in p.get('resources', []))), None)
 
+    def flint_gate_activity(self):
+        url = self.service.config.get('flint_gate_activity_url', 'http://127.0.0.1:18085/internal/activity')
+        token_path = Path(self.service.config.get('flint_controller_token_file',
+            str(Path.home()/'.config/siyuan-nx5-flint/controller.key')))
+        token = token_path.read_text().strip()
+        if len(token) < 32:
+            raise RuntimeError('flint_controller_credential_invalid')
+        request = urllib.request.Request(url, headers={'Authorization':'Bearer '+token})
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        try:
+            with opener.open(request, timeout=5) as response:
+                return json.load(response)
+        except Exception as exc:
+            raise RuntimeError('flint_gate_unavailable') from exc
+
+    def demand_for_mode(self, mode):
+        if mode != 'flint':
+            raise RuntimeError('unsupported_resident_profile')
+        if self.flint_gate_unit() != 'active':
+            return None
+        row = self.flint_gate_activity()
+        if (row.get('group_id') != self.GROUP or row.get('resources') != [self.RESOURCE]
+                or row.get('mode') != 'flint' or row.get('profile_id') != 'nx5-flint'
+                or not isinstance(row.get('profile_digest'), str)
+                or not re.fullmatch(r'[a-f0-9]{64}', row['profile_digest'])
+                or any(type(row.get(key)) is not int or row[key] < 0 for key in ('active','unknown','waiting'))
+                or type(row.get('observed_at')) not in (int,float)
+                or not 0 <= time.time()-row['observed_at'] <= 60
+                or type(row.get('ingress_closed')) is not bool or type(row.get('enabled')) is not bool):
+            raise RuntimeError('flint_gate_activity_unknown')
+        return row if row['waiting'] and not row['active'] and not row['unknown'] else None
+
     def gate_text(self):
         if self.policy_state.get('phase') == 'unknown':
             raise RuntimeError('policy_requires_reconciliation')
@@ -671,13 +707,16 @@ class ManagedComfy:
             raise RuntimeError('device_mode_waiting')
         if self.policy_profiles:
             policy = self.policy_demand(self.checked_activity(require_ready=False))
-            if policy and policy['mode'] in {'comfy', 'off'} and policy['state'] != 'unknown':
+            if policy and policy['mode'] in {'comfy', 'flint', 'off'} and policy['state'] != 'unknown':
                 raise RuntimeError('device_mode_waiting')
         if self.intent.get('phase') == 'unknown':
             raise RuntimeError('lifecycle_requires_reconciliation')
         if self.intent.get('phase') in {'yielding', 'dispatching', 'actions_complete'}:
             raise RuntimeError('device_mode_waiting')
         if self.service.resident.health()['model_loaded']:
+            if self.demand_for_mode('flint'):
+                self.save({'phase':'yielding', 'target_mode':'flint'})
+                raise RuntimeError('device_mode_waiting')
             demand = self.demand(self.checked_activity())
             if demand:
                 self.save({'phase': 'yielding', 'media_operation_id': demand['operation_id']})
@@ -705,8 +744,65 @@ class ManagedComfy:
             raise RuntimeError('comfy_state_unknown')
         return state
 
+    def flint_unit(self):
+        result = subprocess.run(['systemctl','--user','show',self.FLINT_UNIT,'--property=ActiveState','--value'],
+                                capture_output=True, text=True, check=True, timeout=10)
+        state = result.stdout.strip()
+        if state not in {'active', 'inactive'}:
+            raise RuntimeError('flint_state_unknown')
+        return state
+
+    def flint_gate_unit(self):
+        result = subprocess.run(['systemctl','--user','show',self.FLINT_GATE_UNIT,'--property=ActiveState','--value'],
+                                capture_output=True, text=True, check=True, timeout=10)
+        state = result.stdout.strip()
+        if state not in {'active', 'inactive'}:
+            raise RuntimeError('flint_gate_state_unknown')
+        return state
+
     def action(self, verb):
         subprocess.run(['systemctl','--user',verb,self.UNIT], check=True, timeout=60)
+
+    def flint_action(self, verb):
+        subprocess.run(['systemctl','--user',verb,self.FLINT_UNIT], check=True, timeout=60)
+
+    def flint_runtime(self):
+        token_path = Path(self.service.config.get('flint_native_token_file',
+            str(Path.home()/'.config/siyuan-nx5-flint/native.key')))
+        token = token_path.read_text().strip()
+        if len(token) < 32:
+            raise RuntimeError('flint_native_credential_invalid')
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        def get(path):
+            request = urllib.request.Request('http://127.0.0.1:18086'+path,
+                headers={'Authorization':'Bearer '+token})
+            with opener.open(request, timeout=5) as response:
+                return json.load(response)
+        try:
+            health = get('/health')
+            models = get('/v1/models')
+            slots = get('/slots')
+        except Exception as exc:
+            raise RuntimeError('flint_native_unavailable') from exc
+        model_ids = {row.get('id') for row in models.get('data', []) if isinstance(row, dict)}
+        if health.get('status') != 'ok' or model_ids != {'flint'} or not isinstance(slots, list) or not slots:
+            raise RuntimeError('flint_native_identity_mismatch')
+        if any(not isinstance(row, dict) or type(row.get('is_processing')) is not bool for row in slots):
+            raise RuntimeError('flint_native_slots_unknown')
+        return {'ready':True, 'active':sum(row['is_processing'] for row in slots), 'slots':len(slots)}
+
+    def wait_flint_ready(self, timeout=90):
+        deadline = time.monotonic()+timeout
+        last = None
+        while time.monotonic() < deadline:
+            try:
+                return self.flint_runtime()
+            except RuntimeError as exc:
+                last = exc
+                if str(exc) not in {'flint_native_unavailable'}:
+                    raise
+                time.sleep(1)
+        raise RuntimeError('flint_readiness_timeout') from last
 
     def request(self, path):
         request = urllib.request.Request('http://127.0.0.1:8188'+path)
@@ -741,22 +837,26 @@ class ManagedComfy:
             transition = self.transition()
             native = resident.child is not None and resident.child.poll() is None
             unit = self.unit()
-            if native and unit == 'active':
+            flint_unit = self.flint_unit()
+            if (native and unit == 'active') or (flint_unit == 'active' and unit == 'active') or (native and flint_unit == 'active'):
                 raise RuntimeError('mode_conflict')
             demand = self.demand(row) if row.get('fresh') is True and row.get('state') == 'ready' else None
+            flint_demand = self.demand_for_mode('flint')
             pending_text = any(j['status'] not in {'succeeded','failed'} for j in self.service.jobs.values())
             policy_loading = self.policy_state.get('phase') == 'loading'
-            policy_yield = bool(policy and policy['mode'] in {'comfy', 'off'} and policy['state'] != 'unknown'
+            policy_yield = bool(policy and policy['mode'] in {'comfy', 'flint', 'off'} and policy['state'] != 'unknown'
                 and row.get('state') == 'ready' and row.get('active') == 0
                 and (policy['mode'] != 'off' or (not row['pending'] and not transition))
                 and resident.record.get('status') == 'held'
                 and row['leases'] and all(p.get('executor_id') == 'nx5-text'
                     and p.get('operation_id') == resident.record.get('operation_id') for p in row['leases']))
-            if native and not pending_text and not resident.active and not policy_loading and (demand or policy_yield):
+            if native and not pending_text and not resident.active and not policy_loading and (demand or flint_demand or policy_yield):
                 if policy_yield:
                     self.save_policy({'demand':policy, 'phase':'yielding'})
                 self.save({'phase':'yielding', 'media_operation_id':demand['operation_id'],
                            'resident_operation_id':resident.record['operation_id']} if demand else
+                          {'phase':'yielding', 'flint_profile_id':flint_demand['profile_id'],
+                           'resident_operation_id':resident.record['operation_id']} if flint_demand else
                           {'phase':'yielding', 'policy_operation_id':policy['operation_id'],
                            'resident_operation_id':resident.record['operation_id']})
                 try:
@@ -776,8 +876,9 @@ class ManagedComfy:
                 self.save(dict(self.intent, phase='completed'))
             if transition:
                 target = transition.get('target_mode')
-                own_text = (target == 'llm' and transition.get('executor_id') == 'nx5-text'
-                            and transition.get('operation_id') == resident.record.get('operation_id'))
+                own_text = (target in {'llm', 'flint'} and transition.get('executor_id') == 'nx5-text'
+                            and transition.get('operation_id') == resident.record.get('operation_id')
+                            and resident.record.get('mode', 'llm') == target)
                 policy_transition = self.policy_comfy_transition(transition, policy)
                 if not (target == 'comfy' and transition.get('executor_id') == self.MEDIA_EXECUTOR) and not own_text and not policy_transition:
                     raise RuntimeError('unsupported_transition')
@@ -807,24 +908,63 @@ class ManagedComfy:
                     # Retain the demand contract before a lifecycle effect, so a
                     # later unknown central report can reconcile only this ID.
                     self.save_policy({'demand':policy, 'phase':'transitioning'})
-                verb = 'start' if target == 'comfy' else 'stop'
-                needs_action = unit != ('active' if target == 'comfy' else 'inactive')
-                if needs_action:
-                    if self.intent.get('phase') in {'actions_complete', 'completed'} and self.intent.get('operation_id') == transition['operation_id']:
-                        raise RuntimeError('lifecycle_effect_unconfirmed')
-                    if target == 'comfy':
-                        require_idle()
+                if target != 'flint' and flint_unit == 'active':
+                    runtime = self.flint_runtime()
+                    if runtime['active']:
+                        return
                     self.check_policy_barrier(transition, policy if policy_transition else None)
-                    self.save(dict(transition, phase='dispatching'))
+                    self.save(dict(transition, phase='dispatching', step='stop-flint'))
                     try:
-                        self.action(verb)
+                        self.flint_action('stop')
                     except Exception:
                         self.save(dict(self.intent, phase='unknown'))
                         raise
-                    self.save(dict(transition, phase='actions_complete'))
-                    unit = self.unit()
-                    if unit != ('active' if target == 'comfy' else 'inactive'):
+                    self.save(dict(transition, phase='actions_complete', step='stop-flint'))
+                    flint_unit = self.flint_unit()
+                    if flint_unit != 'inactive':
                         raise RuntimeError('lifecycle_effect_unconfirmed')
+                if target == 'flint' and unit == 'active':
+                    if self.queue():
+                        return
+                    self.check_policy_barrier(transition, policy if policy_transition else None)
+                    self.save(dict(transition, phase='dispatching', step='stop-comfy'))
+                    try:
+                        self.action('stop')
+                    except Exception:
+                        self.save(dict(self.intent, phase='unknown'))
+                        raise
+                    self.save(dict(transition, phase='actions_complete', step='stop-comfy'))
+                    unit = self.unit()
+                    if unit != 'inactive':
+                        raise RuntimeError('lifecycle_effect_unconfirmed')
+                target_unit = self.FLINT_UNIT if target == 'flint' else self.UNIT
+                action_for_target = self.flint_action if target == 'flint' else self.action
+                target_state = flint_unit if target == 'flint' else unit
+                desired_state = 'active' if target in {'comfy', 'flint'} else 'inactive'
+                verb = 'start' if desired_state == 'active' else 'stop'
+                needs_action = target_state != desired_state
+                if needs_action:
+                    if (self.intent.get('phase') in {'actions_complete', 'completed'}
+                            and self.intent.get('operation_id') == transition['operation_id']
+                            and self.intent.get('step') not in {'stop-comfy', 'stop-flint'}):
+                        raise RuntimeError('lifecycle_effect_unconfirmed')
+                    if target == 'comfy':
+                        require_idle()
+                    if target == 'flint':
+                        require_idle()
+                    self.check_policy_barrier(transition, policy if policy_transition else None)
+                    self.save(dict(transition, phase='dispatching', step='target-action'))
+                    try:
+                        action_for_target(verb)
+                    except Exception:
+                        self.save(dict(self.intent, phase='unknown'))
+                        raise
+                    self.save(dict(transition, phase='actions_complete', step='target-action'))
+                    target_state = self.flint_unit() if target == 'flint' else self.unit()
+                    if target_state != desired_state:
+                        raise RuntimeError('lifecycle_effect_unconfirmed')
+                    if target == 'flint':
+                        self.wait_flint_ready()
                 self.check_policy_barrier(transition, policy if policy_transition else None)
                 if target == 'llm':
                     require_idle()
@@ -841,6 +981,9 @@ class ManagedComfy:
                 self.start_policy_load(policy)
             if unit == 'active':
                 observation = {'mode':'comfy','state':'ready','active':self.queue()}
+            elif self.flint_unit() == 'active':
+                runtime = self.flint_runtime()
+                observation = {'mode':'flint','state':'ready','active':runtime['active']}
             elif native:
                 observation = {'mode':'llm','state':'ready' if resident.ready else 'loading',
                                'active':int(resident.active)}
@@ -870,14 +1013,17 @@ class ManagedComfy:
                 print('managed_comfy:', type(exc).__name__, flush=True)
             self.stop.wait(3)
 
-    def acquire(self, request, revision, save):
+    def acquire(self, request, revision, save, *, backend_id='nx5-ssd-minicpm', mode='llm'):
         """Enqueue once; refresh only the proven original reservation thereafter."""
+        if (backend_id, mode) not in {('nx5-ssd-minicpm', 'llm'), ('nx5-flint', 'flint')}:
+            raise RuntimeError('unsupported_resident_profile')
         record = {'operation_id':'op_'+uuid.uuid4().hex, 'request_digest':digest(request),
-                  'status':'reserving', 'created_at':time.time(), 'request':request}
+                  'status':'reserving', 'created_at':time.time(), 'request':request,
+                  'backend_id':backend_id, 'mode':mode, 'mapping_version':revision}
         save(record)
         body = {k:record[k] for k in ('operation_id','request_digest')}
-        body['candidates'] = [{'backend_id':'nx5-ssd-minicpm', 'mapping_version':revision,
-            'resources':[{'resource_id':self.RESOURCE,'units':1}], 'mode':'llm',
+        body['candidates'] = [{'backend_id':backend_id, 'mapping_version':revision,
+            'resources':[{'resource_id':self.RESOURCE,'units':1}], 'mode':mode,
             'probe_status':'ready', 'probed_at':time.time()}]
         wire = self.wire()
         path = '/internal/v1/reservations/'+record['operation_id']

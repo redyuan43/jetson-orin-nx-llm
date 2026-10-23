@@ -4,7 +4,7 @@ import json
 import re
 import uuid
 
-MODELS = ('minicpm-64k',)
+MODELS = ('minicpm-64k', 'flint')
 
 
 class InvalidRequest(ValueError):
