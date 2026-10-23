@@ -1,0 +1,20 @@
+diff --git a/src/llama-graph.cpp b/src/llama-graph.cpp
+index 31d4c41..6220382 100644
+--- a/src/llama-graph.cpp
++++ b/src/llama-graph.cpp
+@@ -513,11 +513,13 @@ void llm_graph_input_attn_kv::set_input(const llama_ubatch * ubatch) {
+         mctx->set_input_kq_mask(self_kq_mask, ubatch, cparams.causal_attn);
+     }
+ 
+-    if (self_k_rot) {
++    // DFlash's KV-injection graph does not attend, so its rotation inputs can
++    // exist in the graph-input descriptor without being allocated by the scheduler.
++    if (self_k_rot && self_k_rot->buffer) {
+         mctx->set_input_k_rot(self_k_rot);
+     }
+ 
+-    if (self_v_rot) {
++    if (self_v_rot && self_v_rot->buffer) {
+         mctx->set_input_v_rot(self_v_rot);
+     }
+ }

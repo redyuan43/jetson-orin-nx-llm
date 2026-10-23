@@ -1,12 +1,12 @@
 {
   "family": "minicpm",
   "model": "MiniCPM-V4.7 35B-A3B 64K SSD",
-  "revision": "abeb9e9c7a44b3af7841b07a69b8de170d5d4c78e08cb35e808f2c0424f3540f",
+  "revision": "4ed70a5a3b84b5a4ba71f0f65e896deb5e23631ca179b1d24d6988a9ab7666ad",
   "model_dir": "models/MiniCPM-V-4.7",
-  "library_dir": "minicpm-audit-20261021/optimization/cuda-mapped-v2",
+  "library_dir": "builds/nx5-dflash-b75b05f",
   "library_sha256": {
     "libggml-cuda.so.0": "ea6394c23526ad021d9f449063a1bdc820c7f697d2495169430d7412ffe0dac6",
-    "libllama.so.0": "5ede85f4c76d1299c9dc0e6089b72a6a8bee7e70a60cc5ad561ed112b58b3e6c"
+    "libllama.so.0": "ee92647a1cdb7f990f6901acdd33e985825aa8fe0964e674b1c25b68770f43cf"
   },
   "cli_sha256": "49e307ca0635f67cff3714357565147ab50db02d041c22357991c52c2b468ce5",
   "chat_template": "configs/minicpm-v47-instruct.jinja",
@@ -40,5 +40,5 @@
     "draft_cache_v": "q8_0"
   },
   "model_revision": "a64932ec615e1463158129feaf2f0752d0c07a2e",
-  "profile_digest": "abeb9e9c7a44b3af7841b07a69b8de170d5d4c78e08cb35e808f2c0424f3540f"
+  "profile_digest": "4ed70a5a3b84b5a4ba71f0f65e896deb5e23631ca179b1d24d6988a9ab7666ad"
 }

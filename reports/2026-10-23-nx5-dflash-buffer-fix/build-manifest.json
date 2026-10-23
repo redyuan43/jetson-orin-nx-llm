@@ -1,0 +1,922 @@
+{
+  "binary": {
+    "build_id": "18f41fa8457773ab7d558c5bd903458dbc77e3cb",
+    "path": "nx5-chat-runtime/v6/llama-nx5-chat",
+    "sha256": "c3ab66f12778a84e638d83c69388e02e2e3c0c9ad2abc9750ed72d16e18c855d"
+  },
+  "compile_command": "/usr/bin/c++ -DGGML_BACKEND_SHARED -DGGML_SHARED -DGGML_USE_CPU -DGGML_USE_CUDA -DLLAMA_BUILD -DLLAMA_SHARED -Dllama_EXPORTS -I/home/nx/github/qwen38-kvmem/worktrees/nx5-dflash-null-buffer-a649/src/. -I/home/nx/github/qwen38-kvmem/worktrees/nx5-dflash-null-buffer-a649/src/../vendor -I/home/nx/github/qwen38-kvmem/worktrees/nx5-dflash-null-buffer-a649/src/../include -I/home/nx/github/qwen38-kvmem/worktrees/nx5-dflash-null-buffer-a649/ggml/src/../include -O3 -DNDEBUG -fPIC -Wmissing-declarations -Wmissing-noreturn -Wall -Wextra -Wpedantic -Wcast-qual -Wno-unused-function -Wno-array-bounds -Wextra-semi -MD -MT /home/nx/github/qwen38-kvmem/builds/nx5-dflash-b75b05f/llama-graph.cpp.o -MF /home/nx/github/qwen38-kvmem/builds/nx5-dflash-b75b05f/llama-graph.cpp.o.d -o /home/nx/github/qwen38-kvmem/builds/nx5-dflash-b75b05f/llama-graph.cpp.o -c /home/nx/github/qwen38-kvmem/worktrees/nx5-dflash-null-buffer-a649/src/llama-graph.cpp",
+  "existing_build": {
+    "build_json_sha256": "0777737e89837fd586b3aa09a6a53937268ae52c77276a36fc962850dd6b87cf",
+    "engine_commit": "a64932ec615e1463158129feaf2f0752d0c07a2e",
+    "engine_headers_sha256": {
+      "common/arg.h": "8a24c4cbe6116ac6a08af52dea498f2e6be7e1914174458155ddcfaf7291caa1",
+      "common/build-info.h": "a255949ff4f726bef2dc3464188ad05a8af4465689a0939503940066eefbb393",
+      "common/chat-auto-parser-helpers.h": "a2866e5411ab5c23171db7214fa9aa60171b52ed4737bd37ce66f828d8683998",
+      "common/chat-auto-parser.h": "10779fefa544bc7aa02873b7bb590a881741b0d6e9ecb37c3d57826cddbe4f87",
+      "common/chat-parser.h": "6956157d3e14e6b05b00d2d8bb3073c3463ec42fdd2517e2547100ebdb0ffd9a",
+      "common/chat-peg-parser.h": "601ece524b39716bf8da2f4bc91f796cd3ee159ad40878acac365f32518cb1c7",
+      "common/chat.h": "a6c718f2f332ea0d9d9a3b0b671bb120ec9942535009794ed11d354bae79a257",
+      "common/common.h": "f3dc58cce25345509dfa0b426aa51952e965f49d1655f587de706c3d5adcabab",
+      "common/console.h": "36498a46cda4a0daedf3cc6962c03db07c4cb8228e6304a3bbb711e1df2847cb",
+      "common/debug.h": "2346ae58df3cfa982afc8bcef4baf979131c768f7197956d36412bfe32215719",
+      "common/download.h": "bed9ee3abf336df54addb5eb6b9d56623491a9193ac6e3f46169303e0ef1861f",
+      "common/fit.h": "e5b42a39db77e33f054190f5dad098810299442b6d8d5782c44db9cc0ea5aaa2",
+      "common/hf-cache.h": "1e78fe9c53fa064ebc60b4e917caa41776b2ffe57b704bd9a8572918d176402d",
+      "common/http.h": "166e8ce85e6293423a0ca772fb18078b7c9f80de9736462fcc46800e78459451",
+      "common/jinja/caps.h": "a0a79b4c22f4e73cca9eeeb89b093bd31387c5548086201c419e13df7db1bb69",
+      "common/jinja/lexer.h": "93aecd72cc952fab08f657aa2a70e9f58421672b19d3179f8bdf555e683a1cc7",
+      "common/jinja/parser.h": "6225eb759da910f3dd7753aed71c6938131cfa04c609d744e6f1390396422316",
+      "common/jinja/runtime.h": "f2066100fad6e2785b135f6e21492184e30defc4c9e2a0b08c7036afb72aa05d",
+      "common/jinja/string.h": "4cbff76daf9c9e23da83310cf1b667b710777f074598277222e4650e055c8bd7",
+      "common/jinja/utils.h": "61ae8bc57a7a551bdfb294a23a0ef8b5ba8e3cf4d695389f0f0797e2d7689781",
+      "common/jinja/value.h": "1690f51b5948e72270016a2e087c56b572dcd925db2f15ab3264f606ce650b3c",
+      "common/json-partial.h": "938863feab004b56ce8530393a98dffc838cd958847e39eaec42b246739eb934",
+      "common/json-schema-to-grammar.h": "d6925f39089f10db6ec889caef0461e9b6f942b944c44191db801fc7ed43568c",
+      "common/log.h": "cd065a0799ffc9a8adcb96f5188f77aec139e2520cb76316bf091ca289bb5bcb",
+      "common/ngram-cache.h": "91ec39f1e523e410c8af1aa48a904fc99893223f4197ac4474a5f2d49a4ad60f",
+      "common/ngram-map.h": "39decafa216df72bc77783c4d3ca659cc19e587d661e9149b8d0c2a3dff4fbe2",
+      "common/ngram-mod.h": "bf676fd31f89e7a557f960461f60afe8182799c8974ce9be32fc6f1b00669e20",
+      "common/peg-parser.h": "be6572602d0795e545ae5bf8c4871663c7d2acb7105234d80b0e2e72658e05e8",
+      "common/preset.h": "ed4d73cee48968b8e722fce9137c395be69722acaf2e29ebb12216deeb85d5ed",
+      "common/reasoning-budget.h": "054c950425d59c74ca976c3b20b5a2f3e05778ba7f6bc8ff2c99086c7c0b0465",
+      "common/regex-partial.h": "c4198e922a2a889668e3e03fabfc7d2ab0ae7d54b324bbda490831d8f8d5748d",
+      "common/sampling.h": "95eb47f70865e2358b8d03d4dfd7f6d1b54965b1652f5fce5d2bb20b87a88508",
+      "common/speculative.h": "8d4b9005f1ca75b36ec45efcc5c6bd507a2e821bd04db41d0f65ad276c3aebce",
+      "common/unicode.h": "b88c29194f028c27988c05a64bd72948ff55081dc1b07e5ff9c3bb72601c62b5",
+      "ggml/include/ggml-alloc.h": "94e4cd069b9313b2ceb35dacec901981e0bb478d8bb31035b7126be091998c23",
+      "ggml/include/ggml-backend.h": "1b9db9cbdab14b7218f798b1119b880cd31792027b8366a9c7d8af02a7b39074",
+      "ggml/include/ggml-blas.h": "e76cb8594dc9866d99e7d63191b9fff6ab8b50244b4a28ce3af0f962964a6b5b",
+      "ggml/include/ggml-cann.h": "2cdb134f27fe5c4ec19d52f1eb58f5355aa42b8f54bf385f0e487501c5df7362",
+      "ggml/include/ggml-cpp.h": "bc15ba002c68685df23faae42df0d2b3d58032011f88b649021ab92485862c72",
+      "ggml/include/ggml-cpu.h": "1aafe97e576ea38c0da57517fb2492955d0b69c1a799842481fc069d6d9d28ef",
+      "ggml/include/ggml-cuda.h": "84122bf381c24709eab9e888034956eafc1dfe436f9d826c10fa0e1a695f8a5e",
+      "ggml/include/ggml-hexagon.h": "b2c12bac390f14707b16bdd27c8c75ce4f075ed509c729ee28fd4f03b17e7375",
+      "ggml/include/ggml-metal.h": "4e2b97e210c8cfc2b74dfec7e99fb8bce194cd1125648de5a2e6394508f447b5",
+      "ggml/include/ggml-opencl.h": "8e443e1aa9c8bc6e0cf116c4cc3f42f4858938fa15e65b06bc07b26686e1233a",
+      "ggml/include/ggml-openvino.h": "c2e3f301e28ad815b4285888aad6130808a77e6acb4e8b558de63a648cf9743e",
+      "ggml/include/ggml-opt.h": "3586de1bc8a934b5c72339e2b6937b0641e8f149b512231e666f67de0736eea2",
+      "ggml/include/ggml-rpc.h": "218705af1c85a07d0bdf42f45b080a52e640b5023db912a445f34cb8be1f0cc5",
+      "ggml/include/ggml-sycl.h": "d59d5275423a7ce173c8e6f69933a501e53a635410de3f8d61bf23a59dac81fd",
+      "ggml/include/ggml-virtgpu.h": "ed231e7db3f0f58b84073f5ee67f9ec9d63046d1a7ed091c36a6cfe9f685a463",
+      "ggml/include/ggml-vulkan.h": "7eae5dad2cc7bb4d3eca828539f441816d5fd59fdc7b224d49aa229fc7b7248c",
+      "ggml/include/ggml-webgpu.h": "a91d855313a9e85e75ba597ff869a267247dea936a2c0faef03aeb7f1ea6e79c",
+      "ggml/include/ggml-zdnn.h": "ee1d79c95ade45ba195a6b71f59a05c18617de4a596d2b2b03ecf38975a9a448",
+      "ggml/include/ggml-zendnn.h": "2cb034b842438281616ce647232d922fb224450323f0d422d2af567c334aa8ff",
+      "ggml/include/ggml.h": "36c1c93e440db4efd9f045685e5e15a074ce89ef7a07b7231cddc89b7107e156",
+      "ggml/include/gguf.h": "2ddb276a5bece743433160ad863279473431c9d4c171d468bf860a3cda3fbf3f",
+      "include/llama-cpp.h": "c48fd31095d2403a3bf7cbe98333ba0e61a398ee6e83b56f9d8b7237143b9877",
+      "include/llama.h": "f915e148943d875f1c2e68766098d85965630307a729dfeb922bb8a950f888e2",
+      "tools/server/protocol.h": "5bd19c17e60b4d1d0768da1356e3a2eecfd7fdebedeeda2ad9c8b9b798aba6c6",
+      "tools/server/server-chat.h": "4372b4df8c73566790549cac0da35ceddfd7020d160c6835816eecd411255461",
+      "tools/server/server-common.h": "ba92ff90b21488b002d6d8d92a1d94abc5c39bc388d738939b3e4b32aabcb120",
+      "tools/server/server-context.h": "63c39377ee79c585a6237b812b4a1f9226d8eae016cb29a124b736e645f7d4b6",
+      "tools/server/server-cors-proxy.h": "cd85e7929932ee22a811459005bdc249d947448964ba422e3368d67f9c8428b7",
+      "tools/server/server-http.h": "3566cf450a29886118df5e6c66eb6b927e89040f112dc2625311b06dd19e8f32",
+      "tools/server/server-models.h": "09499b006454af9ed93b456d24e277695306e524be82d5e06cca4ba497db4c3b",
+      "tools/server/server-queue.h": "522782921280bc74b20b6bb0b58f11fbdd1de575de4a540c4c7744967e46ac44",
+      "tools/server/server-task.h": "31f6835050b464e2a45c9887e6decc98c76ddc0bd20b9154acb08acea93cdefe",
+      "tools/server/server-tools.h": "0b4cc45d8759fee0f9c44023336bece70d1f34b8877f4a34cfffbf9d1683c139",
+      "tools/server/session.h": "463af2b6f1ca3ab3475c08e50ad38012e96908957b67a7ad427e5896b02bb694",
+      "tools/server/ws_handler.h": "5ff9fbebc5d4620a7f2bcaa6b8346a56f4bc91ba982977bf9c0f4ed3958d41dd",
+      "vendor/cpp-httplib/httplib.h": "0756cd355778581f1287ad447033fabd03d3fbd920c958156af99f91c803997a",
+      "vendor/miniaudio/miniaudio.h": "ac7af4de748b7e26b777f37e01cee313a308a7296a3eb080e2906b320cc55c89",
+      "vendor/sheredom/subprocess.h": "0bf208a408ba2c7e63739d62a0a492a13f90b0113214776835c855629ef90043",
+      "vendor/stb/stb_image.h": "594c2fe35d49488b4382dbfaec8f98366defca819d916ac95becf3e75f4200b3"
+    },
+    "libllama_sha256_before_patch": "c57cf8e263d2fd112985d5e656dab4cbf5cad1ba2ccc788e0f32817109b36139",
+    "path": "/home/nx/github/qwen38-kvmem/minicpm-les/llama.cpp-omni/build-jetson",
+    "source_sha256": "7d207b556945037b631f0dbfd7535fd74cc954b4d624808325f5dacf93725e21"
+  },
+  "format": "nx5-native-incremental-library-build-v1",
+  "inputs": [
+    {
+      "path": "src/CMakeFiles/llama.dir/llama.cpp.o",
+      "sha256": "f184fd04569ccb897ee3b2d9acb71ac37a6099a845f591ed729f659e8de28045",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-adapter.cpp.o",
+      "sha256": "6a2203e042875ec0f862d11ec7fc66a733bb5d8449b1bb6f66d62c8888f6bb02",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-arch.cpp.o",
+      "sha256": "1762ea49c322b8e69f01725316a6b2fd10dc17c8d26ef533eea0e4c70518ab9a",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-batch.cpp.o",
+      "sha256": "d5a20901878ef2b13a21ce115a7344fc1854c2a6202862abace164e924f34bd0",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-chat.cpp.o",
+      "sha256": "9bb2810fa74b85dbace2357780ad91a1240b9a1f5e585a395478a881eca0c8f0",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-context.cpp.o",
+      "sha256": "83fd196a04b5fd57334195d6b6bc111f307f69846e9fc15a7f253653d8e44d59",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-cparams.cpp.o",
+      "sha256": "227b9359ded5b354fa11a3e36eab1ef13d69d7b0591d646339727f54bff3beb3",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-grammar.cpp.o",
+      "sha256": "fd37d36433d781a8b22d887d1be45563c25d00c7cff15430944dca8f6de866a0",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "patched-object/llama-graph.cpp.o",
+      "sha256": "cfc032a009a16170af85fb58b05408dabb77ef3a3a57d741ce9fa45772f5f2b0",
+      "source_sha": "b75b05f667af094df8db3268c5af7ba71c7ed79f"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-hparams.cpp.o",
+      "sha256": "6494a358e1d0aa0a0f58f3d74745919fad0da4465e6d63595851e18030a1f2d3",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-impl.cpp.o",
+      "sha256": "86f3d6d37357b3acf1092119c38edf8a16c3f283d9cfc2b202bdd29af37a2305",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-io.cpp.o",
+      "sha256": "99cd8df5dabf02dd2ba92997a6376caa61c274c334b82a1de7a0ddaacd865c20",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-kv-cache.cpp.o",
+      "sha256": "67f3d734e0316b46de5be60b461143e7b8a441395b32ad04abeaeb5531d636ec",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-kv-cache-iswa.cpp.o",
+      "sha256": "6c9b596fcff4c7f7ec2100997d849c6ca56af8e9624a5d40828fa2306c264485",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-kv-cache-dsa.cpp.o",
+      "sha256": "fe3e304d5338982a0fb7cf1952e84f41be3a7c87b508544f0b3bc4df775fba37",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-memory.cpp.o",
+      "sha256": "dc89cde009061b6580bfc3af60c1748caf9549f79ea6072db662f21553b39d64",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-memory-hybrid.cpp.o",
+      "sha256": "0a4f3c3758b2bcefe6b7e7517592506a32b5cb2d8b10c3fa2db8e794ff25405c",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-memory-hybrid-iswa.cpp.o",
+      "sha256": "38790540384d1166b67b53d3b5cd97f012a0da43ac2ce1537268463460700224",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-memory-recurrent.cpp.o",
+      "sha256": "fe669272f0f3f567a64ccd8bceb118ab6327ba74f8385826cf45c5d9cec72576",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-mmap.cpp.o",
+      "sha256": "e06056a247adb271982f3eb89119be4bdbc7c1c4e23dc95075695d597755f6d3",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-moe-experts.cpp.o",
+      "sha256": "2f0932a25b7ff2b49c565957fe29ddedaf2c446942cf1ee39fcac33cfe1c38f1",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-moe-slot.cpp.o",
+      "sha256": "445d8b8c684b9f9361377b56daf476cf974c8ce19332f1f8a019528b61c5aa13",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-model-loader.cpp.o",
+      "sha256": "f8641bb2b0b6b43337683f21e7225047812759517044ed90585c72b44dfdb68f",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-model-saver.cpp.o",
+      "sha256": "fd79113f5f8668faaa628e9f4f045ebb7e86049c7fad8fcf1744b8ef2553fd6e",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-model.cpp.o",
+      "sha256": "7ed5d70e775c2e30ee2ea74f04da4ecb52ca15c338391a0169b7fb950734a4c4",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-quant.cpp.o",
+      "sha256": "b916eeee04306ba87d3c675fc4ce8dea44f73a1663759667f9b0d0c84a614aa5",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-sampler.cpp.o",
+      "sha256": "e74aafc6c99897f445604b79d4fa45b1b07c5cabae4dcbc5921d83bc054accd9",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/llama-vocab.cpp.o",
+      "sha256": "e3f48c2b38aa6f77586c71d9afcc1af45187313d8741a8b2ec76b9e0358d2fb2",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/unicode-data.cpp.o",
+      "sha256": "87a2d893e500e173cafed2817c5a5ce1608620f08c885761db8fa90b593a027d",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/unicode.cpp.o",
+      "sha256": "6567502b9f07fbdd898b1d82550aeb9394a6a80b0a5796cb81f963ba9729e5e7",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/afmoe.cpp.o",
+      "sha256": "2a05654741fdac381e0a6b7d26d92510d04e36ff1264cd9d4b878e6287f1c64b",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/apertus.cpp.o",
+      "sha256": "b885b90a6234cff5b9bb603c9abf802dfb9236d2454930976438d3aa00a93d29",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/arcee.cpp.o",
+      "sha256": "0c321b10ced8fbf74d4e5644b2a110be72695c48de1217673937a9bbff6cd586",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/arctic.cpp.o",
+      "sha256": "9eeddff4593ef66590eb622d8b333672dd9f45f9c72a939b11fd6f7a9d588393",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/arwkv7.cpp.o",
+      "sha256": "adb38ff8faa0588347447416e690943f852487789ad1fcf8e21cc8690bfb7b94",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/baichuan.cpp.o",
+      "sha256": "9c35a7e4a421ae4ae85c21a2ba72c2f347f2ea60844f78b266bf729479749bfb",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/bailingmoe.cpp.o",
+      "sha256": "31bc5c3b2f825a0324bfe041ac106859e2aefc0c21895fe22520dd80f7811d5a",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/bailingmoe2.cpp.o",
+      "sha256": "7713b65de2050ad17a76a836ef3fc48251fc53f613f10866a5b297937822df20",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/bert.cpp.o",
+      "sha256": "122461da14afbc95fc4a215de3d837f554f6c7166c90af250213aeb7e6edbc7b",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/bitnet.cpp.o",
+      "sha256": "2bc2e91a6d79df90fefbe0008e392cc16d7828dcea364f280a5d1ba5d3decd1d",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/bloom.cpp.o",
+      "sha256": "609cf4f748035921c0de8d61aae27dc31b3070f665391377b01b52236490da1a",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/chameleon.cpp.o",
+      "sha256": "0e05d17ce7bb2e563da84336ced7fa39b6644c04b4b7d930d5cab90dab62ce4c",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/chatglm.cpp.o",
+      "sha256": "817fbfc2c8859170cbe564b2c6c8d3073fa17698bfb07c0dad0301d01ea149d4",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/codeshell.cpp.o",
+      "sha256": "0350b57441325df1666da374ed7549a265df9c3fcc3db46858527037d665e4ae",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/cogvlm.cpp.o",
+      "sha256": "9e082c6a268ec699a758748aa9bcb0bb200ca8d11f6272d5d22818759ced7ad5",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/cohere2.cpp.o",
+      "sha256": "a64066acacfcb40dacaa019bcd91efc0fe44dca9ca1d61c6575c9f55369df97e",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/command-r.cpp.o",
+      "sha256": "c9072459f4fe90c82d3b8da7c945faa9c648771529bee1e6b5bb27012f375d36",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/dbrx.cpp.o",
+      "sha256": "b203584fc569f68fd9067d4c571f92f10833675e8e6e0558d8f69c03f39e8a43",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/deci.cpp.o",
+      "sha256": "490799693d2f1cba0c49fce2a976aeafba265b8279a4eb56241cb3ffde2c0b66",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/deepseek.cpp.o",
+      "sha256": "d66cc96e8d5e2eca98eff1ecaf6a1ea3562e4b4ea4ff442315f63e4fdff6c1ec",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/deepseek2.cpp.o",
+      "sha256": "3444ddd49b1f68c5152b74b1b7c60300a476865cd5ac8e174665501ac74796ae",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/deepseek2ocr.cpp.o",
+      "sha256": "14339d26ce5d6e1f96ed5ab3f4d2600fead2aed9517d2232c8826e34bb114f80",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/deepseek32.cpp.o",
+      "sha256": "a21623cd0edf161b340fd20225d21c9470cb4482b54d761ad82e9018b8d6a7be",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/delta-net-base.cpp.o",
+      "sha256": "cda82718f752c1a972f752bf322a7d1f46c834790cbe0b733cc7e2653e9f3e9b",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/dflash.cpp.o",
+      "sha256": "e85bc2a52eff60d508eb95b54613b4a74835e7addd72ee1dd2db62d0b6659d90",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/dots1.cpp.o",
+      "sha256": "9b0e4c3280545dbdbf3000870302fef588035d0745364472c5863a2210648224",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/dream.cpp.o",
+      "sha256": "956534f94bd6012e65ea7e490f147e3dc1a42df77848da06d77fae5ff278b445",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/ernie4-5-moe.cpp.o",
+      "sha256": "d1ef3fe20fa491e0fea4402b45f8a06b8586fd33ab1e839e435bb19ddd405489",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/ernie4-5.cpp.o",
+      "sha256": "b886c50066503ce3fc6b4e90250876752d73648cb880375b6ed97bb345a00781",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/eurobert.cpp.o",
+      "sha256": "a533d4e0557f4ead3c369f148c9fff45f69783fe5926031cf14066a6e24a5b8f",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/exaone-moe.cpp.o",
+      "sha256": "30314ffb075bb9ae017ccaad94aca95f00e7b08ef75e1b60c452e1209c3c1e52",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/exaone.cpp.o",
+      "sha256": "61bd2e8064d0924172d717a0c0725c4111af8a0f33b785c672becbeac4e84812",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/exaone4.cpp.o",
+      "sha256": "a3935bd7a954d851700c9bb729acafe9cd56cf24a42018e42e36af385eb81abf",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/falcon-h1.cpp.o",
+      "sha256": "ea2492d17cf6195b33145d2348774ac7e8c7299ff162823b9d0174a20d8339ca",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/falcon.cpp.o",
+      "sha256": "7907ad97e7ed8f77f06de91d8ac1be97bb5670f157a30fbb8d6ae528e18d3262",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/gemma-embedding.cpp.o",
+      "sha256": "923935814540e2ef9bd0ee49e24306142c3671fa091d03e30c7aac697fae9c95",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/gemma.cpp.o",
+      "sha256": "dc6c9dadad0bd369316b34e83f8e509df7837c2d9336d781a052dc5a606d63dd",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/gemma2.cpp.o",
+      "sha256": "819bba9530c8504b104bb07b6c0ca10d5f40966e6ed674a4edb45c2d4869f0a8",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/gemma3.cpp.o",
+      "sha256": "6c7e8b62d3ea9db05be0be2fa90a1800fc425c593fef7f663056b7c877e1226b",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/gemma3n.cpp.o",
+      "sha256": "c90c47ca47147de3c5b4043619c540a4d493f722e93f589b9b093caf6e57c631",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/gemma4.cpp.o",
+      "sha256": "4188f874ab901b809a80035e238d8848fdf0e5f63951ba04dc05b98aada582ce",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/glm-dsa.cpp.o",
+      "sha256": "f78270c821fd8b4fbddfe7fba3172d757cf733b70d9ebb42d96d93c6685f81a3",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/glm4-moe.cpp.o",
+      "sha256": "7350dafbebf5cd072464dfb6f272bf3cf1d611cae5eaa20c97cad5839b866b94",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/glm4.cpp.o",
+      "sha256": "919100f46c1ca515f9c8463f351654ff775c5c74a88b46103748a039b9ff4ba8",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/gpt2.cpp.o",
+      "sha256": "95dde8107836e5c764f828357554c316f0e317a6aab560a497b2c5e461ca9639",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/gptneox.cpp.o",
+      "sha256": "7f83443eb259771179683e52ecc396e8d22a0bb34d54edb850b07703bc76ec3e",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/granite-hybrid.cpp.o",
+      "sha256": "f0209f427ffae7ec8a13db3ca11882c4ffb0755354f523c6707e9863ca70634a",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/granite-moe.cpp.o",
+      "sha256": "e89e47fc99375cabaa08eb7d2522a88bf27f525f8326332766ee6c688143aa7e",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/granite.cpp.o",
+      "sha256": "5192f33085d93de0f31f22947007ffca4d208e562c38f6009ec83918839e0568",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/grok.cpp.o",
+      "sha256": "c9cf348512c9a90c694da70fde566cb3625b40f38bde887ed710fab43b406d0f",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/grovemoe.cpp.o",
+      "sha256": "32b4171b2f7617b6fe6fd31b57cdb0b71dd74801ea63640364a41142b64adb26",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/hunyuan-dense.cpp.o",
+      "sha256": "eb677571e201a8f435f68b939266212de874924c2acf05f98539a04aa4258017",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/hunyuan-moe.cpp.o",
+      "sha256": "232556ab0384f26d329e16437afa78c7d3cd6bb9c5ad655d3f0623323650423d",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/hunyuan-vl.cpp.o",
+      "sha256": "8234d0148f8f519a9739fa6f49bd5091ef0b13a41740567986e8aeda6dee24b4",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/internlm2.cpp.o",
+      "sha256": "1a5ac1b679a2201de8d6ee08ca1512510cb14bad5af0c71ffc6f75bf58759c49",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/jais.cpp.o",
+      "sha256": "8b815fb4bf838b984b9a1d178085432fccf26c66a448886f310799ed46ab545b",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/jais2.cpp.o",
+      "sha256": "4045f99ec884a61d81998ab5b4223eed3ebe7d619157ec611574f2251c8a0ce3",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/jamba.cpp.o",
+      "sha256": "5a37bdfd8948ddc5cf5adbed1c361fc1002c5657ba64bd376b7ca09bcd010c56",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/jina-bert-v2.cpp.o",
+      "sha256": "e22112d00740e1cb47d65b167596068ceed860fb4c4eff1fbaef09ba8cb4eebb",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/jina-bert-v3.cpp.o",
+      "sha256": "5b5088b1ddba3d69c4e0f6414b2225991a602d7646c0c327524960046f683011",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/kimi-linear.cpp.o",
+      "sha256": "6f15a3770240d8242533cf78494c4031c14a1d777346c520c694ddf45604f747",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/lfm2.cpp.o",
+      "sha256": "36496e0a8387423d5dd45e7292e32b32f172f63ca3386f14a7308fca86f2c967",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/lfm2moe.cpp.o",
+      "sha256": "9cfe0c7fb07dcd2ca17668bf5da5f54fadfcf0bc372a95d9b2607ad2e9415b4b",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/llada-moe.cpp.o",
+      "sha256": "65aa4e75d6d65627e3419a7d58a861cbda75b6d19d19d862597d3f36e8f79822",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/llada.cpp.o",
+      "sha256": "e5cbf6aedfcc15ae2fe20562c79fe60fa3771681c6a93c81e82844a657855865",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/llama-embed.cpp.o",
+      "sha256": "72d3078abd0a28058dc8cbfac8cede041bbbf7cf6dfe27276507790364e6cacf",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/llama.cpp.o",
+      "sha256": "0f3200aca953a149736a8e12ac08aee91c867b9d342f5ef0d28a2d8024410f56",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/llama4.cpp.o",
+      "sha256": "ad86d9bb207cc524dd6926514c0e11e52390e2d8135fcd10956570640a36d6d1",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/maincoder.cpp.o",
+      "sha256": "ed2153266ff4e60c463f2fa2615278174d585b7d51f8d982fe0f517014fb951f",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/mamba-base.cpp.o",
+      "sha256": "edd6757700e5abcdf4e0c4d46aadef504d7cf1e07cfa36ed8bfa458ec3a35221",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/mamba.cpp.o",
+      "sha256": "bebd0624bacf976ece17f260548fbb01b6b7fd3fae47042a423dbc99d0c2df51",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/mamba2.cpp.o",
+      "sha256": "d398a08fb094b6372ec3d27658ffefedd811d67a318610575a025f7f8fd0058f",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/mimo2.cpp.o",
+      "sha256": "6e7d3e260f41a544f9b9464754038d025c92976aae05ad5dd0c68de910602e69",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/minicpm.cpp.o",
+      "sha256": "34ebdfc3b7e44888cd41933d7b46416618983007b465142de5bb5dea9c41af25",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/minicpm3.cpp.o",
+      "sha256": "66c152a32ff7f0bc5ef71b4124f3d512e8db5cb702c66fe41f7af7275ee42fe7",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/minimax-m2.cpp.o",
+      "sha256": "68088c66eb5a529917461d560ec5b6eee397029510709cb867d8ea42d096451f",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/mistral3.cpp.o",
+      "sha256": "992c9d578153f3ff5bfe14561c0fe037545ba3d708081a6f0f953c8d6cc62fcf",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/mistral4.cpp.o",
+      "sha256": "814866784da504a8ab0d6b09bd01bdb4bbd131c8599422f1da03edff6644bbca",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/modern-bert.cpp.o",
+      "sha256": "da981d7f25a546ed3f130a8bd53f53664e3446d12861e5f2dd80450d153e675b",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/mpt.cpp.o",
+      "sha256": "4bbef51a3565fc169e97994ec8abc80561ac7acfb59b66a589bd4bc463cebc36",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/nemotron-h-moe.cpp.o",
+      "sha256": "6b9ef6d69d935ba4685b1f4ae7b0c4224f47ebb717a732500499c1e318536c8b",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/nemotron-h.cpp.o",
+      "sha256": "8a3c2e635953394b8f2d3c998dd88ccdba6e8c3856a7201b129a3c03305a278c",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/nemotron.cpp.o",
+      "sha256": "a1fabdfc61d43b8fc2426502e06d3ee393fa18914e811837b781db0cf147bb1b",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/neo-bert.cpp.o",
+      "sha256": "39fc3c985daf66cac919e1085064865adf7e63a4460ce04116503a81ae47d25a",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/nomic-bert-moe.cpp.o",
+      "sha256": "cc86e4a68df6194389100ac9402c38d35fc282c2cf1d5f3674cca27bb1f9f411",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/nomic-bert.cpp.o",
+      "sha256": "db2226ac2aa7eb813e5a58254b27f1c16fedaf23d0a77f68fb2e582ccd4a7b03",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/olmo.cpp.o",
+      "sha256": "9d8e3aaa982dd57897bdb7f6001d6b4f655c7b7f9887b3125bd1c79f304c3ec8",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/olmo2.cpp.o",
+      "sha256": "e2aabc886ef71c14b37aa6ab56dc4921b2b7ca09c232f072ffffcd644d4e42e7",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/olmoe.cpp.o",
+      "sha256": "973bcafb658c8fb3064036c6a6bef21170810368a65f5d8c31a4b23b251b0880",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/openai-moe.cpp.o",
+      "sha256": "b8aaa6b5d005df7893079870c458945dafb653e1038c3c5ef0ab09bc3d2f5bc2",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/openelm.cpp.o",
+      "sha256": "139bd286c0b8f7474b78d26125e6cf1c79beed93a22a036bea007641e4ae340e",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/orion.cpp.o",
+      "sha256": "895c11b3a07ef418e7ff8a5c25d161481929b374c7fdc16b2a68eed7ee6d622d",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/paddleocr.cpp.o",
+      "sha256": "81ad6999f9fda9e5c3eea560920e16d7400cbd10e84f09beefc622506f4135a4",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/pangu-embed.cpp.o",
+      "sha256": "16864cc4cfb639dd6f24c69a7a5e1540d89a0e9b55268ad7a8f896cecd75338d",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/phi2.cpp.o",
+      "sha256": "d481051c8fa38826516e502303da7f2dc11012cd095c9387ed5f30716ee92958",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/phi3.cpp.o",
+      "sha256": "136ab1486d071771991190faa36d0fd2049c15b0e3991e441ba98e7805c738ac",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/phimoe.cpp.o",
+      "sha256": "d390c3e97c5f1c12e76b88d2b42937796b4238c762e007db8758e8c0e6333c7c",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/plamo.cpp.o",
+      "sha256": "87f5536f99424aef44d813081ab984d62ce49365c3e57344d65e1165ddcb38b5",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/plamo2.cpp.o",
+      "sha256": "a92ff3c31cf6f91085a94d123e403fcfc78fc99c36f5a21c0070db74250f6825",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/plamo3.cpp.o",
+      "sha256": "aa7188240f6383a1dd18d17de3b538ea5e9a5f973dfb5154e2bacd952e11e5f7",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/plm.cpp.o",
+      "sha256": "a7d05ba6904db8215c99c54d837324dd151a35aa9dad78f3e48b3410c9e00906",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/qwen.cpp.o",
+      "sha256": "06433d480c88e55a9df45993d4708ab619902719c903f019549d36bfd1953f0c",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/qwen2.cpp.o",
+      "sha256": "351c4a1b6242b10297e2b127718b50d05001c8cb15923ac9b8ba005a964a1ba8",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/qwen2moe.cpp.o",
+      "sha256": "f1e06cbc9a99c6d59d972d3a098db221a7adcb7a9b53412c52f25e2dd7c68dc9",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/qwen2vl.cpp.o",
+      "sha256": "920145eb36b5fe5bf0978378fb9a035137db1e29e1f77bc2b91750962920d64b",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/qwen3.cpp.o",
+      "sha256": "ceb0af113c56cd88ed7fe191ccd6637e8207e8242e6dba66f77a88c59596985d",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/qwen35.cpp.o",
+      "sha256": "cb6e0eccfce8913f4f185e30b867ad75dae2b550d01d89ae2312aa4ba90affcc",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/qwen35moe.cpp.o",
+      "sha256": "bbba5157fed0d77790b6fa09a4187597e2b5f5814041f8d7052fb36a5f9aa5ce",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/qwen3moe.cpp.o",
+      "sha256": "3b1236c47b6944b440da69219e2103fcef07b7b28094407dfa9fd8b897dacb55",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/qwen3next.cpp.o",
+      "sha256": "7ae643f5ac3faddc1085550b6d53de702fe850b1cf415f93ba9e83e9c7e8c277",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/qwen3vl.cpp.o",
+      "sha256": "abca1489c398d8d030d07aab1eabfeb6a8023956ff8af1d4e5ada79a10163421",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/qwen3vlmoe.cpp.o",
+      "sha256": "9602a7ae0845975c60738bff48a04816fbef175cd7e24792522c22b31719ab55",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/refact.cpp.o",
+      "sha256": "ed62100748d9766578f9cedf33b0a012bf71965cb76fc31ce31c44894791858b",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/rnd1.cpp.o",
+      "sha256": "2b21e816ee1c04f82cefa6b6e064d340d7f0dba04e16038e41992f50d29ddc05",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/rwkv6-base.cpp.o",
+      "sha256": "9a0b1fdb9580f47d67a41d10b8635a870bdb8944fd441eae5895cbb1ac2a5df7",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/rwkv6.cpp.o",
+      "sha256": "26e545546aa7ba9e5156dd3ec2b7b5f62e628bacb3b4df4ff08e7fca4cdf8080",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/rwkv6qwen2.cpp.o",
+      "sha256": "8752d1dfaab3605b857d2cd3f5797c9b17e1b06794ce3fb3dac456059bbc9802",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/rwkv7-base.cpp.o",
+      "sha256": "7107990c0d26470dd35259689ab3adb8221a26cb4270fed2c854cea419a2cbcc",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/rwkv7.cpp.o",
+      "sha256": "3d9733ddfef3f9004b13c4394a502c2a91ae0d5e09676c044dd3b26ff21e374d",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/seed-oss.cpp.o",
+      "sha256": "2b4e785cf1adb8be6e803d5251ec96e3ba4ca05de3abfb2a8830bca0defe3606",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/smallthinker.cpp.o",
+      "sha256": "b5e13f238b1575ae103f57da29b59994ff719fa22ed8a11a77b576e3e67ce0a6",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/smollm3.cpp.o",
+      "sha256": "d217cd977b82050a95f1ffd488103341595af3c965058041d03eee33eefc5501",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/stablelm.cpp.o",
+      "sha256": "450ce343f7b47838e64340ea70f423328aa4b48acda414617d1c468842a21859",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/starcoder.cpp.o",
+      "sha256": "e3bd2bf4280dd16cf738f8b41a1dfbab513fcd46a91e57bc4ab996117cef6b71",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/starcoder2.cpp.o",
+      "sha256": "6f395481cbef009e2ed98c55e08a18ac77eaf6dc1fe3f207108538d24dc681f4",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/step35.cpp.o",
+      "sha256": "26673568a701f9baa6aadd2f29f9c9e05dac421917e8150734cfc857ca53bf26",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/t5.cpp.o",
+      "sha256": "1763aced47e0ec66d4ffb78065ec53c31eaa57531473e078a8f2194fb72adfe5",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/t5encoder.cpp.o",
+      "sha256": "5154ba9385843d419875c6e377bfa34bb3a716092eca1d4b866d575d29b2e431",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/talkie.cpp.o",
+      "sha256": "5601998754cb5b38cf35f5c5368ef8b21f20060f3ae830df2eb7527044afee8e",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/wavtokenizer-dec.cpp.o",
+      "sha256": "89c2b8e9dab0ca66a37a7df2796910aff93904686211358b11c48d3ff915e628",
+      "source": "existing-build-object"
+    },
+    {
+      "path": "src/CMakeFiles/llama.dir/models/xverse.cpp.o",
+      "sha256": "e5d948dacfd48293749dcbc37c1eba5cebf9526fd3497d3a996c87773a5fdaa0",
+      "source": "existing-build-object"
+    }
+  ],
+  "link_command": ": && /usr/bin/c++ -fPIC -O3 -DNDEBUG   -shared -Wl,-soname,libllama.so.0 -o /home/nx/github/qwen38-kvmem/builds/nx5-dflash-b75b05f/libllama.so.0.0.1 src/CMakeFiles/llama.dir/llama.cpp.o src/CMakeFiles/llama.dir/llama-adapter.cpp.o src/CMakeFiles/llama.dir/llama-arch.cpp.o src/CMakeFiles/llama.dir/llama-batch.cpp.o src/CMakeFiles/llama.dir/llama-chat.cpp.o src/CMakeFiles/llama.dir/llama-context.cpp.o src/CMakeFiles/llama.dir/llama-cparams.cpp.o src/CMakeFiles/llama.dir/llama-grammar.cpp.o /home/nx/github/qwen38-kvmem/builds/nx5-dflash-b75b05f/llama-graph.cpp.o src/CMakeFiles/llama.dir/llama-hparams.cpp.o src/CMakeFiles/llama.dir/llama-impl.cpp.o src/CMakeFiles/llama.dir/llama-io.cpp.o src/CMakeFiles/llama.dir/llama-kv-cache.cpp.o src/CMakeFiles/llama.dir/llama-kv-cache-iswa.cpp.o src/CMakeFiles/llama.dir/llama-kv-cache-dsa.cpp.o src/CMakeFiles/llama.dir/llama-memory.cpp.o src/CMakeFiles/llama.dir/llama-memory-hybrid.cpp.o src/CMakeFiles/llama.dir/llama-memory-hybrid-iswa.cpp.o src/CMakeFiles/llama.dir/llama-memory-recurrent.cpp.o src/CMakeFiles/llama.dir/llama-mmap.cpp.o src/CMakeFiles/llama.dir/llama-moe-experts.cpp.o src/CMakeFiles/llama.dir/llama-moe-slot.cpp.o src/CMakeFiles/llama.dir/llama-model-loader.cpp.o src/CMakeFiles/llama.dir/llama-model-saver.cpp.o src/CMakeFiles/llama.dir/llama-model.cpp.o src/CMakeFiles/llama.dir/llama-quant.cpp.o src/CMakeFiles/llama.dir/llama-sampler.cpp.o src/CMakeFiles/llama.dir/llama-vocab.cpp.o src/CMakeFiles/llama.dir/unicode-data.cpp.o src/CMakeFiles/llama.dir/unicode.cpp.o src/CMakeFiles/llama.dir/models/afmoe.cpp.o src/CMakeFiles/llama.dir/models/apertus.cpp.o src/CMakeFiles/llama.dir/models/arcee.cpp.o src/CMakeFiles/llama.dir/models/arctic.cpp.o src/CMakeFiles/llama.dir/models/arwkv7.cpp.o src/CMakeFiles/llama.dir/models/baichuan.cpp.o src/CMakeFiles/llama.dir/models/bailingmoe.cpp.o src/CMakeFiles/llama.dir/models/bailingmoe2.cpp.o src/CMakeFiles/llama.dir/models/bert.cpp.o src/CMakeFiles/llama.dir/models/bitnet.cpp.o src/CMakeFiles/llama.dir/models/bloom.cpp.o src/CMakeFiles/llama.dir/models/chameleon.cpp.o src/CMakeFiles/llama.dir/models/chatglm.cpp.o src/CMakeFiles/llama.dir/models/codeshell.cpp.o src/CMakeFiles/llama.dir/models/cogvlm.cpp.o src/CMakeFiles/llama.dir/models/cohere2.cpp.o src/CMakeFiles/llama.dir/models/command-r.cpp.o src/CMakeFiles/llama.dir/models/dbrx.cpp.o src/CMakeFiles/llama.dir/models/deci.cpp.o src/CMakeFiles/llama.dir/models/deepseek.cpp.o src/CMakeFiles/llama.dir/models/deepseek2.cpp.o src/CMakeFiles/llama.dir/models/deepseek2ocr.cpp.o src/CMakeFiles/llama.dir/models/deepseek32.cpp.o src/CMakeFiles/llama.dir/models/delta-net-base.cpp.o src/CMakeFiles/llama.dir/models/dflash.cpp.o src/CMakeFiles/llama.dir/models/dots1.cpp.o src/CMakeFiles/llama.dir/models/dream.cpp.o src/CMakeFiles/llama.dir/models/ernie4-5-moe.cpp.o src/CMakeFiles/llama.dir/models/ernie4-5.cpp.o src/CMakeFiles/llama.dir/models/eurobert.cpp.o src/CMakeFiles/llama.dir/models/exaone-moe.cpp.o src/CMakeFiles/llama.dir/models/exaone.cpp.o src/CMakeFiles/llama.dir/models/exaone4.cpp.o src/CMakeFiles/llama.dir/models/falcon-h1.cpp.o src/CMakeFiles/llama.dir/models/falcon.cpp.o src/CMakeFiles/llama.dir/models/gemma-embedding.cpp.o src/CMakeFiles/llama.dir/models/gemma.cpp.o src/CMakeFiles/llama.dir/models/gemma2.cpp.o src/CMakeFiles/llama.dir/models/gemma3.cpp.o src/CMakeFiles/llama.dir/models/gemma3n.cpp.o src/CMakeFiles/llama.dir/models/gemma4.cpp.o src/CMakeFiles/llama.dir/models/glm-dsa.cpp.o src/CMakeFiles/llama.dir/models/glm4-moe.cpp.o src/CMakeFiles/llama.dir/models/glm4.cpp.o src/CMakeFiles/llama.dir/models/gpt2.cpp.o src/CMakeFiles/llama.dir/models/gptneox.cpp.o src/CMakeFiles/llama.dir/models/granite-hybrid.cpp.o src/CMakeFiles/llama.dir/models/granite-moe.cpp.o src/CMakeFiles/llama.dir/models/granite.cpp.o src/CMakeFiles/llama.dir/models/grok.cpp.o src/CMakeFiles/llama.dir/models/grovemoe.cpp.o src/CMakeFiles/llama.dir/models/hunyuan-dense.cpp.o src/CMakeFiles/llama.dir/models/hunyuan-moe.cpp.o src/CMakeFiles/llama.dir/models/hunyuan-vl.cpp.o src/CMakeFiles/llama.dir/models/internlm2.cpp.o src/CMakeFiles/llama.dir/models/jais.cpp.o src/CMakeFiles/llama.dir/models/jais2.cpp.o src/CMakeFiles/llama.dir/models/jamba.cpp.o src/CMakeFiles/llama.dir/models/jina-bert-v2.cpp.o src/CMakeFiles/llama.dir/models/jina-bert-v3.cpp.o src/CMakeFiles/llama.dir/models/kimi-linear.cpp.o src/CMakeFiles/llama.dir/models/lfm2.cpp.o src/CMakeFiles/llama.dir/models/lfm2moe.cpp.o src/CMakeFiles/llama.dir/models/llada-moe.cpp.o src/CMakeFiles/llama.dir/models/llada.cpp.o src/CMakeFiles/llama.dir/models/llama-embed.cpp.o src/CMakeFiles/llama.dir/models/llama.cpp.o src/CMakeFiles/llama.dir/models/llama4.cpp.o src/CMakeFiles/llama.dir/models/maincoder.cpp.o src/CMakeFiles/llama.dir/models/mamba-base.cpp.o src/CMakeFiles/llama.dir/models/mamba.cpp.o src/CMakeFiles/llama.dir/models/mamba2.cpp.o src/CMakeFiles/llama.dir/models/mimo2.cpp.o src/CMakeFiles/llama.dir/models/minicpm.cpp.o src/CMakeFiles/llama.dir/models/minicpm3.cpp.o src/CMakeFiles/llama.dir/models/minimax-m2.cpp.o src/CMakeFiles/llama.dir/models/mistral3.cpp.o src/CMakeFiles/llama.dir/models/mistral4.cpp.o src/CMakeFiles/llama.dir/models/modern-bert.cpp.o src/CMakeFiles/llama.dir/models/mpt.cpp.o src/CMakeFiles/llama.dir/models/nemotron-h-moe.cpp.o src/CMakeFiles/llama.dir/models/nemotron-h.cpp.o src/CMakeFiles/llama.dir/models/nemotron.cpp.o src/CMakeFiles/llama.dir/models/neo-bert.cpp.o src/CMakeFiles/llama.dir/models/nomic-bert-moe.cpp.o src/CMakeFiles/llama.dir/models/nomic-bert.cpp.o src/CMakeFiles/llama.dir/models/olmo.cpp.o src/CMakeFiles/llama.dir/models/olmo2.cpp.o src/CMakeFiles/llama.dir/models/olmoe.cpp.o src/CMakeFiles/llama.dir/models/openai-moe.cpp.o src/CMakeFiles/llama.dir/models/openelm.cpp.o src/CMakeFiles/llama.dir/models/orion.cpp.o src/CMakeFiles/llama.dir/models/paddleocr.cpp.o src/CMakeFiles/llama.dir/models/pangu-embed.cpp.o src/CMakeFiles/llama.dir/models/phi2.cpp.o src/CMakeFiles/llama.dir/models/phi3.cpp.o src/CMakeFiles/llama.dir/models/phimoe.cpp.o src/CMakeFiles/llama.dir/models/plamo.cpp.o src/CMakeFiles/llama.dir/models/plamo2.cpp.o src/CMakeFiles/llama.dir/models/plamo3.cpp.o src/CMakeFiles/llama.dir/models/plm.cpp.o src/CMakeFiles/llama.dir/models/qwen.cpp.o src/CMakeFiles/llama.dir/models/qwen2.cpp.o src/CMakeFiles/llama.dir/models/qwen2moe.cpp.o src/CMakeFiles/llama.dir/models/qwen2vl.cpp.o src/CMakeFiles/llama.dir/models/qwen3.cpp.o src/CMakeFiles/llama.dir/models/qwen35.cpp.o src/CMakeFiles/llama.dir/models/qwen35moe.cpp.o src/CMakeFiles/llama.dir/models/qwen3moe.cpp.o src/CMakeFiles/llama.dir/models/qwen3next.cpp.o src/CMakeFiles/llama.dir/models/qwen3vl.cpp.o src/CMakeFiles/llama.dir/models/qwen3vlmoe.cpp.o src/CMakeFiles/llama.dir/models/refact.cpp.o src/CMakeFiles/llama.dir/models/rnd1.cpp.o src/CMakeFiles/llama.dir/models/rwkv6-base.cpp.o src/CMakeFiles/llama.dir/models/rwkv6.cpp.o src/CMakeFiles/llama.dir/models/rwkv6qwen2.cpp.o src/CMakeFiles/llama.dir/models/rwkv7-base.cpp.o src/CMakeFiles/llama.dir/models/rwkv7.cpp.o src/CMakeFiles/llama.dir/models/seed-oss.cpp.o src/CMakeFiles/llama.dir/models/smallthinker.cpp.o src/CMakeFiles/llama.dir/models/smollm3.cpp.o src/CMakeFiles/llama.dir/models/stablelm.cpp.o src/CMakeFiles/llama.dir/models/starcoder.cpp.o src/CMakeFiles/llama.dir/models/starcoder2.cpp.o src/CMakeFiles/llama.dir/models/step35.cpp.o src/CMakeFiles/llama.dir/models/t5.cpp.o src/CMakeFiles/llama.dir/models/t5encoder.cpp.o src/CMakeFiles/llama.dir/models/talkie.cpp.o src/CMakeFiles/llama.dir/models/wavtokenizer-dec.cpp.o src/CMakeFiles/llama.dir/models/xverse.cpp.o  -Wl,-rpath,/home/nx/github/qwen38-kvmem/minicpm-les/llama.cpp-omni/build-jetson/bin:  bin/libggml.so.0.13.1  bin/libggml-cpu.so.0.13.1  bin/libggml-cuda.so.0.13.1  bin/libggml-base.so.0.13.1  -Wl,-rpath-link,/usr/local/cuda/targets/sbsa-linux/lib/stubs && :",
+  "output": {
+    "build_id": "aae09eb3888ccd5da750dbd39f65e334618dc1bc",
+    "path": "/home/nx/github/qwen38-kvmem/builds/nx5-dflash-b75b05f/libllama.so.0.0.1",
+    "sha256": "ee92647a1cdb7f990f6901acdd33e985825aa8fe0964e674b1c25b68770f43cf"
+  },
+  "patch_file": "src/llama-graph.cpp",
+  "patch_summary": "Skip K/V rotary-input setters when graph scheduler left optional input tensor unallocated.",
+  "patched_object": {
+    "path": "/home/nx/github/qwen38-kvmem/builds/nx5-dflash-b75b05f/llama-graph.cpp.o",
+    "sha256": "cfc032a009a16170af85fb58b05408dabb77ef3a3a57d741ce9fa45772f5f2b0"
+  },
+  "patched_source_commit": "b75b05f667af094df8db3268c5af7ba71c7ed79f",
+  "runtime_libggml_cuda": {
+    "copied_from": "/home/nx/github/qwen38-kvmem/minicpm-audit-20261021/optimization/cuda-mapped-v2/libggml-cuda.so.0",
+    "path": "/home/nx/github/qwen38-kvmem/builds/nx5-dflash-b75b05f/libggml-cuda.so.0",
+    "sha256": "ea6394c23526ad021d9f449063a1bdc820c7f697d2495169430d7412ffe0dac6"
+  },
+  "source_base_commit": "a64932ec615e1463158129feaf2f0752d0c07a2e",
+  "verification": {
+    "loader_resolution": "/home/nx/github/qwen38-kvmem/builds/nx5-dflash-b75b05f/libllama.so.0",
+    "model_inference": "not yet run",
+    "native_version": "1 (a64932e)"
+  }
+}
