@@ -717,8 +717,12 @@ class ManagedComfy:
     def own_flint_transition(self, transition, row, gate):
         if (not transition or transition.get('target_mode') != 'flint'
                 or transition.get('executor_id') != 'nx5-text'
-                or not gate or gate.get('waiting') != 1
+                or not gate or type(gate.get('waiting')) is not int or gate['waiting'] < 1
                 or gate.get('active') != 0 or gate.get('unknown') != 0):
+            return False
+        if any(pending.get('status') not in {'waiting', 'preparing'}
+                or pending.get('resources') != [{'resource_id': self.RESOURCE, 'units': 1}]
+                for pending in row['pending']):
             return False
         matches = [pending for pending in row['pending']
             if pending.get('executor_id') == transition.get('executor_id')
