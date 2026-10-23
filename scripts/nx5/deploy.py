@@ -288,7 +288,7 @@ print(json.dumps({'deployed':True,'release':str(release),'health':health,'legacy
 
 
 REMOTE_FLINT_RECOVERY = r'''
-import base64,fcntl,hashlib,json,os,pathlib,shlex,subprocess,tempfile,time,urllib.request,urllib.error
+import base64,fcntl,hashlib,json,os,pathlib,re,shlex,subprocess,tempfile,time,urllib.request,urllib.error
 p=PAYLOAD;home=pathlib.Path.home();base=home/'.local/share/nx5-ssd-llm';private=home/'.config/nx5-ssd-llm';state=home/'.local/state/nx5-ssd-llm';units=home/'.config/systemd/user'
 def need(value,code):
  if not value:raise RuntimeError(code)

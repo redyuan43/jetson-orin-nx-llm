@@ -23,6 +23,7 @@ class DeploymentConfigurationTests(unittest.TestCase):
         self.assertIn("owner_required else None", source)
         self.assertIn("expected_config_sha256", source)
         self.assertIn("expected_unit_sha256", source)
+        self.assertIn("pathlib,re,shlex", source)
 
     def test_flint_recovery_requires_exact_live_gate_request_and_central_transition(self):
         operation = 'op_' + 'a' * 32
