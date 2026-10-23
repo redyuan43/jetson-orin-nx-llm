@@ -1,5 +1,6 @@
 import hashlib
 import importlib.util
+import inspect
 import json
 from pathlib import Path
 import tempfile
@@ -50,6 +51,17 @@ class DeploymentConfigurationTests(unittest.TestCase):
         result = module.upgrade_config(existing, {'port': 18347}, llm_profile_version='new-revision')
 
         self.assertEqual(result, existing)
+
+    def test_remote_helper_source_is_self_contained(self):
+        namespace = {'hashlib': hashlib}
+        exec(inspect.getsource(module.upgrade_config), namespace)
+
+        result = namespace['upgrade_config'](
+            {'managed_comfy': True, 'policy_profiles': {'llm': {'profile_id': 'minicpm',
+                                                                'version': 'old'}}},
+            {}, llm_profile_version='new')
+
+        self.assertEqual(result['policy_profiles']['llm']['version'], 'new')
 
     def test_published_version_is_accepted_by_actual_managed_comfy_owner(self):
         resident_path = Path(__file__).resolve().parents[1] / 'scripts/nx5/resident.py'
@@ -165,10 +177,13 @@ class RemoteActivationTests(unittest.TestCase):
                 else:body={'leases':[],'pending':[],'transition':None}
                 return io.BytesIO(json.dumps(body).encode())
         frozen=module.REMOTE.replace('PAYLOAD',repr(self.payload),1)
-        namespace={'upgrade_config':module.upgrade_config,'check_config_baseline':module.check_config_baseline}
+        helpers='\n'.join(inspect.getsource(f) for f in
+                           (module.upgrade_config,module.check_config_baseline))+'\n'
+        namespace={}
         with patch.object(Path,'home',return_value=self.home),patch.object(Path,'iterdir',iterdir), \
              patch.object(subprocess,'run',side_effect=run),patch.object(subprocess,'check_output',side_effect=output), \
              patch.object(urllib.request,'build_opener',return_value=Opener()),redirect_stdout(io.StringIO()):
+            exec(helpers,namespace)
             exec(compile(frozen,'frozen-remote-deploy','exec'),namespace)
 
     def journal(self):

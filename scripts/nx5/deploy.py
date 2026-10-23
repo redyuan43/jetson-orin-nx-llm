@@ -2,7 +2,6 @@
 """Publish an immutable committed nx5 service bundle; preflight unless --apply."""
 import argparse
 import base64
-import copy
 import hashlib
 import inspect
 import json
@@ -11,6 +10,8 @@ import subprocess
 
 
 def upgrade_config(existing, defaults, *, managed_comfy=False, llm_profile_version=None):
+    import copy
+
     if existing is not None and any(existing.get(k) != v for k, v in defaults.items()):
         raise RuntimeError('service_config_changed')
     result = copy.deepcopy(defaults if existing is None else existing)
