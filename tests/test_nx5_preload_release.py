@@ -171,6 +171,8 @@ class PreloadReleaseTests(unittest.TestCase):
                 'transition_pending': False, 'observed_at': now}}
         self.assertTrue(module.validate_central_snapshot(snapshot, operation='nx5-preload-test',
                                                          revision=17, now=now))
+        self.assertTrue(module.validate_central_snapshot(snapshot,
+            operation='nx5-weight-preload-publish-20261025-002', revision=17, now=now))
         refreshed = json.loads(json.dumps(snapshot))
         refreshed['group']['observed_at'] = now + 1
         refreshed['public']['observed_at'] = now + 1

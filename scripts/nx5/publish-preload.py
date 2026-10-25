@@ -63,7 +63,7 @@ def next_phase(current, action):
 
 def validate_central_snapshot(snapshot, *, operation, revision, now):
     if (not isinstance(operation, str) or not re.fullmatch(
-            r'nx5-(?:preload|weight-preload-maintenance)-[A-Za-z0-9-]{1,48}', operation)
+            r'nx5-(?:preload|weight-preload-maintenance|weight-preload-publish)-[A-Za-z0-9-]{1,48}', operation)
             or type(revision) is not int or revision < 0):
         raise ValueError('maintenance_identity_invalid')
     resource = snapshot.get('resource') or {}
