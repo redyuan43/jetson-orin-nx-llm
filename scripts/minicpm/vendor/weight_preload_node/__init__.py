@@ -16,7 +16,7 @@ class SiyuanPreloadModel:
     def INPUT_TYPES(cls):
         return {"required": {"model": ("MODEL",), "authorization_json": ("STRING", {})}}
 
-    RETURN_TYPES = ()
+    RETURN_TYPES = ("MODEL",)
     FUNCTION = "preload"
     OUTPUT_NODE = True
     CATEGORY = "SIYUAN/lifecycle"

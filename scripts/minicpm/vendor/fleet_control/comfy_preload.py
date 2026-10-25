@@ -211,7 +211,7 @@ def load_bounded(model, config, management, *, ram=None):
             loaded.model_load(lowvram_model_memory=cap - before, force_patch_weights=False)
         actual = loaded.model_loaded_memory()
         if not budget["min_loaded_bytes"] <= actual <= cap:
-            raise ValueError("preload_loaded_bytes_outside_budget")
+            raise ValueError("preload_loaded_bytes_outside_budget:actual=" + str(actual) + ":cap=" + str(cap))
         if int(management.get_free_memory(model.load_device)) < budget["reserve_cuda_bytes"]:
             raise ValueError("preload_cuda_reserve_exhausted")
         if not matching:
@@ -232,6 +232,23 @@ def load_bounded(model, config, management, *, ram=None):
         raise
 
 
+def load_preload_model(model, config, management):
+    """Dynamic VRAM stages weights; its official delegate supports bounded loads.
+
+    Return the patcher with the receipt so Comfy's output cache keeps it alive.
+    Ordinary inference and the process-wide VRAM mode remain unchanged.
+    """
+    target = model
+    if callable(getattr(model, "is_dynamic", None)) and model.is_dynamic():
+        check_ram(config)
+        if management.current_loaded_models:
+            raise ValueError("preload_other_model_resident")
+        target = model.get_non_dynamic_delegate()
+        if callable(getattr(target, "is_dynamic", None)) and target.is_dynamic():
+            raise ValueError("preload_non_dynamic_delegate_required")
+    return target, load_bounded(target, config, management)
+
+
 def execute_preload(model, authorization_json, config):
     config = validate_config(config)
     graph = json.loads(Path(config["graph_file"]).read_text())
@@ -248,7 +265,7 @@ def execute_preload(model, authorization_json, config):
     if pending or len(running) != 1 or running[0][1] != claims["prompt_id"]:
         raise ValueError("preload_queue_identity_not_exclusive")
     from comfy import model_management
-    receipt = load_bounded(model, config, model_management)
+    target, receipt = load_preload_model(model, config, model_management)
     receipt.update(operation_id=claims["operation_id"], prompt_id=claims["prompt_id"],
         graph_sha256=config["graph_sha256"], observed_at=time.time())
-    return {"ui": {"siyuan_weight_preload": [receipt]}}
+    return {"ui": {"siyuan_weight_preload": [receipt]}, "result": (target,)}

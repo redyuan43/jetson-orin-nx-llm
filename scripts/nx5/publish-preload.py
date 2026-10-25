@@ -16,7 +16,8 @@ import time
 import urllib.request
 
 BASELINE = '984530f50d6c6abf6b3b0b5c9d682f0a0b1f5c58'
-VENDOR_COMMIT = '00420e8ada805f35a91d31c796b11b2c9cfe4284'
+UPDATE_BASELINE = 'e98f9c46ad3f0cc75e41a651254cb2cfe62428bc'
+VENDOR_COMMIT = '9b64e4ac33aeb0361c37c32f2e2821e5307c40af'
 GRAPH = 'configs/nx5-qwen21-weight-preload-graph.json'
 LOCAL_PRELOAD_FILES = {
     'configs/nx5-qwen21-weight-preload-graph.json',
@@ -218,6 +219,8 @@ config=private/'service.json'; comfy_drop=units/'siyuan-image-comfy.service.d/zz
 node_link=home/'apps/ComfyUI/custom_nodes/siyuan_weight_preload'; plan_path=state/('preload-release-'+P['operation']+'.json')
 backup=state/('preload-backup-'+P['operation']); release=base/'releases'/P['source_commit']; current=base/'current'
 new_private=(private/'weight-preload-central.token',private/'weight-preload.ticket-key',private/'weight-preload.json')
+artifact_paths={'central-token':new_private[0],'ticket-key':new_private[1],
+ 'owner-config':new_private[2],'node-link':node_link}
 opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
 def need(value,code):
  if not value: raise RuntimeError(code)
@@ -278,6 +281,17 @@ def comfy_unit_files(row):
  paths=[pathlib.Path(value) for value in dropins.split() if value]
  return {'fragment':{'path':fragment,'sha256':sha(pathlib.Path(fragment).read_bytes())},
   'dropins':[{'path':str(path),'sha256':sha(path.read_bytes())} for path in paths if path.is_file()]}
+def artifact_files():
+ result={}
+ for name,path in artifact_paths.items():
+  if path.is_symlink():
+   st=path.lstat(); result[name]={'kind':'symlink','uid':st.st_uid,'target':os.readlink(path)}
+  elif path.is_file():
+   st=path.stat(); result[name]={'kind':'file','uid':st.st_uid,
+    'mode':stat.S_IMODE(st.st_mode),'sha256':sha(path.read_bytes())}
+  elif path.exists(): result[name]={'kind':'other'}
+  else: result[name]={'kind':'absent'}
+ return result
 def proc_environment(pid):
  allowed={'PYTHONPATH','PYTHONDONTWRITEBYTECODE','SIYUAN_WEIGHT_PRELOAD_CONFIG'}
  raw=pathlib.Path('/proc/'+str(pid)+'/environ').read_bytes().split(b'\0')
@@ -306,10 +320,11 @@ def snapshot():
   'jobs':jobs(),'python_processes':proc_rows(),'flint_processes':proc_rows(b'flint')}
  row['comfy_unit_files']=comfy_unit_files(row)
  row['new_artifacts']={str(path):path.exists() or path.is_symlink() for path in new_private+(node_link,)}
+ row['artifact_files']=artifact_files()
  return row
 def stable(row):
  return {key:row.get(key) for key in ('current_target','source_commit','config_sha256','comfy_dropin_sha256','node_link',
-  'owner_unit','comfy_unit','flint_unit','comfy_unit_files','new_artifacts','owner','queue','jobs','python_processes','flint_processes')}
+  'owner_unit','comfy_unit','flint_unit','comfy_unit_files','new_artifacts','artifact_files','owner','queue','jobs','python_processes','flint_processes')}
 def atomic(path,raw,mode=0o600,create_only=False,expected_current_sha=None):
  path=pathlib.Path(path); path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
  need(not path.is_symlink() and not path.parent.is_symlink(),'unsafe_path')
@@ -324,7 +339,7 @@ def atomic(path,raw,mode=0o600,create_only=False,expected_current_sha=None):
  os.chmod(tmp,mode);os.replace(tmp,path)
 def write_journal(record,phase,**extra):
  record.update(phase=phase,**extra);atomic(plan_path,(json.dumps(record,sort_keys=True)+'\n').encode())
-def owner_idle(row):
+def owner_idle(row,update_existing=False):
  owner=row['owner']; unitrow=row['owner_unit']
  need(unitrow.get('ActiveState')=='active' and int(unitrow.get('MainPID','0'))>1,'owner_not_active')
  need(owner.get('state')=='ready' and owner.get('mode')=='comfy' and owner.get('active')==0
@@ -332,7 +347,22 @@ def owner_idle(row):
  need(row['jobs']['nonterminal_count']==0,'owner_job_not_terminal')
  need(row['queue']=={'running':0,'pending':0},'comfy_queue_not_empty')
  need(row['comfy_unit'].get('ActiveState')=='active','comfy_not_active')
- need(all(value is False for value in row['new_artifacts'].values()),'preload_artifact_already_exists')
+ if update_existing:
+  need(row['source_commit']==P['previous_source_commit'],'update_source_commit_mismatch')
+  need(row['artifact_files']==P['baseline']['artifact_files'],'preload_artifact_cas_changed')
+  details=row['artifact_files']
+  for name in ('central-token','ticket-key','owner-config'):
+   item=details.get(name,{})
+   need(item.get('kind')=='file' and item.get('uid')==os.getuid()
+    and item.get('mode')==0o600 and len(item.get('sha256',''))==64
+    and all(char in '0123456789abcdef' for char in item.get('sha256','')),
+    'preload_artifact_identity_invalid')
+  link=details.get('node-link',{})
+  need(link.get('kind')=='symlink' and link.get('uid')==os.getuid()
+   and link.get('target')==str(current/'scripts/minicpm/vendor/weight_preload_node'),
+   'preload_artifact_identity_invalid')
+ else:
+  need(all(value is False for value in row['new_artifacts'].values()),'preload_artifact_already_exists')
  need(row['flint_unit']==P['baseline']['flint_unit'],'flint_unit_changed')
 def source_install():
  need(not release.exists(),'release_already_exists')
@@ -373,10 +403,24 @@ def install_config():
  need(not node_link.exists() and not node_link.is_symlink(),'preload_node_path_taken')
  node_link.parent.mkdir(parents=True,exist_ok=True)
  node_link.symlink_to(base/'current/scripts/minicpm/vendor/weight_preload_node')
+def switch_release():
+ if not P.get('update_existing'):
+  install_config()
+ pending=base/('current.pending-'+P['source_commit']);pending.symlink_to(release);os.replace(pending,current)
+ if not P.get('update_existing'):
+  subprocess.run(['systemctl','--user','daemon-reload'],check=True,timeout=30)
+ loaded=unit('siyuan-image-comfy.service')
+ need(str(comfy_drop) in (loaded.get('DropInPaths') or '').split(),'comfy_dropin_not_loaded')
 def verify_live():
  row=snapshot(); need(row['source_commit']==P['source_commit'],'source_commit_not_active')
  active_manifest=json.loads((current/'release.json').read_text())
  need(active_manifest==P['manifest'],'active_release_manifest_mismatch')
+ if P.get('update_existing'):
+  need(row['config_sha256']==P['baseline']['config_sha256']
+   and row['comfy_dropin_sha256']==P['baseline']['comfy_dropin_sha256']
+   and row['node_link']==P['baseline']['node_link']
+   and row['artifact_files']==P['baseline']['artifact_files'],
+   'preload_existing_config_changed')
  health=get('http://100.118.44.27:18347/healthz')
  need(health.get('state')=='ready' and health.get('mode')=='comfy' and health.get('active')==0
   and health.get('model_loaded') is not True and health.get('resident_pid') is None,'owner_post_restart_not_idle')
@@ -401,9 +445,12 @@ def verify_live():
   'comfy_pid':row['comfy_unit']['MainPID'],'flint_unit':row['flint_unit'],'flint_processes':row['flint_processes'],
   'jobs':row['jobs'],'queue':row['queue']}
 if action=='capture':
- row=snapshot(); print(json.dumps(row,sort_keys=True));sys.exit(0)
+ row=snapshot()
+ if P.get('update_existing'):
+  need(row['source_commit']==P['previous_source_commit'],'update_source_commit_mismatch')
+ print(json.dumps(row,sort_keys=True));sys.exit(0)
 if action=='prepare':
- row=snapshot();owner_idle(row);need(stable(row)==P['baseline'],'remote_baseline_changed')
+ row=snapshot();owner_idle(row,update_existing=P.get('update_existing',False));need(stable(row)==P['baseline'],'remote_baseline_changed')
  need(not plan_path.exists() and not backup.exists(),'original_operation_exists_inspect_only')
  state.mkdir(parents=True,exist_ok=True,mode=0o700);backup.mkdir(mode=0o700,parents=True,exist_ok=False)
  shutil_copy=__import__('shutil').copyfile
@@ -427,14 +474,10 @@ if action=='inspect':
 if action=='apply':
  need(plan_path.exists(),'prepare_required');record=json.loads(plan_path.read_text())
  need(record.get('operation')==P['operation'] and record.get('phase')=='prepared','inspect_only:'+str(record.get('phase')))
- row=snapshot();owner_idle(row);need(stable(row)==record['baseline'],'remote_baseline_changed')
+ row=snapshot();owner_idle(row,update_existing=P.get('update_existing',False));need(stable(row)==record['baseline'],'remote_baseline_changed')
  write_journal(record,'applying')
  try:
-  install_config()
-  pending=base/('current.pending-'+P['source_commit']);pending.symlink_to(release);os.replace(pending,current)
-  subprocess.run(['systemctl','--user','daemon-reload'],check=True,timeout=30)
-  loaded=unit('siyuan-image-comfy.service')
-  need(str(comfy_drop) in (loaded.get('DropInPaths') or '').split(),'comfy_dropin_not_loaded')
+  switch_release()
   write_journal(record,'comfy_restart_started')
   subprocess.run(['systemctl','--user','restart','siyuan-image-comfy.service'],check=True,timeout=90)
   write_journal(record,'owner_restart_started')
@@ -688,6 +731,8 @@ def main():
     parser.add_argument('--maintenance-revision', required=True, type=int,
                         help='exact NX5 resource revision after external capacity pause')
     parser.add_argument('--plan', required=True, help='private local operation journal path')
+    parser.add_argument('--update-existing', action='store_true',
+                        help='update the pinned deployed preload release without rewriting private configuration')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     bundle = package(root, args.commit)
@@ -698,10 +743,12 @@ def main():
         validate_central_snapshot(central, operation=args.operation,
                                   revision=args.maintenance_revision, now=time.time())
         remote = json.loads(call_remote({'action':'capture','operation':args.operation,
-            'maintenance_revision':args.maintenance_revision,'source_commit':args.commit},
+            'maintenance_revision':args.maintenance_revision,'source_commit':args.commit,
+            'update_existing':args.update_existing,'previous_source_commit':UPDATE_BASELINE},
             failure_log=failure_log))
         plan = {'schema_version':1,'operation':args.operation,
             'maintenance_revision':args.maintenance_revision,'source_commit':args.commit,
+            'update_existing':args.update_existing,
             'manifest':bundle['manifest'],'manifest_sha256':bundle['manifest_sha256'],
             'graph_sha256':bundle['manifest']['graph_sha256'],'central_baseline':central,
             'remote_baseline':remote,'phase':'captured'}
@@ -716,6 +763,7 @@ def main():
     if (plan.get('schema_version')!=1 or plan.get('operation')!=args.operation
             or plan.get('maintenance_revision')!=args.maintenance_revision
             or plan.get('source_commit')!=args.commit
+            or plan.get('update_existing',False)!=args.update_existing
             or plan.get('manifest_sha256')!=bundle['manifest_sha256']):
         parser.error('fixed source or maintenance plan changed')
     if args.action == 'inspect':
@@ -731,7 +779,8 @@ def main():
         payload = {'action':'verify','operation':args.operation,
             'maintenance_revision':args.maintenance_revision,'source_commit':args.commit,
             'manifest':bundle['manifest'],'baseline':plan['remote_baseline'],
-            'capability':capability_for(config)}
+            'capability':capability_for(config),'update_existing':args.update_existing,
+            'previous_source_commit':UPDATE_BASELINE}
         result=json.loads(call_remote(payload,failure_log=failure_log))
         print(json.dumps({'local_phase':plan.get('phase'),'remote':result},sort_keys=True,indent=2))
         return
@@ -748,7 +797,8 @@ def main():
             'maintenance_revision':args.maintenance_revision,'source_commit':args.commit,
             'manifest':bundle['manifest'],'files':bundle['files'],
             'baseline':plan['remote_baseline'],'preload_spec':config_for_nx5(plan['graph_sha256']),
-            'graph':GRAPH}
+            'graph':GRAPH,'update_existing':args.update_existing,
+            'previous_source_commit':UPDATE_BASELINE}
         result=json.loads(call_remote(payload,failure_log=failure_log))
         current=json.loads(plan_path.read_text())
         save_plan(plan_path,{**current,'phase':'prepared','remote_prepare':result},expected_phase='preparing')
@@ -760,7 +810,8 @@ def main():
             'maintenance_revision':args.maintenance_revision,'source_commit':args.commit,
             'baseline':plan['remote_baseline'],
             'manifest':bundle['manifest'],'preload_spec':config_for_nx5(plan['graph_sha256']),
-            'graph':GRAPH,'capability':capability_for(config_for_nx5(plan['graph_sha256']))}
+            'graph':GRAPH,'capability':capability_for(config_for_nx5(plan['graph_sha256'])),
+            'update_existing':args.update_existing,'previous_source_commit':UPDATE_BASELINE}
         result=json.loads(call_remote(payload,failure_log=failure_log))
         current=json.loads(plan_path.read_text())
         save_plan(plan_path,{**current,'phase':'verified','verification':result},expected_phase='applying')

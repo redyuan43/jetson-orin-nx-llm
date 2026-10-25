@@ -5,8 +5,10 @@ import contextlib
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import sys
 import symtable
@@ -487,6 +489,67 @@ class PreloadReleaseTests(unittest.TestCase):
         self.assertFalse(unchanged(baseline, changed_aux))
         changed_flint = {**after, 'flint_processes': []}
         self.assertFalse(unchanged(baseline, changed_flint))
+
+    def test_incremental_owner_idle_requires_existing_owned_artifact_identity(self):
+        remote_tree = ast.parse(module.REMOTE_PRELOAD)
+        owner_idle = next(node for node in remote_tree.body
+                          if isinstance(node, ast.FunctionDef) and node.name == 'owner_idle')
+        rows = {'source_commit':'e98f9c46ad3f0cc75e41a651254cb2cfe62428bc',
+            'owner':{'state':'ready','mode':'comfy','active':0,'model_loaded':False,'resident_pid':None},
+            'owner_unit':{'ActiveState':'active','MainPID':'100'},
+            'jobs':{'nonterminal_count':0},'queue':{'running':0,'pending':0},
+            'comfy_unit':{'ActiveState':'active'},
+            'new_artifacts':{'central-token':True,'ticket-key':True,'owner-config':True,'node-link':True},
+            'artifact_files':{
+                'central-token':{'kind':'file','uid':1000,'mode':0o600,'sha256':'a'*64},
+                'ticket-key':{'kind':'file','uid':1000,'mode':0o600,'sha256':'b'*64},
+                'owner-config':{'kind':'file','uid':1000,'mode':0o600,'sha256':'c'*64},
+                'node-link':{'kind':'symlink','uid':1000,
+                    'target':'/home/nx/.local/share/nx5-ssd-llm/current/scripts/minicpm/vendor/weight_preload_node'}}}
+        flint_unit={'ActiveState':'inactive','MainPID':'0','InvocationID':'','FragmentPath':'/nx5-flint'}
+        namespace = {'RESTARTED_UNITS':{'nx5-ssd-llm.service','siyuan-image-comfy.service'},
+            'os':SimpleNamespace(getuid=lambda:1000),'stat':stat,
+            'current':Path('/home/nx/.local/share/nx5-ssd-llm/current'),
+            'need':lambda condition, code: None if condition else (_ for _ in ()).throw(RuntimeError(code)),
+            'P':{'previous_source_commit':'e98f9c46ad3f0cc75e41a651254cb2cfe62428bc',
+                'baseline':{'flint_unit':flint_unit,'artifact_files':rows['artifact_files']}}}
+        exec(compile(ast.Module(body=[owner_idle], type_ignores=[]),
+                     'REMOTE_PRELOAD.owner_idle', 'exec'), namespace)
+        rows['flint_unit']=flint_unit
+        namespace['owner_idle'](rows, update_existing=True)
+        changed = {**rows,'artifact_files':{**rows['artifact_files'],
+            'ticket-key':{'kind':'file','uid':1000,'mode':0o640,'sha256':'b'*64}}}
+        with self.assertRaisesRegex(RuntimeError, 'preload_artifact_cas_changed'):
+            namespace['owner_idle'](changed, update_existing=True)
+        namespace['P']['baseline']['artifact_files'] = changed['artifact_files']
+        with self.assertRaisesRegex(RuntimeError, 'preload_artifact_identity_invalid'):
+            namespace['owner_idle'](changed, update_existing=True)
+        with self.assertRaisesRegex(RuntimeError, 'preload_artifact_already_exists'):
+            namespace['owner_idle'](rows)
+
+    def test_incremental_activation_switches_release_without_rewriting_configuration(self):
+        remote_tree = ast.parse(module.REMOTE_PRELOAD)
+        switch = next(node for node in remote_tree.body
+                      if isinstance(node, ast.FunctionDef) and node.name == 'switch_release')
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); base = root/'base'; releases = base/'releases'
+            releases.mkdir(parents=True)
+            old = releases/'old'; new = releases/'new'; old.mkdir(); new.mkdir()
+            current = base/'current'; current.symlink_to(old)
+            comfy_drop = root/'comfy-dropin.conf'; comfy_drop.touch()
+            writes=[]; commands=[]
+            namespace={'P':{'update_existing':True,'source_commit':'new'},'base':base,
+                'current':current,'release':new,'comfy_drop':comfy_drop,'os':os,
+                'need':lambda condition, code: None if condition else (_ for _ in ()).throw(RuntimeError(code)),
+                'install_config':lambda:writes.append('config'),
+                'unit':lambda _name:{'DropInPaths':str(comfy_drop)},
+                'subprocess':SimpleNamespace(run=lambda command,**kwargs:commands.append(command))}
+            exec(compile(ast.Module(body=[switch], type_ignores=[]),
+                         'REMOTE_PRELOAD.switch_release', 'exec'), namespace)
+            namespace['switch_release']()
+            self.assertEqual(current.resolve(), new.resolve())
+            self.assertEqual(writes, [])
+            self.assertEqual(commands, [])
 
     def test_cli_verify_uses_original_plan_without_central_snapshot_or_mutation(self):
         operation = 'nx5-weight-preload-publish-20261025-005'
