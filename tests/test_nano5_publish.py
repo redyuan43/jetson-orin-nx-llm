@@ -104,7 +104,9 @@ def test_full_publication_restores_admission_only_after_verified_owner_and_never
             switched[0]=True
             if restart_error:raise RuntimeError("restart_response_unknown")
     monkeypatch.setattr(m,"user_systemctl",control);monkeypatch.setattr(m,"command",lambda *a,**k:"owner log")
-    monkeypatch.setattr(m,"idle",lambda *a:{"commit":"new"})
+    monkeypatch.setattr(m,"idle",lambda *a:{"commit":"new","model_loaded":False,"residency_source":"per_request_native_process_lifetime"})
+    monkeypatch.setattr(m,"install_idle_comfy_observer",lambda *a:calls.append(("register_hook",)))
+    monkeypatch.setattr(m,"verify_sources_and_hook",lambda *a:calls.append(("source_audit",)))
     def stage(base,raw,payload,apply=False):
         if apply:target.mkdir()
     class Root:
@@ -124,3 +126,20 @@ def test_full_publication_restores_admission_only_after_verified_owner_and_never
     before=list(calls)
     assert m.remote(payload,types.SimpleNamespace(stage=stage),fence)==result
     assert calls==before and calls.count(("restart",m.SERVICE))==1
+
+
+def test_observer_hook_install_refuses_running_comfy_and_keeps_it_stopped(tmp_path, monkeypatch):
+    m=load();monkeypatch.setattr(m,'HOME',tmp_path)
+    parent=tmp_path/'apps/ComfyUI/custom_nodes';parent.mkdir(parents=True)
+    monkeypatch.setattr(m.os,'lchown',lambda *a:None)
+    calls=[]
+    monkeypatch.setattr(m,'user_systemctl',lambda *a:calls.append(a) or 'ActiveState=active\nMainPID=11')
+    with pytest.raises(RuntimeError,match='comfy_not_stopped'):
+        m.install_idle_comfy_observer(tmp_path/'release')
+    assert not (parent/'siyuan_residency').exists()
+    monkeypatch.setattr(m,'user_systemctl',lambda *a:calls.append(a) or 'ActiveState=inactive\nMainPID=0')
+    m.install_idle_comfy_observer(tmp_path/'release')
+    assert (parent/'siyuan_residency').is_symlink()
+    assert all(a[0]=='show' for a in calls)
+    with pytest.raises(RuntimeError,match='path_already_owned'):
+        m.install_idle_comfy_observer(tmp_path/'other')

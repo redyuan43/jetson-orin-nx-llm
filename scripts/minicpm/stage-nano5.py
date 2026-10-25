@@ -16,7 +16,9 @@ import subprocess
 FILES=['scripts/minicpm/nano5-service.py','scripts/minicpm/run-nano5.py','scripts/minicpm/bench-audit.py',
     'scripts/nx5/temporary_admission_fence.py','configs/minicpm-v47-nano5.json',
     'configs/minicpm-v47-instruct.jinja','docs/nano5-service/API.md',
-    'docs/nano5-service/catalog.json','docs/nano5-service/openapi.json']
+    'docs/nano5-service/catalog.json','docs/nano5-service/openapi.json',
+    'scripts/minicpm/vendor/mode_residency.py','scripts/minicpm/vendor/comfy_residency/__init__.py',
+    'scripts/minicpm/vendor/source-lock.json']
 
 
 def sha(raw):return hashlib.sha256(raw).hexdigest()

@@ -104,7 +104,52 @@ class Service:
         p = self.state / 'mode.json'
         return json.loads(p.read_text()).get('mode', 'off') if p.exists() else 'off'
 
+    @staticmethod
+    def native_process_snapshot(proc=Path('/proc')):
+        """Identify CLI/driver processes without logging prompts or reading weights.
+
+        MiniCPM weights belong to the per-request CLI. Its complete absence,
+        together with a stopped Comfy unit, proves no registered model is resident.
+        A process being present does not prove that loading has finished.
+        """
+        rows = []
+        for path in proc.iterdir():
+            if not path.name.isdigit():
+                continue
+            try:
+                comm = (path / 'comm').read_text().strip()
+                raw = (path / 'cmdline').read_bytes()
+                argv = [x.decode(errors='replace') for x in raw.split(b'\0') if x]
+                native = comm.startswith('llama-') or any(
+                    Path(x).name.startswith('llama-') or Path(x).name in
+                    {'run-nano5.py', 'bench-audit.py'} or
+                    ('ComfyUI' in x and Path(x).name == 'main.py') for x in argv[:3])
+                if native:
+                    # Include start time to detect PID reuse between snapshots.
+                    fields = (path / 'stat').read_text().rsplit(')', 1)[1].split()
+                    rows.append((int(path.name), int(fields[19])))
+            except (FileNotFoundError, ProcessLookupError):
+                continue
+            # Permission and malformed snapshots are not evidence of absence.
+        return tuple(sorted(rows))
+
     def local_observation(self):
+        with self.lock:
+            return self._local_observation()
+
+    def comfy_residency(self):
+        # This vendored, fixed-SHA reader is shared with the fleet controllers.
+        source = Path(__file__).parent / 'vendor/mode_residency.py'
+        namespace = {}
+        exec(compile(source.read_bytes(), str(source), 'exec'), namespace)
+        spec = {'kind': 'comfy_loaded_models',
+                'url': 'http://127.0.0.1:8188/siyuan/loaded-models',
+                'profile_id': 'nano5-sdxl', 'profile_version': 'sdxl-t2i-nano5-20261017',
+                'model_class': 'SDXL'}
+        return namespace['observe'](spec, lambda method, url, **kw: self.request(method, url), now=time.time)
+
+    def _local_observation(self):
+        unknown = {'model_loaded': None, 'residency_source': 'native_evidence_unavailable'}
         if self.intent.get('phase') in {'dispatching', 'unknown'} or any(j['status'] == 'unknown' for j in self.jobs.values()):
             return {'mode': 'unknown', 'state': 'unknown', 'active': 1}
         state = self.unit()
@@ -114,20 +159,26 @@ class Service:
             q = self.request('GET', 'http://127.0.0.1:8188/queue')
             if any(not isinstance(q.get(k), list) for k in ('queue_running', 'queue_pending')):
                 raise ValueError('incomplete_comfy_activity')
-            return {'mode': 'comfy', 'state': 'ready', 'active': len(q['queue_running']) + len(q['queue_pending'])}
+            return dict(self.comfy_residency(), residency_source='comfy.current_loaded_models',
+                        mode='comfy', state='ready', active=len(q['queue_running']) + len(q['queue_pending']))
         if state not in {'inactive', 'failed'}:
             raise RuntimeError('comfy_state_unknown')
-        # Reject unmanaged llama jobs too; a direct CLI remains an administrator tool.
-        if not self.active:
-            for p in Path('/proc').iterdir():
-                if not p.name.isdigit():
-                    continue
-                try:
-                    if (p / 'exe').resolve(strict=True).name.startswith('llama-'):
-                        raise RuntimeError('unmanaged_inference_active')
-                except (FileNotFoundError, PermissionError, ProcessLookupError):
-                    pass
-        return {'mode': self.marker(), 'state': 'ready', 'active': self.active}
+        result = dict(unknown, mode=self.marker(), state='ready', active=self.active)
+        if not self.active and not self.switching:
+            try:
+                before = self.native_process_snapshot()
+                after = self.native_process_snapshot()
+            except (OSError, ValueError, IndexError):
+                return result
+            if before != after:
+                return result
+            if before:
+                raise RuntimeError('unmanaged_inference_active')
+            # Verify Comfy did not start during the process snapshots.
+            if self.unit() != state:
+                return result
+            result.update(model_loaded=False, residency_source='per_request_native_process_lifetime')
+        return result
 
     def transition(self):
         data = self.central('GET', '/internal/v1/mode-transitions', controller=True)
@@ -141,7 +192,8 @@ class Service:
                     and a.get('resources') == b.get('resources') == [RESOURCE])
 
     def report(self, observation, transition=None):
-        body = dict(observation, operation_id=transition['operation_id'] if transition else None)
+        body = {k: v for k, v in observation.items() if k != 'residency_source'}
+        body['operation_id'] = transition['operation_id'] if transition else None
         self.central('POST', f'/internal/v1/resource-groups/{GROUP}/observation', body, controller=True)
         self.observed, self.observed_at, self.central_ok = observation, time.time(), True
 
@@ -353,7 +405,8 @@ class Service:
     def health(self):
         return {'service_id': 'nano5-minicpm', 'version': VERSION, 'commit': self.commit,
                 'mode': self.observed['mode'], 'state': self.observed['state'],
-                'active': self.observed['active'], 'model_loaded': None if self.active else False,
+                'active': self.observed['active'], 'model_loaded': self.observed.get('model_loaded'),
+                'residency_source': self.observed.get('residency_source', 'native_evidence_unavailable'),
                 'inference_or_switch_request_active': bool(self.active),
                 'observed_at': self.observed_at, 'coordinator_reachable': self.central_ok}
 

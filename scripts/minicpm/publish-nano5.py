@@ -3,7 +3,8 @@
 
 Plan is read-only. Apply consumes a fixed plan and committed candidate. Unknown
 operations are query-only, retain their admission fence, and never auto-restart.
-No model, Comfy, database, credentials, or sudo policy is modified.
+No model or Comfy process is started/restarted. Only a stopped Comfy receives
+a fixed-source read-only hook; database, credentials and sudo policy are preserved.
 """
 import argparse
 import base64
@@ -133,6 +134,30 @@ def idle(config,root,mark,fence_module,maintenance_hold=None):
     return health
 
 
+def install_idle_comfy_observer(target):
+    # No start/restart: the next normal Comfy start registers this HTTP hook.
+    status = user_systemctl('show', 'siyuan-image-comfy.service',
+                           '--property=ActiveState', '--property=MainPID')
+    values = dict(line.split('=', 1) for line in status.splitlines() if '=' in line)
+    if values.get('ActiveState') not in {'inactive', 'failed'} or values.get('MainPID') != '0':
+        raise RuntimeError('comfy_not_stopped_for_observer_registration')
+    node = HOME/'apps/ComfyUI/custom_nodes/siyuan_residency'
+    if node.exists() or node.is_symlink():
+        raise RuntimeError('comfy_observer_path_already_owned')
+    node.symlink_to(target/'scripts/minicpm/vendor/comfy_residency')
+    os.lchown(node, 2002, 2002)
+
+
+def verify_sources_and_hook(target, manifest):
+    for name, expected in manifest['files'].items():
+        path = target/name
+        if path.is_symlink() or sha(path.read_bytes()) != expected:
+            raise RuntimeError('active_source_hash_changed')
+    node = HOME/'apps/ComfyUI/custom_nodes/siyuan_residency'
+    if not node.is_symlink() or os.readlink(node) != str(target/'scripts/minicpm/vendor/comfy_residency'):
+        raise RuntimeError('comfy_observer_link_changed')
+
+
 def receipt(record):
     return {k:record[k] for k in ('operation_id','source_commit','phase','old_pid','new_pid','error') if k in record}
 
@@ -187,6 +212,8 @@ def remote(payload,stage_module,fence_module):
         after_config=dict(config,deployment=str(target))
         config_after=(json.dumps(after_config,indent=2)+'\n').encode()
         require_baseline(plan['expected'],snapshot());idle(config,root,mark,fence_module,hold)
+        record['phase']='observer_registration';atomic(journal,record)
+        install_idle_comfy_observer(target)
         record['phase']='restarting';atomic(journal,record)
         for path,raw in [(UNIT,unit_after),(CONFIG,config_after)]:
             temp=path.with_name(path.name+'.owner-release-pending')
@@ -207,7 +234,10 @@ def remote(payload,stage_module,fence_module):
                 break
             except Exception:time.sleep(1)
         else:raise RuntimeError('new_owner_verification_failed')
-        record.update(phase='verified',new_pid=now['pid']);atomic(journal,record)
+        verify_sources_and_hook(target, payload['manifest'])
+        if health.get('model_loaded') is not False or health.get('residency_source') != 'per_request_native_process_lifetime':
+            raise RuntimeError('native_absence_not_observed')
+        record.update(phase='verified',new_pid=now['pid'],model_loaded=False);atomic(journal,record)
         fence.unshield()
         record['phase']='active';atomic(journal,record)
         return receipt(record)

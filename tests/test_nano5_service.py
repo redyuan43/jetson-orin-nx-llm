@@ -93,6 +93,80 @@ class NanoServiceTests(unittest.TestCase):
             self.service.release(job, 'succeeded')
             self.assertEqual(request.call_args.args[2]['request_digest'], 'lease')
 
+    def test_stopped_native_processes_prove_unloaded(self):
+        with patch.object(self.service, 'unit', return_value='inactive'), \
+             patch.object(self.service, 'native_process_snapshot', return_value=()):
+            value = self.service.local_observation()
+        self.assertIs(value['model_loaded'], False)
+        self.assertEqual(value['residency_source'], 'per_request_native_process_lifetime')
+
+    def test_service_idle_is_not_native_weight_evidence(self):
+        self.service.active = 1
+        with patch.object(self.service, 'unit', return_value='inactive'):
+            value = self.service.local_observation()
+        self.assertIsNone(value['model_loaded'])
+
+    def test_incomplete_process_snapshot_never_means_unloaded(self):
+        with patch.object(self.service, 'unit', return_value='inactive'), \
+             patch.object(self.service, 'native_process_snapshot', side_effect=PermissionError):
+            value = self.service.local_observation()
+        self.assertIsNone(value['model_loaded'])
+
+    def test_process_race_never_means_unloaded(self):
+        with patch.object(self.service, 'unit', return_value='inactive'), \
+             patch.object(self.service, 'native_process_snapshot', side_effect=[(), ((73, 123),)]):
+            value = self.service.local_observation()
+        self.assertIsNone(value['model_loaded'])
+
+    def test_native_process_exists_does_not_imply_loaded(self):
+        with patch.object(self.service, 'unit', return_value='inactive'), \
+             patch.object(self.service, 'native_process_snapshot', return_value=((73, 123),)):
+            with self.assertRaisesRegex(RuntimeError, 'unmanaged_inference_active'):
+                self.service.local_observation()
+
+    def test_comfy_online_is_not_weight_evidence(self):
+        with patch.object(self.service, 'unit', return_value='active'), \
+             patch.object(self.service, 'request', side_effect=[{'queue_running': [], 'queue_pending': []}, {}]):
+            value = self.service.local_observation()
+        self.assertIsNone(value['model_loaded'])
+
+    def test_comfy_hook_loaded_cuda_sdxl_is_real_weight_evidence(self):
+        import time
+        value = {'schema_version': 1, 'source': 'comfy.current_loaded_models',
+                 'observed_at': time.time(), 'busy': False, 'model_loaded': True,
+                 'count': 1, 'loaded_bytes': 123,
+                 'models': [{'model_class': 'SDXL', 'device_kind': 'cuda', 'loaded_bytes': 123}]}
+        with patch.object(self.service, 'unit', return_value='active'), \
+             patch.object(self.service, 'request', side_effect=[{'queue_running': [], 'queue_pending': []}, value]):
+            observed = self.service.local_observation()
+        self.assertIs(observed['model_loaded'], True)
+        self.assertEqual(observed['profile_id'], 'nano5-sdxl')
+
+    def test_vendored_observer_matches_immutable_source_lock(self):
+        import hashlib
+        root = Path(module.__file__).resolve().parents[2]
+        lock = json.loads((root / 'scripts/minicpm/vendor/source-lock.json').read_text())
+        self.assertEqual(lock['commit'], '8f687edf013d57ad3ebf5d955d2e0fed5cbafc44')
+        for name, row in lock['files'].items():
+            self.assertEqual(hashlib.sha256((root / name).read_bytes()).hexdigest(), row['sha256'])
+
+    def test_health_uses_actual_observation_instead_of_active_counter(self):
+        self.service.observed.update(model_loaded=None, residency_source='unobserved')
+        self.assertIsNone(self.service.health()['model_loaded'])
+        self.service.observed.update(model_loaded=False, residency_source='per_request_native_process_lifetime')
+        self.assertIs(self.service.health()['model_loaded'], False)
+
+    def test_kernel_threads_do_not_hide_native_process_absence(self):
+        proc = Path(self.temp.name) / 'proc'
+        for pid, cmd, comm in [(1, b'', 'kworker'), (2, b'/usr/bin/python3\x00service.py\x00', 'python3')]:
+            item = proc / str(pid); item.mkdir(parents=True)
+            (item / 'cmdline').write_bytes(cmd)
+            (item / 'comm').write_text(comm)
+            (item / 'stat').write_text(str(pid) + ' (' + comm + ') S ' + '0 ' * 18 + '123 0')
+        self.assertEqual(self.service.native_process_snapshot(proc), ())
+        (proc / '2' / 'cmdline').write_bytes(b'/python\x00/path/run-nano5.py\x00')
+        self.assertEqual(self.service.native_process_snapshot(proc), ((2, 123),))
+
     def test_answer_parser_preserves_html(self):
         raw = '> prompt\n\n|\b-\b/\b \\b<html>hello</html>\n[ Prompt: 1 t/s ]'.replace('\\b', '\b')
         self.assertEqual(module.model_answer(raw), '<html>hello</html>')
