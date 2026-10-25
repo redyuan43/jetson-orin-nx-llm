@@ -198,6 +198,9 @@ def central_snapshot(token_file=ADMIN_TOKEN_FILE, *, now=None):
 REMOTE_PRELOAD = r'''import base64,hashlib,json,os,pathlib,secrets,shlex,stat,subprocess,sys,tempfile,time,urllib.request
 P=PAYLOAD; action=P['action']; home=pathlib.Path.home(); base=home/'.local/share/nx5-ssd-llm'
 private=home/'.config/nx5-ssd-llm'; state=home/'.local/state/nx5-ssd-llm'; units=home/'.config/systemd/user'
+RESTARTED_UNITS={'nx5-ssd-llm.service','siyuan-image-comfy.service'}
+def unaffected_processes(rows):
+ return [row for row in rows if row.get('unit') not in RESTARTED_UNITS]
 config=private/'service.json'; comfy_drop=units/'siyuan-image-comfy.service.d/zz-siyuan-weight-preload.conf'
 node_link=home/'apps/ComfyUI/custom_nodes/siyuan_weight_preload'; plan_path=state/('preload-release-'+P['operation']+'.json')
 backup=state/('preload-backup-'+P['operation']); release=base/'releases'/P['source_commit']; current=base/'current'

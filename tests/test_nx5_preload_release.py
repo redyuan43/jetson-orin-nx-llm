@@ -1,11 +1,13 @@
 import ast
 import base64
+import builtins
 import importlib.util
 import json
 from pathlib import Path
 import shutil
 import subprocess
 import sys
+import symtable
 import tempfile
 from types import SimpleNamespace
 import unittest
@@ -212,6 +214,11 @@ class PreloadReleaseTests(unittest.TestCase):
         source = module.remote_program({'action':'capture','operation':'nx5-preload-test',
             'source_commit':'a'*40,'maintenance_revision':12})
         compile(source, 'nx5 generated remote publisher', 'exec')
+        symbols = symtable.symtable(source, 'nx5 generated remote publisher', 'exec')
+        unresolved = sorted({symbol.get_name() for symbol in symbols.get_symbols()
+            if symbol.is_global() and symbol.is_referenced() and not symbol.is_assigned()
+            and not symbol.is_imported() and symbol.get_name() not in dir(builtins)})
+        self.assertEqual(unresolved, [])
 
     def test_central_guard_requires_exact_paused_resource_and_fresh_idle_policy(self):
         now = 1000.0
