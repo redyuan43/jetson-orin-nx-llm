@@ -718,6 +718,7 @@ def main():
         save_plan(plan_path,{**plan,'phase':'applying'},expected_phase='prepared')
         payload={'action':'apply','operation':args.operation,
             'maintenance_revision':args.maintenance_revision,'source_commit':args.commit,
+            'baseline':plan['remote_baseline'],
             'manifest':bundle['manifest'],'preload_spec':config_for_nx5(plan['graph_sha256']),
             'graph':GRAPH,'capability':capability_for(config_for_nx5(plan['graph_sha256']))}
         result=json.loads(call_remote(payload))

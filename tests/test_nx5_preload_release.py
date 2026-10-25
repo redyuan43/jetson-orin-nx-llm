@@ -1,3 +1,4 @@
+import ast
 import base64
 import importlib.util
 import json
@@ -154,6 +155,58 @@ class PreloadReleaseTests(unittest.TestCase):
         for phase in ('applying', 'unknown', 'activated', 'verified'):
             with self.subTest(phase=phase), self.assertRaisesRegex(ValueError, 'inspect_only'):
                 module.next_phase(phase, 'apply')
+
+    def test_apply_cli_passes_remote_baseline_used_by_remote_owner_idle(self):
+        operation = 'nx5-weight-preload-publish-20261025-002'
+        source = 'a'*40
+        now = module.time.time()
+        central = {'resource': {'resource_id':'nx5-igpu','capacity':0,'occupied':0,'revision':12},
+            'leases': [], 'group': {'group_id':'nx5-igpu-group','resources':['nx5-igpu'],
+                'mode':'comfy','state':'ready','active':0,'transition':None,'pending':[],
+                'policy_demand':None,'observed_at':now},
+            'public': {'mode':'comfy','state':'ready','active':0,'fresh':True,
+                'transition_pending':False,'policy_demand':None,'observed_at':now}}
+        flint_unit = {'ActiveState':'inactive','MainPID':'0','InvocationID':''}
+        remote_baseline = {'flint_unit':flint_unit}
+        manifest = {'source_commit':source,'files':{},'vendor_commit':module.VENDOR_COMMIT,
+                    'graph_sha256':'c'*64}
+        bundle = {'manifest':manifest,'files':{},
+                  'manifest_sha256':module.sha(module.canonical(manifest))}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            plan_path = Path(tmp)/'native-preload-release-plan.json'
+            plan_path.write_text(json.dumps({'schema_version':1,'operation':operation,
+                'maintenance_revision':12,'source_commit':source,
+                'manifest_sha256':bundle['manifest_sha256'],'graph_sha256':'c'*64,
+                'central_baseline':central,'remote_baseline':remote_baseline,'phase':'prepared'}))
+            captured = {}
+
+            def fake_call_remote(payload):
+                captured['payload'] = payload
+                tree = ast.parse(module.REMOTE_PRELOAD)
+                owner_idle = next(node for node in tree.body
+                                  if isinstance(node, ast.FunctionDef) and node.name == 'owner_idle')
+                remote = ast.Module(body=[owner_idle], type_ignores=[])
+                namespace = {'P':payload,
+                    'need':lambda condition, code: None if condition else (_ for _ in ()).throw(RuntimeError(code))}
+                exec(compile(remote, 'REMOTE_PRELOAD.owner_idle', 'exec'), namespace)
+                namespace['owner_idle']({'owner_unit':{'ActiveState':'active','MainPID':'123'},
+                    'owner':{'state':'ready','mode':'comfy','active':0,'model_loaded':False,
+                             'resident_pid':None},
+                    'jobs':{'nonterminal_count':0},'queue':{'running':0,'pending':0},
+                    'comfy_unit':{'ActiveState':'active'},'new_artifacts':{'private':False},
+                    'flint_unit':flint_unit})
+                return json.dumps({'phase':'verified'})
+
+            with patch.object(module, 'package', return_value=bundle), \
+                 patch.object(module, 'central_snapshot', return_value=central), \
+                 patch.object(module, 'call_remote', side_effect=fake_call_remote), \
+                 patch.object(sys, 'argv', ['publish-preload.py','--action','apply',
+                    '--commit',source,'--operation',operation,'--maintenance-revision','12',
+                    '--plan',str(plan_path)]):
+                module.main()
+
+            self.assertEqual(captured['payload']['baseline'], remote_baseline)
 
     def test_generated_remote_program_is_valid_python_for_fixed_payload(self):
         source = module.remote_program({'action':'capture','operation':'nx5-preload-test',
