@@ -1,0 +1,19 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "qwen_image_2.1_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "preload": {
+    "class_type": "SiyuanPreloadModel",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "authorization_json": "$AUTH"
+    }
+  }
+}

@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import queue
+import sys
 import shutil
 import tempfile
 import threading
@@ -34,8 +35,313 @@ class ResidentTests(unittest.TestCase):
         owner = object.__new__(module.ManagedComfy)
         owner.policy_profiles = {'comfy': {
             'profile_id': 'nx5-qwen21', 'version': 'qwen21-t2i-nx5-20261005'}}
-        owner.service = type('ServiceFixture', (), {'resident': self.model})()
+        owner.policy_state = {}
+        owner.service = type('ServiceFixture', (), {'resident': self.model, 'closing': False, 'jobs': {}})()
         return owner
+
+    @staticmethod
+    def comfy_policy():
+        return {'operation_id': 'op_' + 'a' * 32, 'profile_id': 'nx5-qwen21',
+                'profile_version': 'qwen21-t2i-nx5-20261005', 'mode': 'comfy',
+                'activation': 'controller', 'policy_revision': 16,
+                'executor_id': 'device-policy:nx5-igpu-group', 'state': 'transitioning',
+                'weight_preload_required': True}
+
+    def preload_owner(self, state='running', loaded=False):
+        owner = self.comfy_owner()
+        owner.policy_profiles['comfy']['weight_preload'] = {'schema_version': 1}
+        owner.policy_comfy_transition = Mock(return_value=True)
+        owner.check_policy_barrier = Mock()
+        owner.report = Mock()
+        owner.checked_activity = Mock(return_value={
+            'group_id': 'nx5-igpu-group', 'resources': ['nx5-igpu'], 'fresh': True,
+            'state': 'ready', 'active': 0, 'leases': [], 'pending': []})
+        owner.unit = Mock(return_value='active')
+        owner.flint_unit = Mock(return_value='inactive')
+        owner.queue = Mock(return_value=0)
+        owner.queue_state = Mock(return_value={'queue_running': [], 'queue_pending': []})
+        client = Mock()
+        client.ensure.return_value = {'state': state, 'prompt_id': '11111111-1111-4111-8111-111111111111'}
+        owner.weight_preload_client = Mock(return_value=client)
+        owner.profile_observation = Mock(return_value={'mode': 'comfy', 'profile_id': 'nx5-qwen21',
+                                                       'profile_version': 'qwen21-t2i-nx5-20261005',
+                                                       'model_loaded': loaded})
+        owner.policy_state = {}
+        owner.save_policy = Mock(side_effect=lambda value: setattr(owner, 'policy_state', value))
+        return owner, client
+
+    def test_comfy_weight_preload_runs_only_inside_original_idle_policy_transition(self):
+        owner, client = self.preload_owner()
+        policy = self.comfy_policy()
+        transition = {'operation_id': policy['operation_id'], 'executor_id': policy['executor_id'],
+                      'target_mode': 'comfy'}
+
+        result = owner._ensure_weight_preload(policy, transition)
+
+        self.assertEqual(result['state'], 'running')
+        owner.weight_preload_client.assert_called_once_with(policy)
+        client.ensure.assert_called_once_with(policy)
+        self.assertEqual(owner.checked_activity.call_args_list,
+                         [unittest.mock.call(require_ready=False), unittest.mock.call(require_ready=False)])
+        owner.report.assert_called_once_with({'mode': 'comfy', 'state': 'loading', 'active': 1}, transition)
+
+    def test_preload_unknown_stays_pending_and_reuses_the_same_operation(self):
+        owner, client = self.preload_owner(state='unknown')
+        policy = self.comfy_policy()
+        transition = {'operation_id': policy['operation_id'], 'executor_id': policy['executor_id'],
+                      'target_mode': 'comfy'}
+
+        first = owner._ensure_weight_preload(policy, transition)
+        second = owner._ensure_weight_preload(policy, transition)
+
+        self.assertEqual((first['state'], second['state']), ('unknown', 'unknown'))
+        self.assertEqual(owner.weight_preload_client.call_count, 2)
+        self.assertEqual(client.ensure.call_args_list, [unittest.mock.call(policy), unittest.mock.call(policy)])
+        self.assertEqual(owner.report.call_count, 2)
+        self.assertTrue(all(call.args[0]['state'] == 'loading' for call in owner.report.call_args_list))
+
+    def test_real_running_preload_journal_resumes_own_busy_queue_to_complete(self):
+        import shutil
+        import time
+        import urllib.parse
+        from unittest.mock import patch
+        source_vendor = Path(module.__file__).resolve().parents[1]/'minicpm/vendor/fleet_control'
+        vendor = self.root/'repo/scripts/minicpm/vendor/fleet_control'
+        vendor.mkdir(parents=True)
+        for name in ('__init__.py', 'comfy_preload.py', 'weight_preload_protocol.py'):
+            shutil.copyfile(source_vendor/name, vendor/name)
+        graph = {'1': {'class_type':'UNETLoader','inputs':{
+                    'unet_name':'qwen_image_2.1_int8_convrot.safetensors','weight_dtype':'default'}},
+                 'preload': {'class_type':'SiyuanPreloadModel','inputs':{
+                    'model':['1',0],'authorization_json':'$AUTH'}}}
+        graph_raw = json.dumps(graph,sort_keys=True,separators=(',',':')).encode()
+        graph_path = self.root/'graph.json'; graph_path.write_bytes(graph_raw)
+        token = self.root/'central.token'; token.write_text('opaque-token'); token.chmod(0o600)
+        key = self.root/'ticket.key'; key.write_text('opaque-ticket-key'); key.chmod(0o600)
+        config = {'schema_version':1,'group_id':'nx5-igpu-group','resource_id':'nx5-igpu',
+            'mode':'comfy','profile_id':'nx5-qwen21','profile_version':'qwen21-t2i-nx5-20261005',
+            'model_class':'QwenImage21','native_base':'http://127.0.0.1:8188',
+            'central':{'base_url':'http://100.91.42.28:18292','token_file':str(token)},
+            'ticket_key_file':str(key),'graph_file':str(graph_path),
+            'graph_sha256':hashlib.sha256(graph_raw).hexdigest(),
+            'budget':{'max_cuda_bytes':3*1024**3,'reserve_cuda_bytes':4*1024**3,
+                'min_ram_available_bytes':9*1024**3,'min_loaded_bytes':256*1024**2,
+                'unified_memory':True}}
+        owner, _unused = self.preload_owner()
+        del owner.weight_preload_client
+        del owner.queue
+        owner.policy_profiles['comfy']['weight_preload'] = config
+        owner.service.repo = self.root/'repo'; owner.service.state = self.root/'state/jobs'
+        owner.service.jobs = {}; owner.service.closing = False
+        owner.service.lock = threading.RLock()
+        owner.policy_state = {}
+        owner.policy_path = self.root/'state/policy-demand.json'
+        owner.policy_path.parent.mkdir(parents=True, exist_ok=True)
+        owner.intent = {}
+        owner.path = self.root/'state/managed-comfy.json'
+        owner.observed = {'mode':'unknown','state':'unknown','active':1}
+        del owner.checked_activity
+        del owner.policy_comfy_transition
+        del owner.check_policy_barrier
+        del owner.report
+        prompt_id = '11111111-1111-4111-8111-111111111111'
+        request_prompt = {}
+        dispatches = []
+        history_complete = {'value':False}
+        def queue_item():
+            return [] if history_complete['value'] else [[0,dispatches[-1] if dispatches else prompt_id,{},{}]]
+        hook = {'schema_version':1,'source':'comfy.current_loaded_models',
+            'observed_at':time.time(),'models':[{'model_class':'QwenImage21',
+                'device_kind':'cuda','loaded_bytes':512*1024**2}],
+            'count':1,'loaded_bytes':512*1024**2,'model_loaded':True,'busy':False}
+        def owner_request(path):
+            if path == '/queue':
+                return {'queue_running':queue_item(),'queue_pending':[]} if dispatches else {
+                    'queue_running':[],'queue_pending':[]}
+            if path == '/siyuan/loaded-models': return hook
+            raise AssertionError(path)
+        owner.request = owner_request
+        owner.profile_observation = module.ManagedComfy.profile_observation.__get__(owner)
+        owner.unit = Mock(return_value='active'); owner.flint_unit = Mock(return_value='inactive')
+        owner.action = Mock(); owner.flint_action = Mock()
+        owner.demand_for_mode = Mock(return_value=None)
+        class Response:
+            def __init__(self, value): self.raw=json.dumps(value).encode()
+            def __enter__(self): return self
+            def __exit__(self,*_args): return False
+            def read(self,_limit=-1): return self.raw
+        class Opener:
+            history_reads = 0
+            def open(self, request, timeout=0):
+                path=urllib.parse.urlsplit(request.full_url).path
+                if path == '/prompt':
+                    body=json.loads(request.data); request_prompt.update(body['prompt'])
+                    dispatches.append(body['prompt_id'])
+                    return Response({'prompt_id':body['prompt_id']})
+                if path.startswith('/history/'):
+                    self.history_reads += 1
+                    if self.history_reads == 1: return Response({})
+                    actual_prompt=path.rsplit('/',1)[-1]
+                    history_complete['value']=True
+                    receipt={'operation_id':policy['operation_id'],'prompt_id':actual_prompt,
+                        'graph_sha256':config['graph_sha256'],'model_class':'QwenImage21',
+                        'scope':'main_model_partial_cuda','inference_executed':False,
+                        'loaded_bytes':512*1024**2}
+                    saved={'prompt':['',actual_prompt,request_prompt], 'status':{
+                        'status_str':'success','completed':True},
+                        'outputs':{'preload':{'siyuan_weight_preload':[receipt]}}}
+                    return Response({actual_prompt:saved})
+                if path == '/siyuan/loaded-models':
+                    return Response({'models':[{'model_class':'QwenImage21','device_kind':'cuda',
+                        'loaded_bytes':512*1024**2}],'busy':False})
+                if path == '/queue': return Response({'queue_running':queue_item(),'queue_pending':[]})
+                raise AssertionError(path)
+        fake=Opener()
+        policy=self.comfy_policy()
+        transition={'group_id':'nx5-igpu-group','resources':['nx5-igpu'],
+            'lease_barrier':True,'operation_id':policy['operation_id'],
+            'executor_id':policy['executor_id'],'target_mode':'comfy'}
+        central_row={'group_id':'nx5-igpu-group','resources':['nx5-igpu'],'fresh':True,
+            'state':'ready','active':0,'leases':[],'pending':[],'policy_demand':dict(policy)}
+        class Central:
+            group='/internal/v1/resource-groups/nx5-igpu-group'
+            observations=[]
+            def api(self,method,path,body=None,controller=False):
+                if method=='GET' and path.endswith('/activity'): return dict(central_row)
+                if method=='GET' and path=='/internal/v1/mode-transitions':
+                    return {'transitions':[transition]}
+                if method=='POST' and path.endswith('/observation'):
+                    self.observations.append(dict(body))
+                    central_row.update(state=body['state'],active=body['active'])
+                    return {'ok':True}
+                raise AssertionError((method,path))
+        owner.central=Central()
+        owner.wire=lambda:owner.central
+        owner.service.lock=threading.RLock()
+        with patch('urllib.request.build_opener',return_value=fake):
+            with patch('resident.foreign_inference_count',return_value=0):
+                owner.tick()
+            journal=owner.service.state.parent/'comfy-weight-preload'/(policy['operation_id']+'.json')
+            self.assertEqual(json.loads(journal.read_text())['state'],'running')
+            self.assertEqual(central_row['state'],'loading',
+                {'phase':owner.policy_state,'intent':owner.intent,'observation':owner.observed,
+                 'journal':json.loads(journal.read_text()),'activity':central_row})
+            self.assertEqual(owner.central.observations[-1]['state'],'loading')
+            central_row.update(state='unknown',active=1)
+            central_row['policy_demand']=dict(policy,state='unknown')
+            # Startup reconciliation may mark an interrupted local policy phase
+            # unknown; only this exact dispatched preload may resume read-only.
+            owner.policy_state['phase']='unknown'
+            with patch('resident.foreign_inference_count',return_value=0):
+                owner.tick()
+        self.assertEqual(json.loads(journal.read_text())['state'],'complete',
+            {'journal':json.loads(journal.read_text()),'history_reads':fake.history_reads,
+             'observations':owner.central.observations})
+        self.assertEqual(len(dispatches),1)
+        self.assertEqual(fake.history_reads,2)
+        self.assertEqual(len(owner.central.observations),2)
+        self.assertEqual([row['state'] for row in owner.central.observations],['loading','ready'])
+        self.assertIsNone(owner.central.observations[0].get('model_loaded'))
+        self.assertIs(owner.central.observations[1].get('model_loaded'),True)
+        self.assertEqual(owner.central.observations[1].get('profile_id'),'nx5-qwen21')
+        self.assertEqual(owner.policy_state['phase'],'applied')
+        owner.action.assert_not_called()
+        owner.flint_action.assert_not_called()
+
+    def test_preload_completion_requires_live_target_weights_and_exact_transition(self):
+        owner, client = self.preload_owner(state='complete', loaded=False)
+        policy = self.comfy_policy()
+        transition = {'operation_id': policy['operation_id'], 'executor_id': policy['executor_id'],
+                      'target_mode': 'comfy'}
+
+        result = owner._ensure_weight_preload(policy, transition)
+
+        self.assertEqual(result['state'], 'unknown')
+        owner.profile_observation.assert_called_once_with({'mode': 'comfy', 'state': 'ready', 'active': 0})
+        owner.policy_comfy_transition.return_value = False
+        rejected = owner._ensure_weight_preload(policy, transition)
+        self.assertEqual(rejected['state'], 'failed')
+        self.assertEqual(client.ensure.call_count, 1)
+        self.assertEqual(owner.report.call_args.args[0]['state'], 'loading')
+
+    def test_preload_never_submits_while_the_physical_group_is_busy(self):
+        owner, client = self.preload_owner()
+        policy = self.comfy_policy()
+        transition = {'operation_id': policy['operation_id'], 'executor_id': policy['executor_id'],
+                      'target_mode': 'comfy'}
+        owner.checked_activity.return_value['leases'] = [{'operation_id': 'other'}]
+
+        result = owner._ensure_weight_preload(policy, transition)
+
+        self.assertEqual(result['state'], 'unknown')
+        client.ensure.assert_not_called()
+        self.assertEqual(owner.report.call_args.args[0]['state'], 'loading')
+
+    def test_preload_flag_is_part_of_demand_identity_and_requires_a_local_contract(self):
+        owner = self.comfy_owner()
+        owner.policy_profiles['comfy']['weight_preload'] = {'schema_version': 1}
+        policy = self.comfy_policy()
+        row = {'fresh': True, 'policy_demand': policy}
+        self.assertEqual(owner.policy_demand(row), policy)
+        changed = dict(policy, weight_preload_required=False)
+        owner.policy_state = {'demand': policy, 'phase': 'transitioning'}
+        with self.assertRaisesRegex(RuntimeError, 'identity_conflict'):
+            owner.policy_demand({'fresh': True, 'policy_demand': changed})
+        owner.policy_profiles['comfy'].pop('weight_preload')
+        with self.assertRaisesRegex(RuntimeError, 'config_missing'):
+            owner.policy_demand({'fresh': True, 'policy_demand': policy})
+
+    def test_policy_without_required_preload_keeps_existing_comfy_transition(self):
+        owner = self.comfy_owner()
+        owner.policy_profiles['comfy']['weight_preload'] = {'schema_version': 1}
+        policy = dict(self.comfy_policy(), weight_preload_required=False)
+        owner.policy_comfy_transition = Mock(return_value=True)
+        owner.checked_activity = Mock(return_value={'fresh': True, 'policy_demand': policy})
+        self.assertTrue(owner.policy_demand({'fresh': True, 'policy_demand': policy}))
+        self.assertFalse(owner._ensure_weight_preload(policy, {
+            'operation_id': policy['operation_id'], 'executor_id': policy['executor_id'],
+            'target_mode': 'comfy'})['state'] == 'complete')
+
+    def test_real_preload_client_loads_isolated_vendored_package_without_path_or_pyc(self):
+        import shutil
+        source_vendor = Path(module.__file__).resolve().parents[1]/'minicpm/vendor/fleet_control'
+        vendor = self.root/'repo/scripts/minicpm/vendor/fleet_control'
+        vendor.mkdir(parents=True)
+        for name in ('__init__.py', 'comfy_preload.py', 'weight_preload_protocol.py'):
+            shutil.copyfile(source_vendor/name, vendor/name)
+        graph = {'1': {'class_type': 'UNETLoader', 'inputs': {
+                    'unet_name': 'qwen_image_2.1_int8_convrot.safetensors', 'weight_dtype': 'default'}},
+                 'preload': {'class_type': 'SiyuanPreloadModel', 'inputs': {
+                    'model': ['1', 0], 'authorization_json': '$AUTH'}}}
+        graph_path = self.root/'preload-graph.json'
+        graph_bytes = json.dumps(graph, sort_keys=True, separators=(',', ':')).encode()
+        graph_path.write_bytes(graph_bytes)
+        token_path = self.root/'central.token'
+        key_path = self.root/'ticket.key'
+        token_path.write_text('placeholder')
+        key_path.write_text('placeholder')
+        config = {'schema_version': 1, 'group_id': 'nx5-igpu-group', 'resource_id': 'nx5-igpu',
+            'mode': 'comfy', 'profile_id': 'nx5-qwen21',
+            'profile_version': 'qwen21-t2i-nx5-20261005', 'model_class': 'QwenImage21',
+            'native_base': 'http://127.0.0.1:8188',
+            'central': {'base_url': 'http://100.91.42.28:18292', 'token_file': str(token_path)},
+            'ticket_key_file': str(key_path), 'graph_file': str(graph_path),
+            'graph_sha256': hashlib.sha256(graph_bytes).hexdigest(),
+            'budget': {'max_cuda_bytes': 3*1024**3, 'reserve_cuda_bytes': 4*1024**3,
+                'min_ram_available_bytes': 9*1024**3, 'min_loaded_bytes': 256*1024**2,
+                'unified_memory': True}}
+        owner = self.comfy_owner()
+        owner.service.repo = self.root/'repo'
+        owner.service.state = self.root/'state/jobs'
+        owner.policy_profiles['comfy']['weight_preload'] = config
+        policy = dict(self.comfy_policy(), weight_preload_required=True)
+        original_path = list(sys.path)
+        client = owner.weight_preload_client(policy)
+        self.assertEqual(client.config, config)
+        self.assertEqual(client.journal_path, self.root/'state/comfy-weight-preload'/
+                         (policy['operation_id']+'.json'))
+        self.assertEqual(sys.path, original_path)
+        self.assertFalse(list(vendor.rglob('__pycache__')))
 
     @staticmethod
     def comfy_payload(models=(), *, busy=False, observed_at=None):
@@ -113,10 +419,14 @@ class ResidentTests(unittest.TestCase):
         self.assertIs(llm['model_loaded'], True)
         self.assertIs(flint['model_loaded'], True)
 
-    def test_vendored_residency_parser_matches_locked_nano5_source(self):
+    def test_vendored_shared_preload_helpers_match_pinned_source_lock(self):
         vendor = Path(__file__).resolve().parents[1] / 'scripts/minicpm/vendor'
         lock = json.loads((vendor/'source-lock.json').read_text())
-        self.assertEqual(lock['commit'], '8f687edf013d57ad3ebf5d955d2e0fed5cbafc44')
+        self.assertEqual(lock['repository'], 'redyuan43/siyuan-media-gateway')
+        self.assertEqual(lock['commit'], '00420e8ada805f35a91d31c796b11b2c9cfe4284')
+        self.assertTrue({'scripts/minicpm/vendor/fleet_control/comfy_preload.py',
+                         'scripts/minicpm/vendor/fleet_control/weight_preload_protocol.py',
+                         'scripts/minicpm/vendor/weight_preload_node/__init__.py'}.issubset(lock['files']))
         for path, metadata in lock['files'].items():
             self.assertEqual(hashlib.sha256((Path(__file__).resolve().parents[1]/path).read_bytes()).hexdigest(),
                              metadata['sha256'])

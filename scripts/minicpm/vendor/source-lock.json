@@ -1,6 +1,6 @@
 {
   "repository": "redyuan43/siyuan-media-gateway",
-  "commit": "8f687edf013d57ad3ebf5d955d2e0fed5cbafc44",
+  "commit": "00420e8ada805f35a91d31c796b11b2c9cfe4284",
   "files": {
     "scripts/minicpm/vendor/mode_residency.py": {
       "upstream_path": "fleet-control/fleet_control/mode_residency.py",
@@ -9,6 +9,22 @@
     "scripts/minicpm/vendor/comfy_residency/__init__.py": {
       "upstream_path": "fleet-control/compat/candidates/nx4/comfy_residency/__init__.py",
       "sha256": "8882886555c3d4b0dc980137f2bfabfb2f2be2aa4d56c319716d890a1bef2811"
+    },
+    "scripts/minicpm/vendor/fleet_control/__init__.py": {
+      "upstream_path": "fleet-control/fleet_control/__init__.py",
+      "sha256": "dac74a78a2d67ebf39a524b80a9fb4ebbb2608cd18ad369adf00c502437dac42"
+    },
+    "scripts/minicpm/vendor/fleet_control/comfy_preload.py": {
+      "upstream_path": "fleet-control/fleet_control/comfy_preload.py",
+      "sha256": "683781fec1e98c4c352f4fbb706281dea316cd7841780f4921319e9fad8e0a5e"
+    },
+    "scripts/minicpm/vendor/fleet_control/weight_preload_protocol.py": {
+      "upstream_path": "fleet-control/fleet_control/weight_preload_protocol.py",
+      "sha256": "25a010eb3aafd25d32a8f0645c6e892af6b0bace1699e77a7d4e4844deadc050"
+    },
+    "scripts/minicpm/vendor/weight_preload_node/__init__.py": {
+      "upstream_path": "fleet-control/compat/candidates/weight_preload/__init__.py",
+      "sha256": "28b3f3bb28dd8db1195cf08895d8de928e37f9b3dac455e9d56712590c980960"
     }
   }
 }

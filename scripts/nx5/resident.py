@@ -7,8 +7,10 @@ import queue
 import re
 import shlex
 import subprocess
+import sys
 import threading
 import time
+import types
 import urllib.request
 import uuid
 
@@ -563,9 +565,13 @@ class ManagedComfy:
                 or set(self.policy_profiles) - {'llm', 'flint', 'comfy'}):
             raise ValueError('policy_profiles_invalid')
         for mode, profile in self.policy_profiles.items():
-            if (not isinstance(profile, dict) or set(profile) != {'profile_id', 'version'}
-                    or any(not isinstance(v, str) or not re.fullmatch(r'[A-Za-z0-9_.:-]{1,160}', v)
-                           for v in profile.values())):
+            allowed_keys = ({frozenset({'profile_id', 'version'}),
+                             frozenset({'profile_id', 'version', 'weight_preload'})}
+                            if mode == 'comfy' else {frozenset({'profile_id', 'version'})})
+            if (not isinstance(profile, dict) or frozenset(profile) not in allowed_keys
+                    or any(not isinstance(profile.get(k), str)
+                           or not re.fullmatch(r'[A-Za-z0-9_.:-]{1,160}', profile[k])
+                           for k in ('profile_id', 'version'))):
                 raise ValueError('policy_profile_invalid')
             if mode == 'llm':
                 native = json.loads((service.repo/'configs/nx5-minicpm-service.json').read_text())
@@ -597,7 +603,7 @@ class ManagedComfy:
     @staticmethod
     def policy_identity(value):
         return {key:value.get(key) for key in ('operation_id', 'profile_id', 'profile_version',
-            'mode', 'activation', 'policy_revision', 'executor_id')}
+            'mode', 'activation', 'policy_revision', 'executor_id', 'weight_preload_required')}
 
     def policy_demand(self, row):
         if not self.policy_profiles or row.get('fresh') is not True:
@@ -613,6 +619,12 @@ class ManagedComfy:
             profile = next((p for p in self.policy_profiles.values()
                 if p['profile_id'] == value.get('profile_id')
                 and p['version'] == value.get('profile_version')), None)
+        preload_required = value.get('weight_preload_required', False)
+        if type(preload_required) is not bool:
+            raise RuntimeError('policy_weight_preload_invalid')
+        if (preload_required and (value.get('mode') != 'comfy'
+                or not isinstance(profile, dict) or 'weight_preload' not in profile)):
+            raise RuntimeError('policy_weight_preload_config_missing')
         if (not profile or value.get('profile_id') != profile['profile_id']
                 or value.get('profile_version') != profile['version']
                 or value.get('activation') != ('resident' if value['mode'] in {'llm','flint'} else 'controller')
@@ -643,9 +655,12 @@ class ManagedComfy:
 
     def check_policy_barrier(self, transition, policy):
         if policy:
-            current = self.policy_demand(self.checked_activity(require_ready=False))
-            if (not current or self.policy_identity(current) != self.policy_identity(policy)
-                    or not self.policy_comfy_transition(transition, current)):
+            row = self.checked_activity(require_ready=False)
+            current = self.policy_demand(row)
+            authorized = bool(current and self.policy_identity(current) == self.policy_identity(policy)
+                and (self.policy_comfy_transition(transition, current)
+                     or self.preload_recovery_allowed(current, transition, row=row)))
+            if not authorized:
                 raise RuntimeError('policy_demand_changed')
         self.check_barrier(transition)
 
@@ -657,6 +672,219 @@ class ManagedComfy:
         self.save_policy({'demand':policy, 'phase':'loading'})
         self.policy_worker = threading.Thread(target=self.load_policy, args=(dict(policy),), daemon=True)
         self.policy_worker.start()
+
+    def _ensure_weight_preload(self, policy, transition):
+        """Advance only the original, idle Comfy policy barrier's pinned preload."""
+        failed = {'state': 'failed'}
+        profile = self.policy_profiles.get('comfy')
+        spec = profile.get('weight_preload') if isinstance(profile, dict) else None
+        if (not isinstance(spec, dict) or policy.get('mode') != 'comfy'
+                or policy.get('activation') != 'controller'
+                or policy.get('profile_id') != profile.get('profile_id')
+                or policy.get('profile_version') != profile.get('version')
+                or policy.get('weight_preload_required') is not True
+                or policy.get('state') not in {'requested', 'transitioning', 'unknown'}
+                or (not self.policy_comfy_transition(transition, policy)
+                    and not self.preload_recovery_allowed(policy, transition))):
+            return failed
+        try:
+            row = self.checked_activity(require_ready=False)
+            client = self.weight_preload_client(policy)
+            journal = self.preload_journal(client, policy['operation_id'])
+            queue = self.queue_state()
+            queued = len(queue['queue_running']) + len(queue['queue_pending'])
+            preload_state = journal.get('state') if journal else None
+            dispatched = preload_state in {'unknown', 'running', 'complete', 'failed'}
+            prompt_id = journal.get('prompt_id') if journal else None
+            queue_items = queue['queue_running'] + queue['queue_pending']
+            own_queue = [item for item in queue_items
+                         if isinstance(item, list) and len(item) > 1 and item[1] == prompt_id]
+            only_original_queue = not queue_items or (len(queue_items) == 1 and len(own_queue) == 1)
+            active_safe = row.get('active') == 0 or (
+                dispatched and row.get('active') == 1 and len(own_queue) == 1 and len(queue_items) == 1)
+            queue_safe = (queued == 0 or (
+                dispatched and only_original_queue and len(own_queue) == 1))
+            state_safe = (row.get('fresh') is True and
+                (row.get('state') == 'ready' if not dispatched else
+                 row.get('state') in {'ready', 'loading', 'unknown'}))
+            # Once the exact original journal crossed the dispatch boundary,
+            # ensure() performs GET-only reconciliation. Busy state can delay
+            # release of the barrier, but cannot prevent reading that UUID.
+            busy = (not state_safe or (not dispatched and (
+                    not active_safe or not queue_safe or row.get('leases') != [] or row.get('pending') != []
+                    or self.service.closing or self.service.resident.blocked or self.service.resident.active
+                    or any(j['status'] not in {'succeeded', 'failed'} for j in self.service.jobs.values())
+                    or self.unit() != 'active' or self.flint_unit() == 'active')))
+            if busy:
+                self.save_policy({'demand': policy, 'phase': 'preload_pending', 'error': 'preload_not_idle'})
+                self.check_policy_barrier(transition, policy)
+                observed_active = row.get('active')
+                active = max(1, observed_active if type(observed_active) is int and observed_active >= 0 else 0,
+                             queued)
+                self.report({'mode': 'comfy', 'state': 'loading', 'active': active}, transition)
+                return {'state': 'unknown'}
+            result = client.ensure(policy)
+        except Exception as exc:
+            self.save_policy({'demand': policy, 'phase': 'preload_pending',
+                              'error': type(exc).__name__})
+            result = {'state': 'unknown'}
+        if not isinstance(result, dict) or result.get('state') not in {'running', 'complete', 'unknown', 'failed'}:
+            self.save_policy({'demand': policy, 'phase': 'preload_pending',
+                              'error': 'invalid_preload_result'})
+            result = {'state': 'unknown'}
+        if result['state'] in {'running', 'unknown'}:
+            self.save_policy({'demand': policy, 'phase': 'preload_pending',
+                              'prompt_id': result.get('prompt_id')})
+        elif result['state'] == 'failed':
+            self.save_policy({'demand': policy, 'phase': 'preload_pending',
+                              'prompt_id': result.get('prompt_id'), 'error': 'preload_failed'})
+        if result['state'] != 'complete':
+            # Never let an intermediate partial CUDA residency satisfy the
+            # controller-mode readiness predicate while the original barrier
+            # and pinned preload are still in flight.
+            self.check_policy_barrier(transition, policy)
+            active_row = self.checked_activity(require_ready=False)
+            active_queue = self.queue_state()
+            active = max(1, active_row.get('active') if type(active_row.get('active')) is int else 0,
+                         len(active_queue['queue_running']) + len(active_queue['queue_pending']))
+            self.report({'mode': 'comfy', 'state': 'loading', 'active': active}, transition)
+            return result
+        self.check_policy_barrier(transition, policy)
+        current = self.checked_activity(require_ready=False)
+        final_queue = self.queue_state()
+        current_demand = self.policy_demand(current)
+        own_loading_observation = (current.get('fresh') is True
+            and current.get('state') in {'loading', 'unknown'} and current.get('active') == 1
+            and current.get('leases') == [] and current.get('pending') == []
+            and current_demand is not None
+            and self.policy_identity(current_demand) == self.policy_identity(policy)
+            and self.same_barrier(transition, self.transition()))
+        central_idle = (current.get('state') == 'ready' and current.get('active') == 0)
+        release_busy = (current.get('fresh') is not True or not (central_idle or own_loading_observation)
+            or current.get('leases') != [] or current.get('pending') != []
+            or final_queue['queue_running'] or final_queue['queue_pending']
+            or self.service.closing or self.service.resident.blocked or self.service.resident.active
+            or any(j['status'] not in {'succeeded', 'failed'} for j in self.service.jobs.values())
+            or self.unit() != 'active' or self.flint_unit() == 'active')
+        if release_busy:
+            self.save_policy({'demand':policy, 'phase':'preload_pending',
+                              'prompt_id':result.get('prompt_id'), 'error':'preload_release_not_idle'})
+            self.check_policy_barrier(transition, policy)
+            active = max(1, current.get('active') if type(current.get('active')) is int else 0,
+                         len(final_queue['queue_running']) + len(final_queue['queue_pending']))
+            self.report({'mode':'comfy', 'state':'loading', 'active':active}, transition)
+            return {'state':'unknown', 'prompt_id':result.get('prompt_id')}
+        observation = self.profile_observation({'mode': 'comfy', 'state': 'ready', 'active': 0})
+        if (observation.get('profile_id') != profile['profile_id']
+                or observation.get('profile_version') != profile['version']
+                or observation.get('model_loaded') is not True):
+            self.save_policy({'demand': policy, 'phase': 'preload_pending',
+                              'prompt_id': result.get('prompt_id'), 'error': 'preload_residency_unconfirmed'})
+            self.check_policy_barrier(transition, policy)
+            self.report({'mode': 'comfy', 'state': 'loading', 'active': 0}, transition)
+            return {'state': 'unknown', 'prompt_id': result.get('prompt_id')}
+        return result
+
+    def preload_recovery_allowed(self, policy, transition, *, row=None):
+        """Authorize only GET recovery for a dispatched journal bound to this policy barrier."""
+        if (not isinstance(policy, dict) or policy.get('mode') != 'comfy'
+                or policy.get('weight_preload_required') is not True
+                or policy.get('state') != 'unknown'):
+            return False
+        previous = self.policy_state.get('demand', {})
+        if self.policy_identity(previous) != self.policy_identity(policy):
+            return False
+        if row is None:
+            row = self.checked_activity(require_ready=False)
+        current = self.policy_demand(row)
+        if (not current or self.policy_identity(current) != self.policy_identity(policy)
+                or row.get('fresh') is not True):
+            return False
+        if not self.same_barrier(transition, self.transition()):
+            return False
+        profile = self.policy_profiles.get('comfy')
+        if (not isinstance(profile, dict) or profile.get('profile_id') != policy.get('profile_id')
+                or profile.get('version') != policy.get('profile_version')):
+            return False
+        try:
+            journal = self.preload_journal(self.weight_preload_client(policy), policy['operation_id'])
+        except Exception:
+            return False
+        if not journal or journal.get('state') not in {'unknown', 'running', 'complete', 'failed'}:
+            return False
+        try:
+            authorization = json.loads(
+                journal['request']['prompt']['preload']['inputs']['authorization_json'])
+            claims = authorization['claims']
+        except (KeyError, TypeError, ValueError):
+            return False
+        return all(claims.get(key) == value for key, value in {
+            'operation_id':policy.get('operation_id'),
+            'group_id':self.GROUP,
+            'executor_id':'device-policy:'+self.GROUP,
+            'profile_id':policy.get('profile_id'),
+            'profile_version':policy.get('profile_version'),
+            'policy_revision':policy.get('policy_revision'),
+            'graph_sha256':profile['weight_preload'].get('graph_sha256')}.items())
+
+    @staticmethod
+    def preload_journal(client, operation_id):
+        """Read the original durable client journal before deciding whether POST is permitted."""
+        path = getattr(client, 'journal_path', None)
+        if not isinstance(path, (str, os.PathLike)) or not Path(path).exists():
+            return None
+        path = Path(path)
+        if path.is_symlink() or not path.is_file():
+            raise RuntimeError('preload_journal_unsafe')
+        row = json.loads(path.read_text())
+        if (row.get('schema_version') != 1 or row.get('operation_id') != operation_id
+                or not isinstance(row.get('prompt_id'), str)
+                or row.get('state') not in {'prepared', 'unknown', 'running', 'complete', 'failed'}):
+            raise RuntimeError('preload_journal_identity_invalid')
+        return row
+
+    def weight_preload_client(self, policy):
+        """Load the pinned helper package without changing sys.path or writing pyc."""
+        profile = self.policy_profiles.get('comfy')
+        config = profile.get('weight_preload') if isinstance(profile, dict) else None
+        if (not isinstance(config, dict) or policy.get('weight_preload_required') is not True
+                or policy.get('mode') != 'comfy'
+                or config.get('group_id') != self.GROUP or config.get('resource_id') != self.RESOURCE
+                or config.get('profile_id') != profile.get('profile_id')
+                or config.get('profile_version') != profile.get('version')):
+            raise RuntimeError('weight_preload_config_mismatch')
+        vendor = self.service.repo/'scripts/minicpm/vendor/fleet_control'
+        sources = {
+            'weight_preload_protocol': vendor/'weight_preload_protocol.py',
+            'comfy_preload': vendor/'comfy_preload.py',
+        }
+        if any(not path.is_file() or path.is_symlink() for path in sources.values()):
+            raise RuntimeError('weight_preload_vendor_missing')
+        package_name = '_nx5_weight_preload_' + hashlib.sha256(
+            str(vendor.resolve()).encode()).hexdigest()[:16]
+        package = types.ModuleType(package_name)
+        package.__path__ = [str(vendor)]
+        package.__package__ = package_name
+        loaded = {package_name: package}
+        try:
+            sys.modules[package_name] = package
+            for name, path in sources.items():
+                module_name = package_name+'.'+name
+                module = types.ModuleType(module_name)
+                module.__file__ = str(path)
+                module.__package__ = package_name
+                sys.modules[module_name] = module
+                loaded[module_name] = module
+                exec(compile(path.read_bytes(), str(path), 'exec'), module.__dict__)
+            client_type = loaded[package_name+'.comfy_preload'].WeightPreloadClient
+        except Exception:
+            raise
+        finally:
+            for name in loaded:
+                sys.modules.pop(name, None)
+        journal = self.service.state.parent/'comfy-weight-preload'/(
+            policy['operation_id']+'.json')
+        return client_type(config, journal)
 
     def load_policy(self, policy):
         """The regular reservation loader must leave tick free to service its barrier."""
@@ -909,13 +1137,22 @@ class ManagedComfy:
             return json.load(response)
 
     def queue(self):
+        row = self.queue_state()
+        return len(row['queue_running']) + len(row['queue_pending'])
+
+    def queue_state(self):
         row = self.request('/queue')
         if not isinstance(row, dict) or any(type(row.get(k)) is not list for k in ('queue_running','queue_pending')):
             raise RuntimeError('incomplete_comfy_activity')
-        return len(row['queue_running']) + len(row['queue_pending'])
+        return row
 
     def report(self, observation, transition=None):
         observation = self.profile_observation(observation)
+        demand = self.policy_state.get('demand', {})
+        if (self.policy_state.get('phase') == 'preload_pending'
+                and demand.get('weight_preload_required') is True
+                and observation.get('mode') == 'comfy' and observation.get('state') != 'ready'):
+            observation['model_loaded'] = None
         result = self.wire().api('POST', self.wire().group+'/observation',
                                 dict(observation, operation_id=transition['operation_id'] if transition else None),
                                 controller=True)
@@ -927,7 +1164,9 @@ class ManagedComfy:
             if foreign_inference_count():
                 raise ForeignInferenceProcess('foreign_inference_process')
             resident = self.service.resident
-            if self.policy_state.get('phase') == 'unknown':
+            policy_unknown = self.policy_state.get('phase') == 'unknown'
+            if (policy_unknown and self.policy_state.get('demand', {}).get(
+                    'weight_preload_required') is not True):
                 raise RuntimeError('policy_requires_reconciliation')
             if self.intent.get('phase') == 'unknown':
                 raise RuntimeError('lifecycle_requires_reconciliation')
@@ -936,6 +1175,10 @@ class ManagedComfy:
             row = self.checked_activity(require_ready=False)
             policy = self.policy_demand(row)
             transition = self.transition()
+            preload_recovery = bool(policy_unknown and policy and transition
+                and self.preload_recovery_allowed(policy, transition, row=row))
+            if policy_unknown and not preload_recovery:
+                raise RuntimeError('policy_requires_reconciliation')
             native = resident.child is not None and resident.child.poll() is None
             unit = self.unit()
             flint_unit = self.flint_unit()
@@ -981,7 +1224,9 @@ class ManagedComfy:
                             and transition.get('operation_id') == resident.record.get('operation_id')
                             and resident.record.get('mode', 'llm') == target)
                 own_flint = self.own_flint_transition(transition, row, flint_demand)
-                policy_transition = self.policy_comfy_transition(transition, policy)
+                preload_recovery = bool(target == 'comfy' and policy and
+                    self.preload_recovery_allowed(policy, transition, row=row))
+                policy_transition = self.policy_comfy_transition(transition, policy) or preload_recovery
                 if not (target == 'comfy' and transition.get('executor_id') == self.MEDIA_EXECUTOR) and not own_text and not own_flint and not policy_transition:
                     raise RuntimeError('unsupported_transition')
                 # A text admission can race the central off barrier while its
@@ -992,7 +1237,11 @@ class ManagedComfy:
                     and not native and not resident.ready and not policy_loading
                     and resident.record.get('status') in {None, 'released', 'reserving'}
                     and all(j['status'] in {'waiting', 'succeeded', 'failed'} for j in self.service.jobs.values()))
-                if native or row['leases'] or (pending_text and not own_text and not own_flint and not off_waiting_text):
+                # A dispatched preload can only be queried by its original UUID.
+                # Do not let its own Comfy queue item, or unrelated activity,
+                # prevent that read-only reconciliation. The final ready gate
+                # below still requires a fresh, fully idle snapshot.
+                if not preload_recovery and (native or row['leases'] or (pending_text and not own_text and not own_flint and not off_waiting_text)):
                     return
                 # Once the original off barrier is granted, later waiting work
                 # must wait for its completion instead of deadlocking the owner.
@@ -1046,6 +1295,8 @@ class ManagedComfy:
                 verb = 'start' if desired_state == 'active' else 'stop'
                 needs_action = target_state != desired_state
                 if needs_action:
+                    if preload_recovery:
+                        return
                     if (self.intent.get('phase') in {'actions_complete', 'completed'}
                             and self.intent.get('operation_id') == transition['operation_id']
                             and self.intent.get('step') not in {'stop-comfy', 'stop-flint'}):
@@ -1070,6 +1321,11 @@ class ManagedComfy:
                 self.check_policy_barrier(transition, policy if policy_transition else None)
                 if target == 'llm':
                     require_idle()
+                if (policy_transition and target == 'comfy'
+                        and policy.get('weight_preload_required') is True):
+                    preload = self._ensure_weight_preload(policy, transition)
+                    if preload.get('state') != 'complete':
+                        return
                 observation = {'mode':target, 'state':'ready', 'active':self.queue() if target == 'comfy' else 0}
                 self.report(observation, transition)
                 self.save(dict(transition, phase='completed'))
