@@ -103,6 +103,9 @@ def remote_ssh_command(command):
 
 
 FILES = ['scripts/nx5/resident.py', 'scripts/nx5/compat_api.py', 'configs/nx5-chat-runtime.json', 'scripts/nx5/chat-runner.cpp', 'scripts/nx5/service.py', 'scripts/nx5/run-model.py', 'scripts/minicpm/bench-audit.py',
+         'scripts/minicpm/vendor/mode_residency.py',
+         'scripts/minicpm/vendor/comfy_residency/__init__.py',
+         'scripts/minicpm/vendor/source-lock.json',
          'configs/qwen36-iq4xs-128k.json', 'configs/nx5-minicpm-service.json',
          'configs/minicpm-v47-instruct.jinja', 'docs/nx5-service/API.md',
          'docs/nx5-service/catalog.json', 'docs/nx5-service/openapi.json',

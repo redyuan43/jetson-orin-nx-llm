@@ -30,6 +30,97 @@ class ResidentTests(unittest.TestCase):
         self.assertEqual(central.api.call_args.args[2],
                          {'mode':'off','state':'ready','active':0,'operation_id':None})
 
+    def comfy_owner(self):
+        owner = object.__new__(module.ManagedComfy)
+        owner.policy_profiles = {'comfy': {
+            'profile_id': 'nx5-qwen21', 'version': 'qwen21-t2i-nx5-20261005'}}
+        owner.service = type('ServiceFixture', (), {'resident': self.model})()
+        return owner
+
+    @staticmethod
+    def comfy_payload(models=(), *, busy=False, observed_at=None):
+        import time
+        rows = [{'model_class': name, 'device_kind': device, 'loaded_bytes': size}
+                for name, device, size in models]
+        return {'schema_version': 1, 'source': 'comfy.current_loaded_models',
+                'observed_at': time.time() if observed_at is None else observed_at,
+                'models': rows, 'count': len(rows), 'loaded_bytes': sum(row['loaded_bytes'] for row in rows),
+                'model_loaded': any(row['loaded_bytes'] > 0 for row in rows), 'busy': busy}
+
+    def test_comfy_observation_uses_real_cuda_qwen_weights_and_local_endpoint(self):
+        owner = self.comfy_owner()
+        payload = self.comfy_payload([('QwenImage21', 'cuda', 1234)])
+        paths = []
+        owner.request = lambda path: paths.append(path) or payload
+
+        result = owner.profile_observation({'mode': 'comfy', 'state': 'ready', 'active': 0})
+
+        self.assertEqual(result['model_loaded'], True)
+        self.assertEqual(result['profile_id'], 'nx5-qwen21')
+        self.assertEqual(result['profile_version'], 'qwen21-t2i-nx5-20261005')
+        self.assertEqual(paths, ['/siyuan/loaded-models'])
+
+    def test_comfy_empty_idle_is_false_but_busy_empty_is_unknown(self):
+        owner = self.comfy_owner()
+        payloads = [self.comfy_payload(), self.comfy_payload(busy=True)]
+        owner.request = lambda _path: payloads.pop(0)
+
+        idle = owner.profile_observation({'mode': 'comfy', 'state': 'ready', 'active': 0})
+        busy = owner.profile_observation({'mode': 'comfy', 'state': 'ready', 'active': 1})
+
+        self.assertIs(idle['model_loaded'], False)
+        self.assertIsNone(busy['model_loaded'])
+
+    def test_comfy_cpu_only_or_unrelated_cuda_weights_do_not_prove_target_loaded(self):
+        owner = self.comfy_owner()
+        payloads = [
+            self.comfy_payload([('QwenImage21', 'cpu', 1234)]),
+            self.comfy_payload([('AutoencoderKL', 'cuda', 5678)]),
+        ]
+        owner.request = lambda _path: payloads.pop(0)
+
+        cpu = owner.profile_observation({'mode': 'comfy', 'state': 'ready', 'active': 0})
+        unrelated = owner.profile_observation({'mode': 'comfy', 'state': 'ready', 'active': 0})
+
+        self.assertIs(cpu['model_loaded'], False)
+        self.assertIs(unrelated['model_loaded'], False)
+
+    def test_comfy_malformed_stale_or_unreachable_weight_evidence_stays_unknown(self):
+        owner = self.comfy_owner()
+        owner.request = lambda _path: {'schema_version': 1, 'source': 'wrong'}
+        malformed = owner.profile_observation({'mode': 'comfy', 'state': 'ready', 'active': 0})
+        owner.request = lambda _path: self.comfy_payload(
+            [('QwenImage21', 'cuda', 1234)], observed_at=0)
+        stale = owner.profile_observation({'mode': 'comfy', 'state': 'ready', 'active': 0})
+        owner.request = Mock(side_effect=TimeoutError('do not expose endpoint details'))
+        unavailable = owner.profile_observation({'mode': 'comfy', 'state': 'ready', 'active': 0})
+
+        self.assertIsNone(malformed['model_loaded'])
+        self.assertIsNone(stale['model_loaded'])
+        self.assertIsNone(unavailable['model_loaded'])
+
+    def test_llm_and_flint_observations_keep_their_existing_loaded_semantics(self):
+        owner = self.comfy_owner()
+        self.model.model_revision = 'llm-version'
+        self.model.health = Mock(return_value={'model_loaded': True})
+        owner.policy_profiles['llm'] = {'profile_id': 'llm-profile', 'version': 'llm-version'}
+        owner.policy_profiles['flint'] = {'profile_id': 'flint-profile', 'version': 'flint-version'}
+        owner.flint_runtime = Mock(return_value={'ready': True})
+
+        llm = owner.profile_observation({'mode': 'llm', 'state': 'ready', 'active': 0})
+        flint = owner.profile_observation({'mode': 'flint', 'state': 'ready', 'active': 0})
+
+        self.assertIs(llm['model_loaded'], True)
+        self.assertIs(flint['model_loaded'], True)
+
+    def test_vendored_residency_parser_matches_locked_nano5_source(self):
+        vendor = Path(__file__).resolve().parents[1] / 'scripts/minicpm/vendor'
+        lock = json.loads((vendor/'source-lock.json').read_text())
+        self.assertEqual(lock['commit'], '8f687edf013d57ad3ebf5d955d2e0fed5cbafc44')
+        for path, metadata in lock['files'].items():
+            self.assertEqual(hashlib.sha256((Path(__file__).resolve().parents[1]/path).read_bytes()).hexdigest(),
+                             metadata['sha256'])
+
     def test_launch_keeps_target_q8_and_sets_explicit_draft_q8_cache(self):
         root = self.root/'runtime'
         model_dir = root/'models'

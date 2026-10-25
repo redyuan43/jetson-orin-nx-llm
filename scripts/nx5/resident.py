@@ -12,6 +12,12 @@ import time
 import urllib.request
 import uuid
 
+_RESIDENCY_VENDOR = Path(__file__).resolve().parents[1] / 'minicpm' / 'vendor'
+_RESIDENCY_SOURCE = _RESIDENCY_VENDOR / 'mode_residency.py'
+_RESIDENCY_NAMESPACE = {}
+exec(compile(_RESIDENCY_SOURCE.read_bytes(), str(_RESIDENCY_SOURCE), 'exec'), _RESIDENCY_NAMESPACE)
+observe_residency = _RESIDENCY_NAMESPACE['observe']
+
 
 def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
@@ -696,6 +702,21 @@ class ManagedComfy:
             loaded = bool(resident.health()['model_loaded'] and resident.model_revision == profile['version'])
         elif observation['mode'] == 'flint':
             loaded = bool(self.flint_runtime()['ready'])
+        elif observation['mode'] == 'comfy':
+            spec = {
+                'kind': 'comfy_loaded_models',
+                'url': 'http://127.0.0.1:8188/siyuan/loaded-models',
+                'profile_id': profile['profile_id'],
+                'profile_version': profile['version'],
+                'model_class': 'QwenImage21',
+            }
+
+            def fetch(method, url, auth=None):
+                if method != 'GET' or auth is not None:
+                    raise ValueError('comfy_residency_request_invalid')
+                return self.request('/siyuan/loaded-models')
+
+            loaded = observe_residency(spec, fetch, now=time.time)['model_loaded']
         return dict(observation, profile_id=profile['profile_id'], profile_version=profile['version'],
                     model_loaded=loaded)
 

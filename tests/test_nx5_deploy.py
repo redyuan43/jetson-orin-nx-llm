@@ -14,6 +14,13 @@ spec.loader.exec_module(module)
 
 
 class DeploymentConfigurationTests(unittest.TestCase):
+    def test_publisher_bundle_includes_the_locked_shared_residency_parser(self):
+        self.assertTrue({
+            'scripts/minicpm/vendor/mode_residency.py',
+            'scripts/minicpm/vendor/comfy_residency/__init__.py',
+            'scripts/minicpm/vendor/source-lock.json',
+        }.issubset(set(module.FILES)))
+
     def test_flint_recovery_remote_can_inspect_barrier_after_owner_stop(self):
         source = module.REMOTE_FLINT_RECOVERY.replace('PAYLOAD', '{}', 1)
         compile(inspect.getsource(module.validate_flint_recovery_snapshot) + '\n' + source,
