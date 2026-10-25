@@ -347,11 +347,11 @@ def install_config():
  merged['policy_profiles']['comfy']['weight_preload']=cfg
  node=json.dumps(cfg,sort_keys=True,indent=2).encode()+b'\n'
  owner=json.dumps(merged,sort_keys=True,indent=2).encode()+b'\n'
- ticket=secrets.token_urlsafe(32).encode('ascii')
+ ticket=(secrets.token_urlsafe(32)+'\n').encode('ascii')
  need(all(not path.exists() and not path.is_symlink() for path in new_private+(node_link,)),
   'preload_artifact_cas_conflict')
  atomic(private/'weight-preload-central.token',(values[0]+'\n').encode(),0o600,create_only=True)
- atomic(private/'weight-preload.ticket-key',(ticket+'\n').encode(),0o600,create_only=True)
+ atomic(private/'weight-preload.ticket-key',ticket,0o600,create_only=True)
  atomic(private/'weight-preload.json',node,0o600,create_only=True)
  atomic(config,owner,0o600,expected_current_sha=P['baseline']['config_sha256'])
  old_dropin_sha=P['baseline']['comfy_dropin_sha256']

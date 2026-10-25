@@ -349,6 +349,54 @@ class PreloadReleaseTests(unittest.TestCase):
                 namespace['atomic'](secret, b'two', 0o600, create_only=True)
             self.assertEqual(secret.read_bytes(), b'one')
 
+    def test_remote_install_config_creates_all_private_artifacts(self):
+        tree = ast.parse(module.REMOTE_PRELOAD)
+        names = {'need', 'sha', 'atomic', 'install_config'}
+        functions = [node for node in tree.body
+                     if isinstance(node, ast.FunctionDef) and node.name in names]
+        namespace = {'json':json,'hashlib':__import__('hashlib'),'os':__import__('os'),
+            'pathlib':__import__('pathlib'),'secrets':__import__('secrets'),
+            'shlex':__import__('shlex'),'tempfile':tempfile,'P':None,
+            'merge_owner_config':module.merge_owner_config,
+            'comfy_dropin':lambda _current,_config:'[Service]\n'}
+        exec(compile(ast.Module(body=functions,type_ignores=[]),
+                     'REMOTE_PRELOAD.install_config', 'exec'), namespace)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            private = home/'.config/nx5-ssd-llm'
+            private.mkdir(parents=True)
+            base = home/'.local/share/nx5-ssd-llm'
+            config = private/'service.json'
+            owner_config = {'managed_comfy':True,'policy_profiles':{'comfy':{
+                'profile_id':'nx5-qwen21','version':'qwen21-t2i-nx5-20261005'}}}
+            config_raw = (json.dumps(owner_config)+'\n').encode()
+            config.write_bytes(config_raw)
+            wrapper = home/'.config/siyuan-text-ingress/wrapper.json'
+            wrapper.parent.mkdir(parents=True)
+            wrapper.write_text(json.dumps({'central':{'auth':{'token_env':'NX5_CENTRAL_TOKEN'}}}))
+            credentials = wrapper.parent/'credentials.env'
+            credentials.write_text('NX5_CENTRAL_TOKEN=fixture-only-value\n')
+            comfy_drop = home/'.config/systemd/user/siyuan-image-comfy.service.d/weight.conf'
+            node_link = home/'apps/ComfyUI/custom_nodes/siyuan_weight_preload'
+            new_private = (private/'weight-preload-central.token',
+                           private/'weight-preload.ticket-key',private/'weight-preload.json')
+            graph_digest = 'd'*64
+            namespace.update({'home':home,'private':private,'base':base,'config':config,
+                'comfy_drop':comfy_drop,'node_link':node_link,'new_private':new_private,
+                'P':{'preload_spec':module.config_for_nx5(graph_digest,home=str(home)),
+                    'baseline':{'config_sha256':module.sha(config_raw),
+                                'comfy_dropin_sha256':None},'graph':module.GRAPH}})
+            namespace['install_config']()
+
+            self.assertEqual(new_private[0].read_bytes(),b'fixture-only-value\n')
+            self.assertTrue(new_private[1].read_bytes().endswith(b'\n'))
+            self.assertEqual(json.loads(new_private[2].read_text()),
+                json.loads(config.read_text())['policy_profiles']['comfy']['weight_preload'])
+            self.assertEqual(node_link.readlink(),base/'current/scripts/minicpm/vendor/weight_preload_node')
+            for path in new_private:
+                self.assertEqual(path.stat().st_mode & 0o777,0o600)
+
     def test_remote_verification_pins_live_restart_environment_jobs_and_old_dropins(self):
         for required in (
                 "health=get('http://100.118.44.27:18347/healthz')",
