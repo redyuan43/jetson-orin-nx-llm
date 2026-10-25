@@ -1,6 +1,6 @@
 {
   "repository": "redyuan43/siyuan-media-gateway",
-  "commit": "9b64e4ac33aeb0361c37c32f2e2821e5307c40af",
+  "commit": "f55618f001f71893ee15813da70dbaca5a0b3f7b",
   "files": {
     "scripts/minicpm/vendor/mode_residency.py": {
       "upstream_path": "fleet-control/fleet_control/mode_residency.py",
@@ -16,7 +16,7 @@
     },
     "scripts/minicpm/vendor/fleet_control/comfy_preload.py": {
       "upstream_path": "fleet-control/fleet_control/comfy_preload.py",
-      "sha256": "70e1e81e93edef9f591dacfb8b70eced272485415f49a7f149fe66e514cdf253"
+      "sha256": "afd7bc8eed477c84ca7b8e77daab3710ebd83445ef6fdcc639cf86d68124f134"
     },
     "scripts/minicpm/vendor/fleet_control/weight_preload_protocol.py": {
       "upstream_path": "fleet-control/fleet_control/weight_preload_protocol.py",

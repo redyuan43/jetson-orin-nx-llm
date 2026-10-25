@@ -214,6 +214,8 @@ def load_bounded(model, config, management, *, ram=None):
             raise ValueError("preload_loaded_bytes_outside_budget:actual=" + str(actual) + ":cap=" + str(cap))
         if int(management.get_free_memory(model.load_device)) < budget["reserve_cuda_bytes"]:
             raise ValueError("preload_cuda_reserve_exhausted")
+        if (available_ram() if ram is None else ram) < host_reserve:
+            raise ValueError("preload_host_reserve_exhausted")
         if not matching:
             entries.insert(0, loaded)
         return {"model_class": config["model_class"], "device_kind": "cuda",

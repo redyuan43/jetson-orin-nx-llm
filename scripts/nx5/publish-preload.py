@@ -17,7 +17,7 @@ import urllib.request
 
 BASELINE = '984530f50d6c6abf6b3b0b5c9d682f0a0b1f5c58'
 UPDATE_BASELINE = 'e98f9c46ad3f0cc75e41a651254cb2cfe62428bc'
-VENDOR_COMMIT = '9b64e4ac33aeb0361c37c32f2e2821e5307c40af'
+VENDOR_COMMIT = 'f55618f001f71893ee15813da70dbaca5a0b3f7b'
 GRAPH = 'configs/nx5-qwen21-weight-preload-graph.json'
 LOCAL_PRELOAD_FILES = {
     'configs/nx5-qwen21-weight-preload-graph.json',
