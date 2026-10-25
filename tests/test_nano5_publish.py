@@ -143,3 +143,15 @@ def test_observer_hook_install_refuses_running_comfy_and_keeps_it_stopped(tmp_pa
     assert all(a[0]=='show' for a in calls)
     with pytest.raises(RuntimeError,match='path_already_owned'):
         m.install_idle_comfy_observer(tmp_path/'other')
+
+
+def test_owned_capacity_pause_accepts_only_exact_idle_group_without_foreign_jobs():
+    m=load();health={'state':'ready','active':0,'inference_or_switch_request_active':False,
+        'coordinator_reachable':True,'mode':'off'}
+    activity={'group_id':'nano5-igpu-group','resources':['nano5-igpu'],'state':'ready','fresh':True,
+        'active':0,'mode':'off','leases':[],'pending':[],'transition':None}
+    pause={'resource_id':'nano5-igpu','capacity':0,'revision':4,'occupied':0,'mode':'off'}
+    m.require_idle(health,activity,[],{},maintenance_pause=pause)
+    for delta in ({'leases':[{'status':'held'}]}, {'pending':[{'status':'waiting'}]}, {'fresh':False}, {'mode':'comfy'}):
+        with pytest.raises(RuntimeError):m.require_idle(health,activity|delta,[],{},maintenance_pause=pause)
+    with pytest.raises(RuntimeError):m.require_idle(health,activity,[],{},maintenance_pause=pause|{'capacity':1})
