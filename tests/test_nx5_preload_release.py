@@ -1,7 +1,9 @@
 import ast
 import base64
 import builtins
+import contextlib
 import importlib.util
+import io
 import json
 from pathlib import Path
 import shutil
@@ -428,6 +430,94 @@ class PreloadReleaseTests(unittest.TestCase):
                 {'pid':3,'unit':'siyuan-image-comfy.service'}, {'pid':4,'unit':'siyuan-nx5-flint-ingress.service'}]
         self.assertEqual(module.unaffected_processes(rows),
             [{'pid':4,'unit':'siyuan-nx5-flint-ingress.service'}])
+
+    def test_restart_filter_excludes_only_explicit_old_and_new_main_pids(self):
+        rows = [
+            {'pid':2571583,'starttime':'28863033','unit':'user@1000.service'},
+            {'pid':3679414,'starttime':'43233401','unit':'user@1000.service'},
+            {'pid':3696180,'starttime':'43406503','unit':'user@1000.service'},
+            {'pid':3679409,'starttime':'43233396','unit':'user@1000.service'},
+            {'pid':3750836,'starttime':'44064292','unit':'user@1000.service'},
+            {'pid':3750840,'starttime':'44064351','unit':'user@1000.service'},
+        ]
+        self.assertEqual(module.unaffected_processes(rows, {3679409,3696180,3750836,3750840}),
+            [rows[0], rows[1]])
+
+        remote_tree = ast.parse(module.REMOTE_PRELOAD)
+        remote_function = next(node for node in remote_tree.body
+                                if isinstance(node, ast.FunctionDef)
+                                and node.name == 'unaffected_processes')
+        namespace = {'RESTARTED_UNITS':{'nx5-ssd-llm.service','siyuan-image-comfy.service'}}
+        exec(compile(ast.Module(body=[remote_function], type_ignores=[]),
+                     'REMOTE_PRELOAD.unaffected_processes', 'exec'), namespace)
+        self.assertEqual(namespace['unaffected_processes'](
+            rows, {3679409,3696180,3750836,3750840}), [rows[0], rows[1]])
+
+    def test_remote_restart_comparison_preserves_auxiliary_and_flint_processes(self):
+        remote_tree = ast.parse(module.REMOTE_PRELOAD)
+        remote_function = next(node for node in remote_tree.body
+                                if isinstance(node, ast.FunctionDef)
+                                and node.name == 'unaffected_processes_unchanged')
+        baseline = {
+            'owner_unit': {'MainPID':'3696180'}, 'comfy_unit': {'MainPID':'3679409'},
+            'flint_unit': {'MainPID':'0','InvocationID':''},
+            'flint_processes': [{'pid':2571583,'starttime':'28863033','argv_sha256':'f'*64}],
+            'python_processes': [
+                {'pid':2571583,'starttime':'28863033','argv_sha256':'f'*64,'unit':'user@1000.service'},
+                {'pid':3679414,'starttime':'43233401','argv_sha256':'a'*64,'unit':'user@1000.service'},
+                {'pid':3696180,'starttime':'43406503','argv_sha256':'b'*64,'unit':'user@1000.service'},
+                {'pid':3679409,'starttime':'43233396','argv_sha256':'c'*64,'unit':'user@1000.service'}],
+        }
+        after = {
+            **baseline,
+            'owner_unit': {'MainPID':'3750840'}, 'comfy_unit': {'MainPID':'3750836'},
+            'python_processes': [baseline['python_processes'][0], baseline['python_processes'][1],
+                {'pid':3750840,'starttime':'44064351','argv_sha256':'d'*64,'unit':'user@1000.service'},
+                {'pid':3750836,'starttime':'44064292','argv_sha256':'e'*64,'unit':'user@1000.service'}],
+        }
+        namespace = {'RESTARTED_UNITS':{'nx5-ssd-llm.service','siyuan-image-comfy.service'}}
+        namespace['unaffected_processes'] = module.unaffected_processes
+        exec(compile(ast.Module(body=[remote_function], type_ignores=[]),
+                     'REMOTE_PRELOAD.unaffected_processes_unchanged', 'exec'), namespace)
+        unchanged = namespace['unaffected_processes_unchanged']
+        self.assertTrue(unchanged(baseline, after))
+        changed_aux = {**after, 'python_processes': [
+            after['python_processes'][0], {**after['python_processes'][1], 'argv_sha256':'9'*64},
+            *after['python_processes'][2:]]}
+        self.assertFalse(unchanged(baseline, changed_aux))
+        changed_flint = {**after, 'flint_processes': []}
+        self.assertFalse(unchanged(baseline, changed_flint))
+
+    def test_cli_verify_uses_original_plan_without_central_snapshot_or_mutation(self):
+        operation = 'nx5-weight-preload-publish-20261025-005'
+        revision = 'e98f9c46ad3f0cc75e41a651254cb2cfe62428bc'
+        manifest = {'source_commit': revision, 'files': {'resident.py': 'a'*64}}
+        baseline = {'owner_unit': {'MainPID':'3696180'}, 'jobs': {'sha256':'b'*64}}
+        with tempfile.TemporaryDirectory() as tmp:
+            plan_path = Path(tmp)/'plan.json'
+            plan_path.write_text(json.dumps({'schema_version':1,'operation':operation,
+                'maintenance_revision':12,'source_commit':revision,'manifest_sha256':'c'*64,
+                'graph_sha256':'d'*64,'remote_baseline':baseline,'phase':'applying'}))
+            bundle = {'manifest':manifest,'manifest_sha256':'c'*64,'files':{}}
+            stdout = io.StringIO()
+            with patch.object(module, 'package', return_value=bundle), \
+                 patch.object(module, 'central_snapshot', side_effect=AssertionError('verify must not query central')) as central, \
+                 patch.object(module, 'call_remote', return_value='{"phase":"unknown","verification":{}}') as remote, \
+                 patch.object(sys, 'argv', ['publisher','--action','verify','--commit',revision,
+                    '--operation',operation,'--maintenance-revision','12','--plan',str(plan_path)]), \
+                 contextlib.redirect_stdout(stdout):
+                module.main()
+            payload = remote.call_args.args[0]
+            self.assertEqual(payload['action'], 'verify')
+            self.assertEqual(payload['manifest'], manifest)
+            self.assertEqual(payload['baseline'], baseline)
+            self.assertFalse(central.called)
+            self.assertEqual(json.loads(stdout.getvalue())['remote']['phase'], 'unknown')
+
+    def test_cli_exposes_the_read_only_verify_action(self):
+        result = subprocess.run([sys.executable, str(ROOT/'scripts/nx5/publish-preload.py'), '--help'],
+                                text=True, capture_output=True, check=True)
+        self.assertIn('--action {capture,prepare,apply,inspect,verify}', result.stdout)
 
 
 if __name__ == '__main__':

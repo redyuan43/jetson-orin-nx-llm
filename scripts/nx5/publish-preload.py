@@ -110,8 +110,10 @@ def central_baseline_matches(before, after):
 RESTARTED_UNITS = {'nx5-ssd-llm.service', 'siyuan-image-comfy.service'}
 
 
-def unaffected_processes(rows):
-    return [row for row in rows if row.get('unit') not in RESTARTED_UNITS]
+def unaffected_processes(rows, excluded_pids=()):
+    excluded_pids = {int(pid) for pid in excluded_pids}
+    return [row for row in rows if row.get('pid') not in excluded_pids
+            and row.get('unit') not in RESTARTED_UNITS]
 
 
 def comfy_dropin(current, node_config):
@@ -200,8 +202,18 @@ REMOTE_PRELOAD = r'''import base64,hashlib,json,os,pathlib,secrets,shlex,stat,su
 P=PAYLOAD; action=P['action']; home=pathlib.Path.home(); base=home/'.local/share/nx5-ssd-llm'
 private=home/'.config/nx5-ssd-llm'; state=home/'.local/state/nx5-ssd-llm'; units=home/'.config/systemd/user'
 RESTARTED_UNITS={'nx5-ssd-llm.service','siyuan-image-comfy.service'}
-def unaffected_processes(rows):
- return [row for row in rows if row.get('unit') not in RESTARTED_UNITS]
+def unaffected_processes(rows,excluded_pids=()):
+ excluded_pids={int(pid) for pid in excluded_pids}
+ return [row for row in rows if row.get('pid') not in excluded_pids
+  and row.get('unit') not in RESTARTED_UNITS]
+def unaffected_processes_unchanged(baseline,after):
+ if (after['flint_unit']!=baseline['flint_unit']
+  or after['flint_processes']!=baseline['flint_processes']): return False
+ restarted_pids={int(baseline[name]['MainPID']) for name in ('owner_unit','comfy_unit')}
+ restarted_pids.update(int(after[name]['MainPID']) for name in ('owner_unit','comfy_unit'))
+ old_python=unaffected_processes(baseline['python_processes'],restarted_pids)
+ after_python=unaffected_processes(after['python_processes'],restarted_pids)
+ return after_python==old_python
 config=private/'service.json'; comfy_drop=units/'siyuan-image-comfy.service.d/zz-siyuan-weight-preload.conf'
 node_link=home/'apps/ComfyUI/custom_nodes/siyuan_weight_preload'; plan_path=state/('preload-release-'+P['operation']+'.json')
 backup=state/('preload-backup-'+P['operation']); release=base/'releases'/P['source_commit']; current=base/'current'
@@ -433,10 +445,7 @@ if action=='apply':
    except Exception:time.sleep(1)
   else:raise RuntimeError('post_restart_verify_failed')
   after=snapshot()
-  old_python=unaffected_processes(record['baseline']['python_processes'])
-  need(after['flint_unit']==record['baseline']['flint_unit'] and after['flint_processes']==record['baseline']['flint_processes'],'flint_process_changed')
-  after_other=unaffected_processes(after['python_processes'])
-  need(after_other==old_python,'unrelated_python_process_changed')
+  need(unaffected_processes_unchanged(record['baseline'],after),'unrelated_python_process_changed')
   record['verification']=receipt;write_journal(record,'verified')
   print(json.dumps({'phase':'verified','source_commit':P['source_commit'],'verification':receipt},sort_keys=True))
  except Exception as exc:
@@ -673,7 +682,7 @@ def call_remote(payload, *, failure_log):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--action', choices=('capture', 'prepare', 'apply', 'inspect'), required=True)
+    parser.add_argument('--action', choices=('capture', 'prepare', 'apply', 'inspect', 'verify'), required=True)
     parser.add_argument('--commit', required=True, help='full immutable native source SHA')
     parser.add_argument('--operation', required=True, help='unique nx5-preload maintenance operation label')
     parser.add_argument('--maintenance-revision', required=True, type=int,
@@ -713,6 +722,17 @@ def main():
         result=json.loads(call_remote({'action':'inspect','operation':args.operation,
             'maintenance_revision':args.maintenance_revision,'source_commit':args.commit,
             'baseline':plan['remote_baseline']},failure_log=failure_log))
+        print(json.dumps({'local_phase':plan.get('phase'),'remote':result},sort_keys=True,indent=2))
+        return
+    if args.action == 'verify':
+        if plan.get('phase') not in ('applying', 'verified'):
+            raise ValueError('inspect_only:'+str(plan.get('phase')))
+        config = config_for_nx5(plan['graph_sha256'])
+        payload = {'action':'verify','operation':args.operation,
+            'maintenance_revision':args.maintenance_revision,'source_commit':args.commit,
+            'manifest':bundle['manifest'],'baseline':plan['remote_baseline'],
+            'capability':capability_for(config)}
+        result=json.loads(call_remote(payload,failure_log=failure_log))
         print(json.dumps({'local_phase':plan.get('phase'),'remote':result},sort_keys=True,indent=2))
         return
     central=central_snapshot()
