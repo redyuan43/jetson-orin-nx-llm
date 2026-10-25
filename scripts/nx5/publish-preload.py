@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 import secrets
 import shlex
+import stat
 import subprocess
 import time
 import urllib.request
@@ -651,9 +652,23 @@ def remote_program(payload):
     return helpers+REMOTE_PRELOAD.replace('PAYLOAD', repr(payload), 1)
 
 
-def call_remote(payload):
-    return subprocess.check_output(['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=8',
-        'nx5', 'python3', '-'], input=remote_program(payload), text=True, stderr=subprocess.DEVNULL)
+def call_remote(payload, *, failure_log):
+    command = ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=8', 'nx5', 'python3', '-']
+    result = subprocess.run(command, input=remote_program(payload), text=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if result.returncode:
+        path = Path(failure_log)
+        parent = path.parent.stat(follow_symlinks=False)
+        if (path.is_symlink() or not stat.S_ISDIR(parent.st_mode)
+                or parent.st_uid != os.getuid() or parent.st_mode & 0o077):
+            raise RuntimeError('remote_failure_log_path_unsafe')
+        fd = os.open(path, os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW, 0o600)
+        with os.fdopen(fd, 'wb') as stream:
+            stream.write(result.stderr.encode('utf-8', errors='replace'))
+            stream.flush(); os.fsync(stream.fileno())
+        os.chmod(path, 0o600)
+        raise RuntimeError('remote_call_failed:'+str(payload.get('action'))+':'+str(result.returncode))
+    return result.stdout
 
 
 def main():
@@ -668,12 +683,14 @@ def main():
     root = Path(__file__).resolve().parents[2]
     bundle = package(root, args.commit)
     plan_path = Path(args.plan)
+    failure_log = plan_path.with_name(plan_path.name+'.'+args.operation+'.'+args.action+'.remote.stderr')
     if args.action == 'capture':
         central = central_snapshot()
         validate_central_snapshot(central, operation=args.operation,
                                   revision=args.maintenance_revision, now=time.time())
         remote = json.loads(call_remote({'action':'capture','operation':args.operation,
-            'maintenance_revision':args.maintenance_revision,'source_commit':args.commit}))
+            'maintenance_revision':args.maintenance_revision,'source_commit':args.commit},
+            failure_log=failure_log))
         plan = {'schema_version':1,'operation':args.operation,
             'maintenance_revision':args.maintenance_revision,'source_commit':args.commit,
             'manifest':bundle['manifest'],'manifest_sha256':bundle['manifest_sha256'],
@@ -695,7 +712,7 @@ def main():
     if args.action == 'inspect':
         result=json.loads(call_remote({'action':'inspect','operation':args.operation,
             'maintenance_revision':args.maintenance_revision,'source_commit':args.commit,
-            'baseline':plan['remote_baseline']}))
+            'baseline':plan['remote_baseline']},failure_log=failure_log))
         print(json.dumps({'local_phase':plan.get('phase'),'remote':result},sort_keys=True,indent=2))
         return
     central=central_snapshot()
@@ -712,7 +729,7 @@ def main():
             'manifest':bundle['manifest'],'files':bundle['files'],
             'baseline':plan['remote_baseline'],'preload_spec':config_for_nx5(plan['graph_sha256']),
             'graph':GRAPH}
-        result=json.loads(call_remote(payload))
+        result=json.loads(call_remote(payload,failure_log=failure_log))
         current=json.loads(plan_path.read_text())
         save_plan(plan_path,{**current,'phase':'prepared','remote_prepare':result},expected_phase='preparing')
     elif args.action == 'apply':
@@ -724,7 +741,7 @@ def main():
             'baseline':plan['remote_baseline'],
             'manifest':bundle['manifest'],'preload_spec':config_for_nx5(plan['graph_sha256']),
             'graph':GRAPH,'capability':capability_for(config_for_nx5(plan['graph_sha256']))}
-        result=json.loads(call_remote(payload))
+        result=json.loads(call_remote(payload,failure_log=failure_log))
         current=json.loads(plan_path.read_text())
         save_plan(plan_path,{**current,'phase':'verified','verification':result},expected_phase='applying')
     else:

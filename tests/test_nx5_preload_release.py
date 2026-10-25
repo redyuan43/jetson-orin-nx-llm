@@ -183,7 +183,7 @@ class PreloadReleaseTests(unittest.TestCase):
                 'central_baseline':central,'remote_baseline':remote_baseline,'phase':'prepared'}))
             captured = {}
 
-            def fake_call_remote(payload):
+            def fake_call_remote(payload, **_kwargs):
                 captured['payload'] = payload
                 tree = ast.parse(module.REMOTE_PRELOAD)
                 owner_idle = next(node for node in tree.body
@@ -209,6 +209,19 @@ class PreloadReleaseTests(unittest.TestCase):
                 module.main()
 
             self.assertEqual(captured['payload']['baseline'], remote_baseline)
+
+    def test_call_remote_failure_stores_stderr_in_create_only_private_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            private = Path(tmp)/'private'
+            private.mkdir(mode=0o700)
+            log = private/'remote-apply.stderr'
+            completed = subprocess.CompletedProcess(['ssh'], 1, stdout='', stderr='RuntimeError: safe failure\n')
+            with patch.object(module.subprocess, 'run', return_value=completed), \
+                 patch.object(module, 'remote_program', return_value='pass'):
+                with self.assertRaisesRegex(RuntimeError, 'remote_call_failed'):
+                    module.call_remote({'action':'apply'}, failure_log=log)
+            self.assertEqual(log.read_text(), 'RuntimeError: safe failure\n')
+            self.assertEqual(log.stat().st_mode & 0o777, 0o600)
 
     def test_generated_remote_program_is_valid_python_for_fixed_payload(self):
         source = module.remote_program({'action':'capture','operation':'nx5-preload-test',
