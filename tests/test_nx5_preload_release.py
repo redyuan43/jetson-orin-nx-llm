@@ -1,9 +1,12 @@
+import base64
 import importlib.util
 import json
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -89,6 +92,38 @@ class PreloadReleaseTests(unittest.TestCase):
                 self.assertEqual(bundle['manifest']['graph_sha256'],
                                  module.sha(module.canonical(json.loads((ROOT/module.GRAPH).read_text()))))
                 self.assertIn('scripts/minicpm/vendor/weight_preload_node/__init__.py', bundle['files'])
+
+                # Exercise the real consumer against a materialized package, not
+                # just the publisher's manifest dictionary. Service.__init__ reads
+                # release.json and requires the legacy release/commit header.
+                materialized = repo/'materialized-release'
+                for name, row in bundle['files'].items():
+                    target = materialized/name
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(base64.b64decode(row['content']))
+                (materialized/'release.json').write_text(json.dumps(bundle['manifest']))
+                service_path = materialized/'scripts/nx5/service.py'
+                sys.path.insert(0, str(service_path.parent))
+                try:
+                    service_spec = importlib.util.spec_from_file_location(
+                        'nx5_service_from_candidate', service_path)
+                    service_module = importlib.util.module_from_spec(service_spec)
+                    service_spec.loader.exec_module(service_module)
+                    with patch.object(service_module, 'ResidentModel',
+                                      return_value=SimpleNamespace(manager=None)):
+                        service = service_module.Service({'state': str(materialized/'state')})
+                finally:
+                    sys.path.remove(str(service_path.parent))
+                hashes = bundle['manifest']['files']
+                self.assertEqual(bundle['manifest']['release'], 'nx5-ssd-llm-'+revision[:12])
+                self.assertEqual(bundle['manifest']['commit'], module.sha(
+                    json.dumps(hashes, sort_keys=True).encode()))
+                self.assertEqual(service.release, {
+                    'release': bundle['manifest']['release'],
+                    'commit': bundle['manifest']['commit'],
+                    'source_commit': revision,
+                })
+
                 unrelated = repo/'unrelated.txt'
                 unrelated.write_text('not owned\n')
                 subprocess.run(['git', '-C', str(repo), 'add', '.'], check=True)

@@ -495,7 +495,13 @@ def package(repo, revision):
             'model': ['1', 0], 'authorization_json': '$AUTH'}}:
         raise ValueError('preload_graph_contract_changed')
     graph_digest = sha(canonical(graph))
-    manifest = {'source_commit': revision, 'files': {name: row['sha256'] for name, row in files.items()},
+    file_hashes = {name: row['sha256'] for name, row in files.items()}
+    # Keep the header consumed by scripts/nx5/service.py and existing clients.
+    # The fingerprint is the fixed bundle's complete file-hash map, as in the
+    # canonical NX5 publisher; source_commit remains the immutable Git identity.
+    manifest = {'release': 'nx5-ssd-llm-' + revision[:12],
+                'commit': sha(json.dumps(file_hashes, sort_keys=True).encode()),
+                'source_commit': revision, 'files': file_hashes,
                 'vendor_commit': VENDOR_COMMIT, 'graph_sha256': graph_digest}
     return {'manifest': manifest, 'files': files, 'manifest_sha256': sha(canonical(manifest))}
 
